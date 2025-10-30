@@ -66,7 +66,7 @@ export default function Landing() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 animate-in slide-in-from-bottom-4 duration-1000 delay-700">
-            <Link href="/blog">
+            <Link href="/blog/begin-your-journey">
               <Button
                 size="lg"
                 className="text-lg px-10 py-7 bg-primary hover:bg-primary/90 border-2 border-primary-border shadow-xl"

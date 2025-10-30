@@ -11,9 +11,10 @@ import {
   type Flashcard, type InsertFlashcard,
   type MeditationTrack, type InsertMeditationTrack,
   type MusicTrack, type InsertMusicTrack,
+  type BlogPost, type InsertBlogPost,
   messages, users, newsletterSubscribers, subscriptions,
   courses, modules, lessons, studentProgress, enrollments,
-  flashcards, meditationTracks, musicTracks
+  flashcards, meditationTracks, musicTracks, blogPosts
 } from "../shared/schema.ts";
 import { db } from "./db.ts";
 import { eq, and, desc } from "drizzle-orm";
@@ -82,6 +83,12 @@ export interface IStorage {
   getAllMusicTracks(): Promise<MusicTrack[]>;
   getMusicTrack(id: string): Promise<MusicTrack | undefined>;
   createMusicTrack(track: InsertMusicTrack): Promise<MusicTrack>;
+  
+  // Blog operations
+  getAllBlogPosts(): Promise<BlogPost[]>;
+  getBlogPost(id: string): Promise<BlogPost | undefined>;
+  getBlogPostBySlug(slug: string): Promise<BlogPost | undefined>;
+  createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -474,6 +481,35 @@ export class DatabaseStorage implements IStorage {
 
   async createMusicTrack(track: InsertMusicTrack): Promise<MusicTrack> {
     const [created] = await db.insert(musicTracks).values(track).returning();
+    return created;
+  }
+
+  // Blog operations
+  async getAllBlogPosts(): Promise<BlogPost[]> {
+    return await db
+      .select()
+      .from(blogPosts)
+      .orderBy(desc(blogPosts.publishedAt));
+  }
+
+  async getBlogPost(id: string): Promise<BlogPost | undefined> {
+    const [post] = await db
+      .select()
+      .from(blogPosts)
+      .where(eq(blogPosts.id, id));
+    return post;
+  }
+
+  async getBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
+    const [post] = await db
+      .select()
+      .from(blogPosts)
+      .where(eq(blogPosts.slug, slug));
+    return post;
+  }
+
+  async createBlogPost(post: InsertBlogPost): Promise<BlogPost> {
+    const [created] = await db.insert(blogPosts).values(post).returning();
     return created;
   }
 }

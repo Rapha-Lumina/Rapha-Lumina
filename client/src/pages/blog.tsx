@@ -3,17 +3,38 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 import meditationImg from "@assets/stock_images/meditation_spiritual_555a3c50.jpg";
 
+type BlogPost = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  category: string;
+  readTime: string;
+  thumbnail: string | null;
+  publishedAt: string;
+  updatedAt: string;
+};
+
 export default function Blog() {
-  const posts = [
+  const { data: posts = [], isLoading } = useQuery<BlogPost[]>({
+    queryKey: ["/api/blog"],
+  });
+
+  const fallbackPosts = [
     {
+      id: "1",
+      slug: "shadow-light-integration",
       title: "The Integration of Shadow and Light: A Modern Approach",
       excerpt: "Exploring how Jungian psychology meets quantum consciousness in the journey of self-discovery and wholeness.",
-      date: "October 15, 2025",
+      publishedAt: "2025-10-15T00:00:00Z",
       readTime: "8 min read",
       category: "Psychology",
-      image: meditationImg
+      thumbnail: meditationImg
     },
     {
       title: "Why Rigid Religion Fails the Modern Seeker",
@@ -94,44 +115,64 @@ export default function Blog() {
 
         {/* Blog Posts */}
         <div className="max-w-6xl mx-auto px-4 pb-16">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {posts.map((post, index) => (
-              <Card key={index} className="hover-elevate flex flex-col" data-testid={`card-post-${index}`}>
-                <div className="overflow-hidden rounded-t-lg">
-                  <img 
-                    src={post.image} 
-                    alt={post.title}
-                    className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <CardHeader>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="secondary" className="text-xs">{post.category}</Badge>
-                  </div>
-                  <CardTitle className="text-lg font-serif line-clamp-2">{post.title}</CardTitle>
-                  <CardDescription className="line-clamp-3">{post.excerpt}</CardDescription>
-                </CardHeader>
-                <CardContent className="flex-1">
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      {post.date}
+          {isLoading ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">Loading articles...</p>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {(posts.length > 0 ? posts : fallbackPosts).map((post, index) => {
+                const displayPost = {
+                  ...post,
+                  date: post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  }) : 'Recent',
+                  image: post.thumbnail || meditationImg,
+                };
+
+                return (
+                  <Card key={post.id || index} className="hover-elevate flex flex-col" data-testid={`card-post-${index}`}>
+                    <div className="overflow-hidden rounded-t-lg">
+                      <img 
+                        src={displayPost.image} 
+                        alt={post.title}
+                        className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
+                      />
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {post.readTime}
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button variant="ghost" className="w-full group" data-testid={`button-read-post-${index}`}>
-                    Read More
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
+                    <CardHeader>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="secondary" className="text-xs">{post.category}</Badge>
+                      </div>
+                      <CardTitle className="text-lg font-serif line-clamp-2">{post.title}</CardTitle>
+                      <CardDescription className="line-clamp-3">{post.excerpt}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex-1">
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {displayPost.date}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {post.readTime}
+                        </div>
+                      </div>
+                    </CardContent>
+                    <CardFooter>
+                      <Link href={`/blog/${post.slug}`} className="w-full">
+                        <Button variant="ghost" className="w-full group" data-testid={`button-read-post-${index}`}>
+                          Read More
+                          <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                        </Button>
+                      </Link>
+                    </CardFooter>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Newsletter CTA */}
