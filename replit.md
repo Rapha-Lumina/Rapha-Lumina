@@ -84,7 +84,7 @@ Implemented a comprehensive blog system with database persistence and SEO-friend
 - **Blog Listing Page** (`/blog`): Fetches and displays all blog posts from database with fallback data, includes category filtering badges
 - **Blog Detail Page** (`/blog/:slug`): Dynamic slug-based URLs (e.g., `/blog/begin-your-journey`), displays full article content with formatted markdown-style rendering
 - **Featured Content**: "Begin Your Journey" blog post inserted into database, serves as main entry point for new users
-- **Featured Image**: Beautiful sunset silhouette image (`/attached_assets/generated_images/Awakening_journey_sunset_silhouette_de47bd25.png`) showing person with arms raised on mountain peak, representing spiritual awakening journey
+- **Featured Image**: Beautiful contemplative sunset image (`/attached_assets/image_1761840686623.png`) showing person in prayer/meditation pose with hands together, representing peaceful spiritual awakening
 - **Landing Page Integration**: "Begin Your Journey" button now links directly to `/blog/begin-your-journey` for seamless user journey
 - **SEO Optimization**: Slug-based URLs improve search engine discoverability and social sharing
 - **Content Format**: Blog posts support markdown-style formatting with headers (##), bold text (**), author attribution (—), and regular paragraphs
