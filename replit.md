@@ -74,6 +74,20 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates
 
+### Database-Backed Blog System with Slug-Based URLs (October 30, 2025)
+
+Implemented a comprehensive blog system with database persistence and SEO-friendly slug-based URLs:
+- **Database Schema**: Added `blog_posts` table with columns: id, slug (unique), title, excerpt, content, category, readTime, thumbnail, publishedAt, updatedAt
+- **API Routes**: 
+  - `GET /api/blog` - Returns all published blog posts
+  - `GET /api/blog/slug/:slug` - Returns individual blog post by slug for SEO-friendly URLs
+- **Blog Listing Page** (`/blog`): Fetches and displays all blog posts from database with fallback data, includes category filtering badges
+- **Blog Detail Page** (`/blog/:slug`): Dynamic slug-based URLs (e.g., `/blog/begin-your-journey`), displays full article content with formatted markdown-style rendering
+- **Featured Content**: "Begin Your Journey" blog post inserted into database, serves as main entry point for new users
+- **Landing Page Integration**: "Begin Your Journey" button now links directly to `/blog/begin-your-journey` for seamless user journey
+- **SEO Optimization**: Slug-based URLs improve search engine discoverability and social sharing
+- **Content Format**: Blog posts support markdown-style formatting with headers (##), bold text (**), author attribution (—), and regular paragraphs
+
 ### Newsletter Popup Prevention for Authenticated Users (October 30, 2025)
 
 Updated newsletter signup behavior to prevent systeme.io popup for authenticated users:
