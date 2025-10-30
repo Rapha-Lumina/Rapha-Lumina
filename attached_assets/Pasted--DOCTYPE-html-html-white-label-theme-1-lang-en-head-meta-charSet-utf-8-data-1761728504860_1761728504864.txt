@@ -1,0 +1,1735 @@
+<!DOCTYPE html>
+<html white-label-theme="1" lang="en">
+    <head>
+        <meta charSet="utf-8" data-next-head=""/>
+        <meta name="viewport" content="width=device-width" data-next-head=""/>
+        <title data-next-head="">Sales funnels</title>
+        <link rel="shortcut icon" href="/dashboard/favicon.ico"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, interactive-widget=resizes-content"/>
+        <link rel="preload" href="https://d2pviq63ux9jcb.cloudfront.net/_next/static/media/f1f0c35b32161446-s.p.woff2" as="font" type="font/woff2" crossorigin="anonymous" data-next-font="size-adjust"/>
+        <link rel="preload" href="https://d2pviq63ux9jcb.cloudfront.net/_next/static/media/579e0f95cacfae57-s.p.woff2" as="font" type="font/woff2" crossorigin="anonymous" data-next-font="size-adjust"/>
+        <link rel="preload" href="https://d2pviq63ux9jcb.cloudfront.net/_next/static/media/fcb100c7607696fd-s.p.woff2" as="font" type="font/woff2" crossorigin="anonymous" data-next-font="size-adjust"/>
+        <link rel="preload" href="https://d2pviq63ux9jcb.cloudfront.net/_next/static/media/dc792b508e6f91c7-s.p.woff2" as="font" type="font/woff2" crossorigin="anonymous" data-next-font="size-adjust"/>
+        <link rel="preload" href="https://d2pviq63ux9jcb.cloudfront.net/_next/static/media/453c570719538b13-s.p.woff2" as="font" type="font/woff2" crossorigin="anonymous" data-next-font="size-adjust"/>
+        <link rel="preload" href="https://d2pviq63ux9jcb.cloudfront.net/_next/static/media/167d02023fe255ba-s.p.woff2" as="font" type="font/woff2" crossorigin="anonymous" data-next-font="size-adjust"/>
+        <link rel="preload" href="https://d2pviq63ux9jcb.cloudfront.net/_next/static/media/96b347e4ccb975d6-s.p.woff2" as="font" type="font/woff2" crossorigin="anonymous" data-next-font="size-adjust"/>
+        <link rel="preload" href="https://d2pviq63ux9jcb.cloudfront.net/_next/static/media/360af6e6cbaeea1a-s.p.woff2" as="font" type="font/woff2" crossorigin="anonymous" data-next-font="size-adjust"/>
+        <link rel="preload" href="https://d2pviq63ux9jcb.cloudfront.net/_next/static/css/a1bac2587f2dfe8a.css" as="style"/>
+        <link rel="stylesheet" href="https://d2pviq63ux9jcb.cloudfront.net/_next/static/css/a1bac2587f2dfe8a.css" data-n-g=""/>
+        <noscript data-n-css=""></noscript>
+        <script defer="" nomodule="" src="https://d2pviq63ux9jcb.cloudfront.net/_next/static/chunks/polyfills-42372ed130431b0a.js"></script>
+        <script src="https://d2pviq63ux9jcb.cloudfront.net/_next/static/chunks/webpack-05788440683736bc.js" defer=""></script>
+        <script src="https://d2pviq63ux9jcb.cloudfront.net/_next/static/chunks/framework-79d2231e73d039de.js" defer=""></script>
+        <script src="https://d2pviq63ux9jcb.cloudfront.net/_next/static/chunks/main-525eeb25fd1f980f.js" defer=""></script>
+        <script src="https://d2pviq63ux9jcb.cloudfront.net/_next/static/chunks/pages/_app-89b5551c11039405.js" defer=""></script>
+        <script src="https://d2pviq63ux9jcb.cloudfront.net/_next/static/chunks/87046-62f8850b44c50a3e.js" defer=""></script>
+        <script src="https://d2pviq63ux9jcb.cloudfront.net/_next/static/chunks/81465-330aa2a3d9ee4597.js" defer=""></script>
+        <script src="https://d2pviq63ux9jcb.cloudfront.net/_next/static/chunks/99354-82355479032a4690.js" defer=""></script>
+        <script src="https://d2pviq63ux9jcb.cloudfront.net/_next/static/chunks/46757-04b49452d3fd441f.js" defer=""></script>
+        <script src="https://d2pviq63ux9jcb.cloudfront.net/_next/static/chunks/pages/funnels-3fb13b671c5bf7f2.js" defer=""></script>
+        <script src="https://d2pviq63ux9jcb.cloudfront.net/_next/static/T6OLKfvUEntAYEK9BBYWa/_buildManifest.js" defer=""></script>
+        <script src="https://d2pviq63ux9jcb.cloudfront.net/_next/static/T6OLKfvUEntAYEK9BBYWa/_ssgManifest.js" defer=""></script>
+        <style id="__jsx-2601668172">
+            :root {
+                --font-inter: 'interFont', 'interFont Fallback';
+                --font-averta: 'avertaFont', 'avertaFont Fallback'
+            }
+        </style>
+    </head>
+    <body class="bg-background-primary text-sm font-averta font-light text-text-tertiary" style="background-color:rgb(var(--background-primary))">
+        <script>
+            0
+        </script>
+        <div id="__next">
+            <div>
+                <nav class="top-0 z-10">
+                    <div class="text-background-secondary z-10 mx-auto flex h-[69px] w-full items-center justify-between gap-4 bg-[rgb(var(--background-header))] px-4 sm:px-6 md:px-14">
+                        <div class="flex items-center gap-4">
+                            <img class="max-h-[35px] max-w-[35px]" src="https://d2543nuuc0wvdg.cloudfront.net/images/logo_small.svg" alt="Systeme.io"/>
+                            <div class="flex"></div>
+                        </div>
+                        <div class="ml-auto flex h-full">
+                            <div class="ml-auto hidden animate-pulse items-center gap-4 lg:flex">
+                                <div class="bg-text-secondary h-5 w-16 rounded"></div>
+                                <div class="bg-text-secondary h-5 w-16 rounded"></div>
+                                <div class="bg-text-secondary h-5 w-16 rounded"></div>
+                                <div class="bg-text-secondary h-5 w-16 rounded"></div>
+                                <div class="bg-text-secondary h-5 w-16 rounded"></div>
+                                <div class="bg-text-secondary h-5 w-16 rounded"></div>
+                                <div class="bg-text-secondary h-5 w-16 rounded"></div>
+                            </div>
+                        </div>
+                        <div class="flex h-full shrink-0 items-center justify-around gap-4">
+                            <div class="bg-text-secondary h-10 w-10 animate-pulse rounded-full"></div>
+                            <div class="bg-text-secondary h-6 w-[44px] animate-pulse rounded-sm"></div>
+                        </div>
+                        <div class="hidden">
+                            <div class="animate-pulse flex w-full items-center justify-end gap-5">
+                                <button class="focus-visible:border-brand-primary flex h-full items-center justify-around gap-2.5 border-b-4 border-transparent focus:outline-none">
+                                    <div class="text-background-secondary/90 relative w-5 text-sm font-bold">
+                                        <svg width="22" height="24" viewBox="0 0 22 24" xmlns="http://www.w3.org/2000/svg" class="fill-text-secondary stroke-text-secondary hover:fill-background-secondary hover:stroke-background-secondary transition">
+                                            <path d="M21.1719 17.2391C20.5266 16.1234 19.75 14.0016 19.75 10.25V9.47344C19.75 4.62813 15.8563 0.657819 11.0657 0.625007H11C9.85057 0.623567 8.71211 0.84891 7.64986 1.28813C6.58761 1.72735 5.62245 2.37181 4.80965 3.18461C3.99685 3.99741 3.35238 4.96258 2.91317 6.02483C2.47395 7.08707 2.2486 8.22554 2.25004 9.37501V10.25C2.25004 14.0016 1.47348 16.1234 0.828168 17.2391C0.66867 17.5047 0.583501 17.8082 0.581576 18.118C0.579652 18.4278 0.661044 18.7325 0.817231 19C0.970367 19.2675 1.19184 19.4895 1.45898 19.6432C1.72612 19.797 2.02933 19.877 2.33754 19.875H19.6625C19.9708 19.877 20.274 19.797 20.5411 19.6432C20.8082 19.4895 21.0297 19.2675 21.1829 19C21.339 18.7325 21.4204 18.4278 21.4185 18.118C21.4166 17.8082 21.3314 17.5047 21.1719 17.2391Z"></path>
+                                            <path d="M14.4893 21.625H7.48926C7.25719 21.625 7.03464 21.7172 6.87054 21.8813C6.70645 22.0454 6.61426 22.2679 6.61426 22.5C6.61426 22.7321 6.70645 22.9546 6.87054 23.1187C7.03464 23.2828 7.25719 23.375 7.48926 23.375H14.4893C14.7213 23.375 14.9439 23.2828 15.108 23.1187C15.2721 22.9546 15.3643 22.7321 15.3643 22.5C15.3643 22.2679 15.2721 22.0454 15.108 21.8813C14.9439 21.7172 14.7213 21.625 14.4893 21.625Z"></path>
+                                        </svg>
+                                    </div>
+                                </button>
+                                <button disabled="" aria-label="Open Menu">
+                                    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" class="h-8 w-8">
+                                        <path d="M4 6h16M4 12h16M4 18h16"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+                <div class="px-4 sm:px-6 md:px-14">
+                    <main class="py-5">
+                        <div class="mb-5 flex flex-col justify-between gap-5 lg:flex-row lg:gap-3">
+                            <div class="flex flex-wrap justify-between truncate lg:basis-full">
+                                <div class="flex items-center gap-1">
+                                    <div role="status">
+                                        <svg aria-hidden="true" class="h-5 w-5 animate-spin fill-background-secondary text-text-primary" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"></path>
+                                            <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"></path>
+                                        </svg>
+                                        <span class="sr-only">Loading...</span>
+                                    </div>
+                                    <div class="flex items-center whitespace-nowrap h-[42px] ">
+                                        <h1 class="flex items-center gap-1.5">
+                                            Funnels
+                                            <div class="ui-flex ui-items-center" data-headlessui-state="">
+                                                <button class="ui-relative ui-truncate ui-outline-none ui-cursor-pointer ui-w-full ui-max-w-fit ui-h-full" aria-expanded="false" data-headlessui-state="">
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="rgb(var(--brand-primary))" xmlns="http://www.w3.org/2000/svg" class="fill-fill-primary group-focus-visible:fill-brand-primary">
+                                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 24C18.6274 24 24 18.6274 24 12C24 5.37258 18.6274 0 12 0C5.37258 0 0 5.37258 0 12C0 18.6274 5.37258 24 12 24Z"></path>
+                                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M10.8813 9.18766C10.687 9.54872 10.3116 9.77547 9.90164 9.77949C9.49164 9.7835 9.11193 9.56414 8.91059 9.20696C8.70926 8.84978 8.71819 8.41134 8.93391 8.06266C9.69772 6.73986 11.2548 6.09497 12.7302 6.49031C14.2056 6.88566 15.2316 8.22267 15.2317 9.75016C15.2317 10.9854 14.4745 11.9934 13.5442 12.5627C12.7972 13.0194 13.2629 14.2502 11.8533 14.2502C11.5347 14.25 11.2311 14.1147 11.0179 13.8779C10.8047 13.6411 10.7019 13.325 10.735 13.0082C10.7654 12.413 11.0309 11.9282 11.32 11.5772C11.6249 11.2059 12.0265 10.9022 12.3325 10.7199C14.0392 9.70516 11.9579 7.62953 10.8813 9.18878V9.18766ZM11.8533 15.3752C11.232 15.3752 10.7283 15.8788 10.7283 16.5002C10.7283 17.1215 11.232 17.6252 11.8533 17.6252C12.4746 17.6252 12.9783 17.1215 12.9783 16.5002C12.9783 15.8788 12.4746 15.3752 11.8533 15.3752Z" fill="rgb(var(--background-secondary))"></path>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                            <span hidden="" style="position:fixed;top:1px;left:1px;width:1px;height:0;padding:0;margin:-1px;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border-width:0;display:none"></span>
+                                        </h1>
+                                    </div>
+                                </div>
+                                <div class="ml-auto flex gap-3">
+                                    <button class="group ui-group ui-min-h-[42px] ui-relative ui-rounded-lg ui-py-2.5 ui-font-medium ui-text-sm ui-main-transition-colors ui-focus-ring ui-whitespace-nowrap [&amp;&gt;*]:ui-font-medium [&amp;&gt;*]:ui-font-inter ui-font-inter ui-flex ui-items-center ui-justify-center ui-gap-2 ui-bg-brand-primary ui-text-background-secondary hover:ui-text-background-secondary hover:ui-bg-brand-primary-hover ui-px-4 flex items-center lg:hidden">
+                                        <div role="status" class="ui-absolute ui-invisible -ui-translate-x-1/2 ui-left-1/2">
+                                            <svg aria-hidden="true" class="ui-w-5 ui-h-5 ui-animate-spin ui-fill-brand-primary ui-text-background-secondary" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"></path>
+                                                <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"></path>
+                                            </svg>
+                                            <span class="ui-sr-only">Loading...</span>
+                                        </div>
+                                        <div class="ui-flex ui-items-center ui-justify-center ui-gap-2 ui-truncate">
+                                            <svg width="20" height="20" viewBox="0 0 20 20" fill="rgb(var(--background-secondary))" xmlns="http://www.w3.org/2000/svg" class="h-[15px] w-[15px]">
+                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M18.7608 0.608398H1.19002C0.382658 0.608398 -0.0247321 1.588 0.547328 2.16007L7.55151 9.16531V16.9692C7.55151 17.2658 7.69622 17.5438 7.93921 17.7139L10.969 19.834C11.5667 20.2524 12.3992 19.8283 12.3992 19.0893V9.16531L19.4035 2.16007C19.9744 1.58915 19.5698 0.608398 18.7608 0.608398Z"></path>
+                                            </svg>
+                                        </div>
+                                    </button>
+                                    <button disabled="" class="group ui-group ui-min-h-[42px] ui-relative ui-rounded-lg ui-py-2.5 ui-font-medium ui-text-sm ui-main-transition-colors ui-focus-ring ui-whitespace-nowrap [&amp;&gt;*]:ui-font-medium [&amp;&gt;*]:ui-font-inter ui-font-inter ui-flex ui-items-center ui-justify-center ui-gap-2 ui-text-background-secondary hover:ui-text-background-secondary hover:ui-bg-brand-primary-hover ui-px-4 flex lg:hidden ui-bg-text-secondary/50 ui-pointer-events-none">
+                                        <div role="status" class="ui-absolute ui-invisible -ui-translate-x-1/2 ui-left-1/2">
+                                            <svg aria-hidden="true" class="ui-w-5 ui-h-5 ui-animate-spin ui-fill-brand-primary ui-text-background-secondary" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"></path>
+                                                <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"></path>
+                                            </svg>
+                                            <span class="ui-sr-only">Loading...</span>
+                                        </div>
+                                        <div class="ui-flex ui-items-center ui-justify-center ui-gap-2 ui-truncate">
+                                            <svg fill="rgb(var(--background-secondary))" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M8 16C12.4183 16 16 12.4183 16 8C16 3.58172 12.4183 0 8 0C3.58172 0 0 3.58172 0 8C0 12.4183 3.58172 16 8 16ZM9 5C9 4.44772 8.55228 4 8 4C7.44771 4 7 4.44772 7 5V7H5C4.44772 7 4 7.44772 4 8C4 8.55229 4.44772 9 5 9H7V11C7 11.5523 7.44771 12 8 12C8.55228 12 9 11.5523 9 11V9H11C11.5523 9 12 8.55228 12 8C12 7.44771 11.5523 7 11 7H9V5Z"></path>
+                                            </svg>
+                                            <span class="hidden sm:flex">
+                                            <!-- -->
+                                            Create</span>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="w-full flex-col overflow-x-hidden rounded-lg lg:overflow-visible hidden lg:flex">
+                                <div class="bg-brand-primary-subtle flex justify-center px-6 py-4 lg:hidden">
+                                    <span class="font-inter text-text-primary text-[17px] font-bold">Filter by</span>
+                                </div>
+                                <form class="bg-background-secondary w-full flex-col justify-end gap-3 rounded-b-lg px-6 py-4 lg:flex-row lg:bg-transparent lg:px-0 lg:py-0 hidden lg:flex">
+                                    <label class="min-w-[150px] ui-relative ui-text-sm ui-font-medium ui-flex ui-flex-col ui-gap-1">
+                                        <svg width="17" height="16" viewBox="0 0 17 16" fill="none" stroke="rgb(var(--text-primary))" xmlns="http://www.w3.org/2000/svg" class="ui-absolute ui-right-4 ui-w-[21px] ui-h-[21px] ui-translate-y-1/2 ui-scale-75 ui-z-1">
+                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M14.2107 7.17079C14.2107 10.5788 11.448 13.3416 8.03993 13.3416C4.6319 13.3416 1.86914 10.5788 1.86914 7.17079C1.86914 3.76276 4.6319 1 8.03993 1C11.448 1 14.2107 3.76276 14.2107 7.17079Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                            <path d="M15.7538 14.8847L12.3984 11.5293" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                        </svg>
+                                        <input class="ui-relative ui-w-full ui-text-text-primary ui-main-transition-colors ui-rounded-lg ui-border ui-border-text-secondary/30 ui-py-2.5 ui-pl-4 ui-pr-8 focus:ui-border-brand-primary focus:ui-outline-none placeholder:ui-text-text-tertiary/70 disabled:ui-bg-background-tertiary/40 " type="text" placeholder="Search" spellcheck="false" data-test-id="search-input" value=""/>
+                                    </label>
+                                    <div class="ui-relative ui-flex ui-flex-col ui-gap-1">
+                                        <div class="ui-relative ui-flex ui-flex-col ui-gap-1" data-headlessui-state="">
+                                            <button class="ui-relative" id="headlessui-combobox-button-:R9mr696r6:" type="button" tabindex="-1" aria-haspopup="listbox" aria-expanded="false" data-headlessui-state="">
+                                                <input class="ui-truncate ui-w-full ui-text-[16px] sm:ui-text-sm ui-flex ui-items-center ui-justify-between ui-px-4 ui-py-2.5 ui-pr-14 ui-rounded-lg ui-cursor-default ui-text-text-primary placeholder:ui-text-text-tertiary/70 ui-border focus:ui-outline-none focus-visible:ui-border-brand-primary ui-main-transition-colors ui-bg-background-secondary ui-border-text-secondary/30" placeholder="Select" id="headlessui-control-:R6r696r6:" role="combobox" type="text" aria-expanded="false" aria-autocomplete="list" data-headlessui-state=""/>
+                                                <div class="ui-flex ui-items-center ui-focus-ring ui-rounded-md ui-absolute ui-inset-y-0 ui-right-4 ui-h-[46px] sm:ui-h-[42px]" id="headlessui-combobox-button-:R2pmr696r6:" tabindex="-1" aria-haspopup="listbox" aria-expanded="false" data-headlessui-state="">
+                                                    <svg width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="rgb(var(--text-primary))" xmlns="http://www.w3.org/2000/svg" class="ui-stroke-text-primary ui-main-transition" aria-hidden="true">
+                                                        <path d="M1.5 1.5L7.5 7.5L13.5 1.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                                    </svg>
+                                                </div>
+                                            </button>
+                                            <button type="button" class="ui-flex ui-items-center ui-focus-ring ui-rounded-md ui-absolute ui-bottom-0 ui-right-10 ui-h-[46px] sm:ui-h-[42px]">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" width="19" height="16" class="ui-h-4 ui-w-4 ui-fill-text-primary">
+                                                    <path d="M310.6 361.4c12.5 12.5 12.5 32.75 0 45.25C304.4 412.9 296.2 416 288 416s-16.38-3.125-22.62-9.375L160 301.3L54.63 406.6C48.38 412.9 40.19 416 32 416S15.63 412.9 9.375 406.6c-12.5-12.5-12.5-32.75 0-45.25l105.4-105.4L9.375 150.6c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0L160 210.8l105.4-105.4c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25l-105.4 105.4L310.6 361.4z"></path>
+                                                </svg>
+                                            </button>
+                                            <span hidden="" style="position:fixed;top:1px;left:1px;width:1px;height:0;padding:0;margin:-1px;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border-width:0;display:none"></span>
+                                        </div>
+                                    </div>
+                                    <button disabled="" class="group ui-group ui-min-h-[42px] ui-relative ui-rounded-lg ui-py-2.5 ui-font-medium ui-text-sm ui-main-transition-colors ui-focus-ring ui-whitespace-nowrap [&amp;&gt;*]:ui-font-medium [&amp;&gt;*]:ui-font-inter ui-font-inter ui-flex ui-items-center ui-justify-center ui-gap-2 ui-text-background-secondary hover:ui-text-background-secondary hover:ui-bg-brand-primary-hover ui-px-4 flex min-w-[126px] items-center ui-bg-text-secondary/50 ui-pointer-events-none" type="submit" data-test-id="filter-btn">
+                                        <div role="status" class="ui-absolute ui-invisible -ui-translate-x-1/2 ui-left-1/2">
+                                            <svg aria-hidden="true" class="ui-w-5 ui-h-5 ui-animate-spin ui-fill-brand-primary ui-text-background-secondary" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"></path>
+                                                <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"></path>
+                                            </svg>
+                                            <span class="ui-sr-only">Loading...</span>
+                                        </div>
+                                        <div class="ui-flex ui-items-center ui-justify-center ui-gap-2 ui-truncate">
+                                            <svg width="20" height="20" viewBox="0 0 20 20" fill="rgb(var(--background-secondary))" xmlns="http://www.w3.org/2000/svg" class="h-[15px] w-[15px]">
+                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M18.7608 0.608398H1.19002C0.382658 0.608398 -0.0247321 1.588 0.547328 2.16007L7.55151 9.16531V16.9692C7.55151 17.2658 7.69622 17.5438 7.93921 17.7139L10.969 19.834C11.5667 20.2524 12.3992 19.8283 12.3992 19.0893V9.16531L19.4035 2.16007C19.9744 1.58915 19.5698 0.608398 18.7608 0.608398Z"></path>
+                                            </svg>
+                                            <span>
+                                            <!-- -->
+                                            Filter</span>
+                                        </div>
+                                    </button>
+                                </form>
+                            </div>
+                            <button disabled="" class="group ui-group ui-min-h-[42px] ui-relative ui-rounded-lg ui-py-2.5 ui-font-medium ui-text-sm ui-main-transition-colors ui-focus-ring ui-whitespace-nowrap [&amp;&gt;*]:ui-font-medium [&amp;&gt;*]:ui-font-inter ui-font-inter ui-flex ui-items-center ui-justify-center ui-gap-2 ui-text-background-secondary hover:ui-text-background-secondary hover:ui-bg-brand-primary-hover ui-px-4 hidden lg:flex ui-bg-text-secondary/50 ui-pointer-events-none" data-test-id="create-btn">
+                                <div role="status" class="ui-absolute ui-invisible -ui-translate-x-1/2 ui-left-1/2">
+                                    <svg aria-hidden="true" class="ui-w-5 ui-h-5 ui-animate-spin ui-fill-brand-primary ui-text-background-secondary" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"></path>
+                                        <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"></path>
+                                    </svg>
+                                    <span class="ui-sr-only">Loading...</span>
+                                </div>
+                                <div class="ui-flex ui-items-center ui-justify-center ui-gap-2 ui-truncate">
+                                    <svg fill="rgb(var(--background-secondary))" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M8 16C12.4183 16 16 12.4183 16 8C16 3.58172 12.4183 0 8 0C3.58172 0 0 3.58172 0 8C0 12.4183 3.58172 16 8 16ZM9 5C9 4.44772 8.55228 4 8 4C7.44771 4 7 4.44772 7 5V7H5C4.44772 7 4 7.44772 4 8C4 8.55229 4.44772 9 5 9H7V11C7 11.5523 7.44771 12 8 12C8.55228 12 9 11.5523 9 11V9H11C11.5523 9 12 8.55228 12 8C12 7.44771 11.5523 7 11 7H9V5Z"></path>
+                                    </svg>
+                                    <span>
+                                    <!-- -->
+                                    Create</span>
+                                </div>
+                            </button>
+                        </div>
+                        <div data-test="funnel-list">
+                            <div class="flex w-full flex-col gap-3" data-test="table">
+                                <div class="overflow-x-hidden rounded-lg undefined" data-test-table-is-loaded="false">
+                                    <div class="bg-brand-primary-subtle flex items-center">
+                                        <div class="text-text-primary font-inter hidden truncate p-4 text-start text-[17px] font-bold lg:flex lg:items-center pl-6" style="width:false;flex:73">
+                                            <div class="w-full">
+                                                <div class="ui-flex ui-items-center" data-headlessui-state="">
+                                                    <div class="ui-relative ui-truncate ui-outline-none ui-w-full ui-max-w-fit ui-h-full" aria-expanded="false" data-headlessui-state="">Name</div>
+                                                </div>
+                                                <span hidden="" style="position:fixed;top:1px;left:1px;width:1px;height:0;padding:0;margin:-1px;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border-width:0;display:none"></span>
+                                            </div>
+                                        </div>
+                                        <div class="text-text-primary font-inter hidden truncate p-4 text-start text-[17px] font-bold lg:flex lg:items-center" style="width:false;flex:10">
+                                            <div class="w-full">
+                                                <div class="ui-flex ui-items-center" data-headlessui-state="">
+                                                    <div class="ui-relative ui-truncate ui-outline-none ui-w-full ui-max-w-fit ui-h-full" aria-expanded="false" data-headlessui-state="">Status</div>
+                                                </div>
+                                                <span hidden="" style="position:fixed;top:1px;left:1px;width:1px;height:0;padding:0;margin:-1px;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border-width:0;display:none"></span>
+                                            </div>
+                                        </div>
+                                        <div class="text-text-primary font-inter hidden truncate p-4 text-start text-[17px] font-bold lg:flex lg:items-center" style="width:false;flex:17">
+                                            <div class="w-full">
+                                                <div class="ui-flex ui-items-center" data-headlessui-state="">
+                                                    <div class="ui-relative ui-truncate ui-outline-none ui-w-full ui-max-w-fit ui-h-full" aria-expanded="false" data-headlessui-state="">Created</div>
+                                                </div>
+                                                <span hidden="" style="position:fixed;top:1px;left:1px;width:1px;height:0;padding:0;margin:-1px;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border-width:0;display:none"></span>
+                                            </div>
+                                        </div>
+                                        <div class="text-text-primary font-inter hidden truncate p-4 text-start text-[17px] font-bold lg:flex lg:items-center pr-6" style="width:82px;flex:false">
+                                            <div class="w-full">
+                                                <div class="ui-flex ui-items-center" data-headlessui-state="">
+                                                    <div class="ui-relative ui-truncate ui-outline-none ui-w-full ui-max-w-fit ui-h-full" aria-expanded="false" data-headlessui-state=""></div>
+                                                </div>
+                                                <span hidden="" style="position:fixed;top:1px;left:1px;width:1px;height:0;padding:0;margin:-1px;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border-width:0;display:none"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="even:bg-brand-primary-subtle odd:bg-background-secondary group flex animate-pulse flex-col items-start gap-4 border border-transparent p-4 lg:flex-row lg:items-center lg:gap-0 lg:p-0 false">
+                                        <div class="lg:p-4 w-full lg:pl-6" style="flex:73">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-full" style="flex:10">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-full" style="flex:17">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-[42px] lg:w-[82px] lg:pr-6" style="flex:false">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                    </div>
+                                    <div class="even:bg-brand-primary-subtle odd:bg-background-secondary group flex animate-pulse flex-col items-start gap-4 border border-transparent p-4 lg:flex-row lg:items-center lg:gap-0 lg:p-0 false">
+                                        <div class="lg:p-4 w-full lg:pl-6" style="flex:73">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-full" style="flex:10">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-full" style="flex:17">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-[42px] lg:w-[82px] lg:pr-6" style="flex:false">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                    </div>
+                                    <div class="even:bg-brand-primary-subtle odd:bg-background-secondary group flex animate-pulse flex-col items-start gap-4 border border-transparent p-4 lg:flex-row lg:items-center lg:gap-0 lg:p-0 false">
+                                        <div class="lg:p-4 w-full lg:pl-6" style="flex:73">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-full" style="flex:10">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-full" style="flex:17">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-[42px] lg:w-[82px] lg:pr-6" style="flex:false">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                    </div>
+                                    <div class="even:bg-brand-primary-subtle odd:bg-background-secondary group flex animate-pulse flex-col items-start gap-4 border border-transparent p-4 lg:flex-row lg:items-center lg:gap-0 lg:p-0 false">
+                                        <div class="lg:p-4 w-full lg:pl-6" style="flex:73">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-full" style="flex:10">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-full" style="flex:17">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-[42px] lg:w-[82px] lg:pr-6" style="flex:false">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                    </div>
+                                    <div class="even:bg-brand-primary-subtle odd:bg-background-secondary group flex animate-pulse flex-col items-start gap-4 border border-transparent p-4 lg:flex-row lg:items-center lg:gap-0 lg:p-0 false">
+                                        <div class="lg:p-4 w-full lg:pl-6" style="flex:73">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-full" style="flex:10">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-full" style="flex:17">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-[42px] lg:w-[82px] lg:pr-6" style="flex:false">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                    </div>
+                                    <div class="even:bg-brand-primary-subtle odd:bg-background-secondary group flex animate-pulse flex-col items-start gap-4 border border-transparent p-4 lg:flex-row lg:items-center lg:gap-0 lg:p-0 false">
+                                        <div class="lg:p-4 w-full lg:pl-6" style="flex:73">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-full" style="flex:10">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-full" style="flex:17">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-[42px] lg:w-[82px] lg:pr-6" style="flex:false">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                    </div>
+                                    <div class="even:bg-brand-primary-subtle odd:bg-background-secondary group flex animate-pulse flex-col items-start gap-4 border border-transparent p-4 lg:flex-row lg:items-center lg:gap-0 lg:p-0 false">
+                                        <div class="lg:p-4 w-full lg:pl-6" style="flex:73">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-full" style="flex:10">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-full" style="flex:17">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-[42px] lg:w-[82px] lg:pr-6" style="flex:false">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                    </div>
+                                    <div class="even:bg-brand-primary-subtle odd:bg-background-secondary group flex animate-pulse flex-col items-start gap-4 border border-transparent p-4 lg:flex-row lg:items-center lg:gap-0 lg:p-0 false">
+                                        <div class="lg:p-4 w-full lg:pl-6" style="flex:73">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-full" style="flex:10">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-full" style="flex:17">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-[42px] lg:w-[82px] lg:pr-6" style="flex:false">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                    </div>
+                                    <div class="even:bg-brand-primary-subtle odd:bg-background-secondary group flex animate-pulse flex-col items-start gap-4 border border-transparent p-4 lg:flex-row lg:items-center lg:gap-0 lg:p-0 false">
+                                        <div class="lg:p-4 w-full lg:pl-6" style="flex:73">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-full" style="flex:10">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-full" style="flex:17">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-[42px] lg:w-[82px] lg:pr-6" style="flex:false">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                    </div>
+                                    <div class="even:bg-brand-primary-subtle odd:bg-background-secondary group flex animate-pulse flex-col items-start gap-4 border border-transparent p-4 lg:flex-row lg:items-center lg:gap-0 lg:p-0 rounded-b-lg">
+                                        <div class="lg:p-4 w-full lg:pl-6" style="flex:73">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-full" style="flex:10">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-full" style="flex:17">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                        <div class="lg:p-4 w-[42px] lg:w-[82px] lg:pr-6" style="flex:false">
+                                            <div class="bg-skeleton-primary rounded text-transparent">.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-end">
+                                    <div class="flex items-center gap-5 sm:gap-10" data-test="table-pagination">
+                                        <div class="flex gap-2">
+                                            <button class="ring-brand-primary flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-sm font-bold outline-none ring-offset-1 focus-visible:ring-2 bg-background-secondary text-brand-primary" data-test="table-pagination-limit-button-0">10</button>
+                                            <button class="ring-brand-primary flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-sm font-bold outline-none ring-offset-1 focus-visible:ring-2 text-text-primary/50 bg-transparent " data-test="table-pagination-limit-button-1">25</button>
+                                            <button class="ring-brand-primary flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-sm font-bold outline-none ring-offset-1 focus-visible:ring-2 text-text-primary/50 bg-transparent " data-test="table-pagination-limit-button-2">50</button>
+                                        </div>
+                                        <div class="flex gap-3">
+                                            <button disabled="" class="group ui-group ui-min-h-[42px] ui-relative ui-rounded-lg ui-py-2.5 ui-font-medium ui-text-sm ui-main-transition-colors ui-focus-ring ui-whitespace-nowrap [&amp;&gt;*]:ui-font-medium [&amp;&gt;*]:ui-font-inter ui-font-inter ui-flex ui-items-center ui-justify-center ui-gap-2 ui-text-text-primary/50 hover:ui-text-background-secondary hover:ui-bg-brand-primary ui-px-4 ui-bg-text-secondary/50 ui-pointer-events-none" data-test="table-pagination-previous-button">
+                                                <div role="status" class="ui-absolute ui-invisible -ui-translate-x-1/2 ui-left-1/2">
+                                                    <svg aria-hidden="true" class="ui-w-5 ui-h-5 ui-animate-spin ui-fill-brand-primary ui-text-background-secondary" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"></path>
+                                                        <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"></path>
+                                                    </svg>
+                                                    <span class="ui-sr-only">Loading...</span>
+                                                </div>
+                                                <div class="ui-flex ui-items-center ui-justify-center ui-gap-2 ui-truncate">Previous</div>
+                                            </button>
+                                            <button class="group ui-group ui-min-h-[42px] ui-relative ui-rounded-lg ui-py-2.5 ui-font-medium ui-text-sm ui-main-transition-colors ui-focus-ring ui-whitespace-nowrap [&amp;&gt;*]:ui-font-medium [&amp;&gt;*]:ui-font-inter ui-font-inter ui-flex ui-items-center ui-justify-center ui-gap-2 ui-bg-background-secondary ui-text-text-primary/50 hover:ui-text-background-secondary hover:ui-bg-brand-primary ui-px-4" data-test="table-pagination-next-button">
+                                                <div role="status" class="ui-absolute ui-invisible -ui-translate-x-1/2 ui-left-1/2">
+                                                    <svg aria-hidden="true" class="ui-w-5 ui-h-5 ui-animate-spin ui-fill-brand-primary ui-text-background-secondary" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"></path>
+                                                        <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"></path>
+                                                    </svg>
+                                                    <span class="ui-sr-only">Loading...</span>
+                                                </div>
+                                                <div class="ui-flex ui-items-center ui-justify-center ui-gap-2 ui-truncate">Next</div>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+            <div id="_rht_toaster" style="position:fixed;z-index:9999;top:80px;left:16px;right:20px;bottom:16px;pointer-events:none" class="[&amp;_a]:ui-primary-link"></div>
+        </div>
+        <script id="__NEXT_DATA__" type="application/json">
+            {
+                "props": {
+                    "pageProps": {
+                        "_nextI18Next": {
+                            "initialI18nStore": {
+                                "en": {
+                                    "global": {
+                                        "core": {
+                                            "error": {
+                                                "internal_error_message": "Something went wrong. Please try again",
+                                                "payload_to_large_error_message": "The file size is too big",
+                                                "conflict_error_message": "Sorry, but someone else has already changed this entity. Please reload the page and try again!"
+                                            }
+                                        },
+                                        "global": {
+                                            "created_on": "Created",
+                                            "url": "URL",
+                                            "name": "Name",
+                                            "title": "Name",
+                                            "status": "Status",
+                                            "active": "Active",
+                                            "inactive": "Inactive",
+                                            "activate": "Activate",
+                                            "deactivate": "Deactivate",
+                                            "remove": "Remove",
+                                            "continue": "Continue",
+                                            "select": "Select",
+                                            "unlimited": "Unlimited",
+                                            "create": "Create",
+                                            "email_address": "Email address",
+                                            "cancelled": "Canceled",
+                                            "completed": "Completed",
+                                            "customer": "Customer",
+                                            "export_pdf": "Export to PDF",
+                                            "export_csv": "Export to CSV",
+                                            "copy": "Copy",
+                                            "copy_clipboard": "Copied to clipboard",
+                                            "search": "Search",
+                                            "filter": "Filter",
+                                            "time": "Time",
+                                            "export": "Export",
+                                            "back_to_page": "Back to page",
+                                            "apply": "Apply",
+                                            "clear": "Clear",
+                                            "settings": "Settings",
+                                            "email": "Email",
+                                            "last_name": "Last Name",
+                                            "click_to_upload": "Click to upload",
+                                            "png_jpg": "PNG, JPG",
+                                            "upload_image": "Upload image",
+                                            "price": "Price",
+                                            "currency": "Currency",
+                                            "changes_saved": "Changes saved",
+                                            "error": "Error",
+                                            "filter_by": "Filter by",
+                                            "language": "Language",
+                                            "type": "Type",
+                                            "each": "Each",
+                                            "none": "None",
+                                            "all": "All",
+                                            "url_path": "URL Path",
+                                            "date_from": "From",
+                                            "date_to": "To",
+                                            "duplicate": "Duplicate",
+                                            "duplicated": "Duplicated",
+                                            "next": "Next",
+                                            "previous": "Previous",
+                                            "invalid_credentials": "Credentials are invalid",
+                                            "limit_exceeded": "Over 10,000",
+                                            "dates": "Dates",
+                                            "view": "View",
+                                            "choose_file": "Choose file",
+                                            "show": "View",
+                                            "edit": "Edit",
+                                            "hidden": "Hidden",
+                                            "logo": "Logo",
+                                            "label": "Label",
+                                            "domain": "Domain",
+                                            "read_more": "Read more",
+                                            "subdomain": "Subdomain",
+                                            "username": "Username",
+                                            "password": "Password",
+                                            "removed_on": "Removed",
+                                            "more_actions": "More actions",
+                                            "subscribe": "Subscribe",
+                                            "reset": "Reset",
+                                            "select_date": "Select a date",
+                                            "short_description": "Short description",
+                                            "image": "Image",
+                                            "title_caption": "Title",
+                                            "description": "Description",
+                                            "confirm": "Confirm",
+                                            "text": "Text",
+                                            "action": "Action",
+                                            "refunded": "Refunded",
+                                            "add": "Add",
+                                            "exit": "Exit",
+                                            "source": "Source",
+                                            "download": "Download",
+                                            "delete": "Delete",
+                                            "date": "Date",
+                                            "day_of_week": {
+                                                "monday": "Monday",
+                                                "tuesday": "Tuesday",
+                                                "wednesday": "Wednesday",
+                                                "thursday": "Thursday",
+                                                "friday": "Friday",
+                                                "saturday": "Saturday",
+                                                "sunday": "Sunday"
+                                            },
+                                            "name_of_times": {
+                                                "seconds": {
+                                                    "many": "",
+                                                    "several": "",
+                                                    "plural": "Seconds",
+                                                    "one": "Second"
+                                                },
+                                                "days": {
+                                                    "many": "",
+                                                    "one": "Day",
+                                                    "plural": "Days",
+                                                    "several": ""
+                                                },
+                                                "hours": {
+                                                    "one": "Hour",
+                                                    "plural": "Hours",
+                                                    "several": ""
+                                                },
+                                                "minutes": {
+                                                    "many": "",
+                                                    "one": "Minute",
+                                                    "plural": "Minutes",
+                                                    "several": ""
+                                                },
+                                                "years": {
+                                                    "plural": "Years",
+                                                    "one": "Year"
+                                                },
+                                                "weeks": {
+                                                    "plural": "Weeks",
+                                                    "one": "Week"
+                                                },
+                                                "months": {
+                                                    "plural": "Months",
+                                                    "one": "Month"
+                                                },
+                                                "minute_icu": "{minutes, plural, =1 {# minute} other {# minutes}}",
+                                                "day": {
+                                                    "icu": "{count, plural, =1 {day} other {days}}"
+                                                },
+                                                "hour": {
+                                                    "icu": "{count, plural, =1 {hour} other {hours}}"
+                                                },
+                                                "minutes_icu": "{count, plural, =1 {minute} other {minutes}}",
+                                                "day_icu": "{count, plural, =1 {day} other {days}}",
+                                                "years_icu": "{count, plural, =1 {year} other {years}}",
+                                                "weeks_icu": "{count, plural, =1 {week} other {weeks}}",
+                                                "months_icu": "{count, plural, =1 {month} other {months}}",
+                                                "hour_icu": "{count, plural, =1 {hour} other {hours}}"
+                                            },
+                                            "save": "Save",
+                                            "copy_to_clipboard_caption": "Copy link to clipboard",
+                                            "cancel": "Cancel",
+                                            "event_caption": "Event",
+                                            "error_input_phone": "This phone number is invalid",
+                                            "more": "More",
+                                            "dashboard": "Dashboard",
+                                            "errors": {
+                                                "fields_toast_message": "Some fields contain invalid data, scroll down to resolve the issue"
+                                            },
+                                            "select_all": "Select all",
+                                            "preview_image_label": "Preview image",
+                                            "with_exceptions": "With exceptions",
+                                            "dynamic_search": {
+                                                "has_more_results": "There are over {{count}} results, try a more specific query",
+                                                "start_typing": "Start typing to view matches"
+                                            },
+                                            "close": "Close",
+                                            "id": "Id",
+                                            "canceling": "Canceling",
+                                            "user_id": "User id",
+                                            "expired": "Expired",
+                                            "reconnect": "Reconnect",
+                                            "error_file_with_same_name_exists": "A file with this name already exists.",
+                                            "duplicate_name": "Duplicate name",
+                                            "day_of_week_short": {
+                                                "monday": "Mon",
+                                                "tuesday": "Tue",
+                                                "wednesday": "Wed",
+                                                "thursday": "Thu",
+                                                "friday": "Fri",
+                                                "saturday": "Sat",
+                                                "sunday": "Sun"
+                                            },
+                                            "month_list": {
+                                                "january": "January",
+                                                "february": "February",
+                                                "march": "March",
+                                                "april": "April",
+                                                "may": "May",
+                                                "june": "June",
+                                                "july": "July",
+                                                "august": "August",
+                                                "september": "September",
+                                                "october": "October",
+                                                "november": "November",
+                                                "december": "December"
+                                            },
+                                            "custom": "Custom",
+                                            "save_draft": "Save draft",
+                                            "window_open_failed": "The login pop-up couldn't be opened. This might be due to a pop-up blocker in your browser. Please allow pop-ups for this site and try again",
+                                            "select_image": "Select an image",
+                                            "deactivated": "Deactivated",
+                                            "error_resource_locked": "Resource locked. Try again later",
+                                            "contact_removed": "Contact removed",
+                                            "template_selected": "Template Selected"
+                                        },
+                                        "edit_modal": {
+                                            "save": "Save"
+                                        },
+                                        "dashboard": {
+                                            "email": {
+                                                "sender_email_address": "Sender email address",
+                                                "add_new_email_hint": "\u003ca\u003eClick here to add and verify a new email\u003c/a\u003e",
+                                                "test_email_address": "Test email address"
+                                            }
+                                        }
+                                    },
+                                    "header": {
+                                        "header": {
+                                            "top_menu": {
+                                                "blogs": "Blogs",
+                                                "dashboard": "Dashboard",
+                                                "main_dashboard": "Main dashboard",
+                                                "affiliate_dashboard": "Affiliate dashboard",
+                                                "student_dashboard": "Student dashboard",
+                                                "marketplace": "Marketplace",
+                                                "contacts": "Contacts",
+                                                "tags": "Tags",
+                                                "statistics": "Statistics",
+                                                "funnels": "Sales funnels",
+                                                "emails": "Emails",
+                                                "newsletters": "Newsletters",
+                                                "campaigns": "Campaigns",
+                                                "email_statistics": "Statistics",
+                                                "automations": "Automations",
+                                                "rules": "Rules",
+                                                "workflows": "Workflows",
+                                                "products_and_sales": "Products/sales",
+                                                "physical_products": "Physical products",
+                                                "coupons": "Coupons",
+                                                "orders": "Orders",
+                                                "transactions": "Transactions",
+                                                "subscriptions": "Subscriptions",
+                                                "affiliate_invoices": "Affiliate invoices",
+                                                "courses": "Courses",
+                                                "course_bundles": "Course bundles",
+                                                "students": "Students",
+                                                "affiliate_program": "My affiliate program",
+                                                "administration": "Administration",
+                                                "admin": {
+                                                    "users": "User list",
+                                                    "customers": "Systeme.io clients",
+                                                    "emails": "Deliverability statistics",
+                                                    "user_plans": "Systeme.io plans",
+                                                    "email_templates": "Email templates",
+                                                    "page_templates": "Page templates",
+                                                    "blog_templates": "Blog templates",
+                                                    "domains_blocked": "Domains blocked",
+                                                    "domains_white_listed": "Domains white listed",
+                                                    "suspicious_page_content_keywords": "Suspicious page content keywords",
+                                                    "suspicious_email_keywords": "Suspicious email keywords",
+                                                    "statistics": "Statistics",
+                                                    "funnel_templates": "Funnel templates",
+                                                    "admin": "Admin",
+                                                    "suspicious_email_address": "Suspicious email addreses",
+                                                    "templates": "Templates",
+                                                    "suspicious_content": "Suspicious content",
+                                                    "website_templates": "Website templates"
+                                                },
+                                                "help": "Help",
+                                                "communities": "Communities",
+                                                "physical_products_old": "Physical products (old)",
+                                                "products": "Assets",
+                                                "newsletters_tooltip_text": "Newsletters are sent manually to your contacts. To automatically send emails go to \"Campaigns\"",
+                                                "upgrade_account": "Upgrade your account",
+                                                "sales": "Sales",
+                                                "physical_product": "Physical products",
+                                                "sales-2": "Sales",
+                                                "upgrade": "Upgrade",
+                                                "stores": "Stores",
+                                                "email_delivery_statistics": "Email delivery statistics",
+                                                "email_pending_mailing": "Pending emails",
+                                                "websites": "Websites",
+                                                "digital_stores": "Digital stores",
+                                                "crm_pipeline": "Pipelines",
+                                                "bookings": "Bookings",
+                                                "events": "Events",
+                                                "calendar": "Calendar",
+                                                "crm": "CRM",
+                                                "files": "Files",
+                                                "sub_accounts": "Subaccounts",
+                                                "website": "Websites",
+                                                "sites": "Sites",
+                                                "sms": "SMS",
+                                                "sms_statistics": "Statistics",
+                                                "sms_templates": "SMS Templates",
+                                                "assignments": "Assignments",
+                                                "white_label_users": "White label users",
+                                                "white_label_settings": "White label settings",
+                                                "white_label_price_plans": "Price plans",
+                                                "white_label_price_plans_edit": "Edit price plan",
+                                                "agency_dashboard": "Agency dashboard"
+                                            },
+                                            "user": {
+                                                "profile": {
+                                                    "menu": {
+                                                        "change_password": "Security",
+                                                        "logout": "Logout",
+                                                        "settings": "Settings",
+                                                        "user_plans": "Manage my systeme.io plan",
+                                                        "sub_accounts": "Subaccounts",
+                                                        "sub_account": {
+                                                            "verification": {
+                                                                "description": "This subaccount's email address has not been verified. Please check your inbox and click the confirmation link"
+                                                            }
+                                                        },
+                                                        "workspace": "Select a workspace"
+                                                    }
+                                                },
+                                                "exit_impersonation": "Exit impersonation"
+                                            },
+                                            "exit_impersonation": "Exit impersonation"
+                                        }
+                                    },
+                                    "notifications": {
+                                        "dashboard": {
+                                            "notifications": {
+                                                "workspace_saved": "Workspace has been saved successfully",
+                                                "account_restricted": "\u003cp\u003eYou've exceeded your plan limits, some features are now unavailable because your account has been restricted.\u003c/p\u003e\n\u003cp\u003e\u003ca\u003ePlease click here to upgrade your plan\u003c/a\u003e\u003c/p\u003e",
+                                                "fill_profile": "To receive your affiliate payouts you must \u003ca\u003ecomplete your profile\u003c/a\u003e",
+                                                "fill_profile_and_payments_methods": "To receive payments you must \u003ca\u003ecomplete your profile\u003c/a\u003e and \u003cb\u003echoose a payment method\u003c/b\u003e",
+                                                "email_pending_status_description": "IMPORTANT: as a new user, the emails you send are being temporarily throttled to ensure good deliverability for all users (this includes you!). For more information please \u003ca\u003eclick here\u003c/a\u003e",
+                                                "email_status": {
+                                                    "new_user": "IMPORTANT: as a new user, the emails you send are being temporarily throttled to ensure good deliverability for all users (this includes you!). For more information please \u003ca\u003eclick here\u003c/a\u003e",
+                                                    "pending": "IMPORTANT: The emails you send are being temporarily throttled to ensure good deliverability for all users. For more information please \u003ca\u003eclick here\u003c/a\u003e",
+                                                    "blocked": "IMPORTANT: The emails you send are being temporarily blocked to ensure good deliverability for all users. To resolve this issue, please \u003ca\u003ereach out to our customer support team\u003c/a\u003e"
+                                                },
+                                                "mark_all_read": "Mark all as read",
+                                                "all_notifcations": "All notifications",
+                                                "notification_settings": "Notification settings",
+                                                "user_liked_post": "\u003cstrong\u003e{{user}}\u003c/strong\u003e liked your post in \u003cstrong\u003e{{community}}\u003c/strong\u003e",
+                                                "empty_list": {
+                                                    "title": "Nothing to see here!",
+                                                    "description": "Looks like you're all caught up!"
+                                                },
+                                                "new": "New",
+                                                "view_all": "View all",
+                                                "title": "Notifications",
+                                                "manage_notifications": {
+                                                    "title": "Notification settings"
+                                                },
+                                                "unread_notifications": "Unread",
+                                                "mark_as_read": "Mark as read",
+                                                "workflow_sharing_in_progress": "Workflow is currently being imported",
+                                                "workflow_sharing_completed": "Workflow was imported successfully",
+                                                "workflow_sharing_failed": "Workflow import failed",
+                                                "workflow_sharing_cancelled": "Workflow import was cancelled",
+                                                "workflow_sharing_failed_to_share": "Workflow import failed",
+                                                "workflow_sharing_processing_time_exceeded": "Workflow import failed due to time exceeding",
+                                                "workflow_sharing_resource_removed": "Workflow import failed due to its removal"
+                                            }
+                                        }
+                                    },
+                                    "funnel": {
+                                        "dashboard": {
+                                            "community": {
+                                                "title": "Community"
+                                            },
+                                            "coupon": {
+                                                "coupon_name": "Coupon name",
+                                                "discount": {
+                                                    "fixed": "Fixed amount discount",
+                                                    "percent": "Percentage discount"
+                                                },
+                                                "expiration_date": "Expiration",
+                                                "discount_amount": "Discount amount",
+                                                "limit_of_use": "Limit of use",
+                                                "coupon_code": "Coupon code",
+                                                "expiration_date_never": "Never"
+                                            },
+                                            "tag": {
+                                                "title": "Tag"
+                                            },
+                                            "transactions": {
+                                                "sub_interval": {
+                                                    "day": "Day",
+                                                    "days": "Days"
+                                                }
+                                            },
+                                            "blog": {
+                                                "title": "Blog"
+                                            },
+                                            "campaign": {
+                                                "title": "Campaign"
+                                            },
+                                            "funnel": {
+                                                "title_plural": "Funnels",
+                                                "title": "Funnel",
+                                                "title_tooltip": "A funnel is a visual representation of the customer journey, depicting the sales process from awareness to action",
+                                                "funnel_domain": "Funnel domain",
+                                                "domain_tooltip": "Your systeme.io account's subdomain will always be active, you can choose it to be your funnel's domain at any stage. However, if you want to add customized links to your funnel, you will need to \u003ca\u003econnect a custom domain name\u003c/a\u003e in your account settings beforehand",
+                                                "view_funnel": "View funnel",
+                                                "duplicate_funnel": "Duplicate funnel",
+                                                "name_of_duplicate_funnel": "Duplicate funnel name",
+                                                "share_link": "Use this link to share your funnel",
+                                                "share_funnel": "Share this funnel",
+                                                "optin_title": "Build an audience",
+                                                "optin_description": "Collect email addresses and build your email list",
+                                                "sale_title": "Sell",
+                                                "sale_description": "Sell a product or a service",
+                                                "custom_title": "Custom",
+                                                "custom_description": "Build a custom funnel from scratch",
+                                                "webinar_title": "Run an evergreen webinar",
+                                                "webinar_description": "Run evergreen webinars to automate your business",
+                                                "choose_funnel_goal": "Choose your funnel goal",
+                                                "edit_funnel": "Edit funnel",
+                                                "funnel_settings": "Funnel settings",
+                                                "marketplace_offer": "Marketplace offer",
+                                                "step_configuration": "Configuration",
+                                                "stats": "Stats",
+                                                "sales": "Sales",
+                                                "automation_rules": {
+                                                    "title": "Automation Rules",
+                                                    "enable": "Enable rule",
+                                                    "disable": "Disable rule",
+                                                    "delete": "Delete rule",
+                                                    "delete_success": "Rule has been deleted successfully",
+                                                    "disable_success": "Rule has been disabled successfully",
+                                                    "disable_confirm": "Are you sure you want to disable the rule?",
+                                                    "enable_confirm": "Are you sure you want to enable the rule?",
+                                                    "enable_success": "Rule has been enabled successfully",
+                                                    "delete_confirm": "Are you sure you want to delete the rule? It can not be restored.",
+                                                    "edit": "Edit automation rule",
+                                                    "back": "Back",
+                                                    "add_action": "Add action",
+                                                    "add_rule": "Add rule",
+                                                    "delete_rule": {
+                                                        "confirmation": "\u003cb\u003eWarning:\u003c/b\u003e This automation rule is connected to other triggers not shown on this page. Deleting or deactivating it will also delete all associated triggers"
+                                                    }
+                                                },
+                                                "split_tests_title": "A/B test",
+                                                "deadline_settings": "Deadline settings",
+                                                "leads": "Leads",
+                                                "funnel_step": "Funnel step",
+                                                "move_funnel_step": "Move",
+                                                "create_funnel_step": "Add step",
+                                                "inactive_page": "Inactive Page",
+                                                "inactive_page_description": "This page is displayed when the funnel is disabled",
+                                                "funnel_step_type": {
+                                                    "thank-you-page": "Thank you page",
+                                                    "offer-form": "Order form",
+                                                    "upsell": "Upsell",
+                                                    "downsell": "Downsell",
+                                                    "squeeze": "Opt-in page",
+                                                    "sales_page": "Sales page",
+                                                    "info_page": "Info page",
+                                                    "inline": "Inline form",
+                                                    "popup": "Popup form",
+                                                    "group": {
+                                                        "opt-in": "Opt-in",
+                                                        "sales": "Sales",
+                                                        "misc": "Misc",
+                                                        "webinar": "Webinar"
+                                                    },
+                                                    "opt_in_thank_you_page": "Opt-in thank you page",
+                                                    "webinar_registration": "Webinar registration page",
+                                                    "webinar_thank_you": "Webinar thank you page",
+                                                    "webinar_session": "Webinar broadcast page",
+                                                    "order": {
+                                                        "thank-you-page": "Thank you page"
+                                                    },
+                                                    "contact_us_page": "Contact us page",
+                                                    "link_in_bio": "Link in bio"
+                                                },
+                                                "create_funnel_step_modal_title": "Add new funnel step",
+                                                "funnel_step_type_placeholder": "Choose step type",
+                                                "confirm_duplicate": "Are you sure you want to create a copy of this funnel step?",
+                                                "move_funnel_step_modal_title": "Move this funnel step to another funnel",
+                                                "move_funnel_step_title": "Select destination funnel",
+                                                "marketplace_offer_name_title": "Offer name",
+                                                "marketplace_offer_description_popover": "The description of your offer is very important. Let your prospects know exactly what it's about to encourage them to promote it. Be as clear and informative as possible",
+                                                "marketplace_offer_category": "Category",
+                                                "marketplace_offer_show_title": "Show this offer in the marketplace",
+                                                "marketplace_offer_image_popover": "This image is used as the offer's preview in the marketplace ",
+                                                "marketplace_offer_opt_in_page": "Opt-in page",
+                                                "marketplace_offer_sales_funnel_step": "Sales funnel step",
+                                                "marketplace_offer_info_page": "Info page",
+                                                "marketplace_offer_edit_title": "Edit marketplace offer",
+                                                "leads_opt_in_date": "Opt-in date",
+                                                "leads_funnel_step_name": "Funnel step name",
+                                                "leads_email": "Email address",
+                                                "sales_date": "Date",
+                                                "sales_step": "Step",
+                                                "sales_price": "Price",
+                                                "sales_customer": "Customer",
+                                                "sales_status": "Status",
+                                                "sales_status_revoked": "Access to resources was revoked",
+                                                "sales_status_received": "Access to resources was granted, payment received",
+                                                "deadline_settings_description": "The Deadline page feature is used to push prospects to take advantage of an offer. You’ll have the option to define a timeframe after your contact has opted into a funnel and at the end of this period, all the pages of the funnel will redirect to the page of your choice. You’re only able to use the deadline feature on “Order Form” and “Sales Page” funnel steps. All other steps are available as the \"Funnel step to redirect to after the deadline has expired\".",
+                                                "deadline_settings_enable": "Enable deadline feature",
+                                                "deadline_settings_deadline_expiration_title": "Deadline page expires in:",
+                                                "deadline_settings_expiration_funnel_step_title": "Funnel step to redirect to once the deadline has expired",
+                                                "deadline_settings_expiration_time_title": "Time when deadline page should expire",
+                                                "deadline_settings_expiration_time_tooltip": "Time is set in your timezone",
+                                                "deadline_settings_available_funnel_steps_title": "Available funnel steps for deadline funnel",
+                                                "deadline_settings_available_funnel_steps_tooltip": "This step will be available only after opt-in",
+                                                "deadline_settings_save": "Save",
+                                                "statistics": {
+                                                    "opt_in_title": "Opt-ins",
+                                                    "page_views": "Page views",
+                                                    "sales": "Sales",
+                                                    "earning_pageview_title": "Earnings / Pageview",
+                                                    "all": "All",
+                                                    "conversion_rate": "Conversion rate",
+                                                    "total": "Total",
+                                                    "revenue": "Revenue",
+                                                    "gross": "Total sales",
+                                                    "average_cart_value": "Average cart value",
+                                                    "unique_visits": "Unique visits",
+                                                    "opt_in_title_hint": "Opt-in statistics track new email sign-ups. If an email is already on your list, we won't count it as a new opt-in"
+                                                },
+                                                "split_tests": {
+                                                    "choose_page": "Choose page",
+                                                    "unique_visits": "Unique visits",
+                                                    "conversions": "Conversions",
+                                                    "history_header": "A/B test history",
+                                                    "start_test": "Start A/B Test",
+                                                    "start_test_description": "Your A/B test isn't running just yet. Once you're happy with the changes to this variation, click the button below and we'll start sending traffic to both.",
+                                                    "create_test_description": "Compare your pages and optimize your lead and sales generation",
+                                                    "start_test_title": "Almost there!",
+                                                    "goal_funnel_step": "Goal page",
+                                                    "started": "Already running!",
+                                                    "end_test": "End A/B test",
+                                                    "remove_variant_confirmation": "You are about to cancel your choice of variant. Continue?",
+                                                    "finish_test_confirmation": "Are you sure you want to end this A/B test?",
+                                                    "original_title": "Original",
+                                                    "variant_title": "Variant",
+                                                    "remove_action_history_confirmation_text": "You are about to remove this A/B test's stats. Continue?",
+                                                    "remove_action_history_toast": "Test stats are deleted",
+                                                    "finish_test_toast": "A/B test is ended",
+                                                    "choose_variant": "Choose a variant",
+                                                    "choose_variant_modal_title": "Choose a variant among the funnel steps of this funnel",
+                                                    "variant_funnel_step": "Variant page",
+                                                    "running_tooltip": "A/B test is running",
+                                                    "selected_tooltip": "Selected for A/B test",
+                                                    "goal_page_tooltip": "Goal page in an A/B test",
+                                                    "deleted_variant_toast": "Variant is deleted"
+                                                },
+                                                "configuration": {
+                                                    "webinar": {
+                                                        "duration": "Webinar duration",
+                                                        "duration_popover": "The duration of the webinar (in seconds). \nYou can set the webinar’s duration to limit people’s access to the webinar.\nFor example, if a webinar is 3600 seconds in length (1 hour) and the visitor registered for the webinar at 12:00, the visitor will not be able to view the webinar after 13:00",
+                                                        "url_path_popover": "URLs consist of 2 parts: the URL base and the URL path\nThe base is your website address (e.g. https://systeme.io/)\nThe path is the name of your specific page (e.g. “dashboard” in https://systeme.io/dashboard)",
+                                                        "url_path_popover-2": "URLs consist of 2 parts: the URL base and the URL path\nThe base is your website address (e.g. {{mainWebsiteUrl}})\nThe path is the name of your specific page (e.g. “dashboard” in {{dashboardUrl}})"
+                                                    },
+                                                    "common": {
+                                                        "view_funnel_step": "View funnel step",
+                                                        "edit_page": "Edit page",
+                                                        "change_page_template": "Change page template",
+                                                        "offer_resources": {
+                                                            "course_start_access_on_day": "Grant access on specific date",
+                                                            "course_start_access_on_day_popover": "Your student will gain access to the course on the selected day at 00:00 in your time zone. Read\u0026nbsp;\u003ca href=\"https://help.systeme.io/article/1619-how-to-set-a-specific-date-to-grant-access-to-a-course\" target=\"_blank\" rel=\"noopener\"\u003ethis\u003c/a\u003e\u0026nbsp;article to learn more about granting timed access to a course.",
+                                                            "course_expiration_period": "Expiration delay (in days)",
+                                                            "course_expiration_period_popover": "Access to the course will be canceled after this delay (starting from the date of purchase)",
+                                                            "title": "Resources",
+                                                            "description_popover": "Resources are assets your customers will have access to after they've made a purchase. If a refund is issued or if a subscription is canceled, access to these resources will be automatically revoked",
+                                                            "description": "Resources which the customer will have access to after the purchase",
+                                                            "choose_course": "Choose a course",
+                                                            "choose_course_bundle": "Choose a course bundle",
+                                                            "choose_course_access_type": "Choose course access type",
+                                                            "choose_course_bundle_access_type": "Choose course bundle access type",
+                                                            "choose_tag": "Choose tag",
+                                                            "choose_systeme_io_plan": "Choose systeme.io user plan",
+                                                            "resource_value": "Resource value",
+                                                            "choose_community_access": "Choose a community",
+                                                            "remove_resource_confirmation": "You are about to remove this resource. Do you wish to continue?",
+                                                            "enrollment_dripping_access": {
+                                                                "first_course": "From start"
+                                                            },
+                                                            "choose_dripping_course": "Start with this course from the bundle",
+                                                            "course_start_access_on_day_description": "Your student will gain access to the course on the selected day at 00:00 in your time zone. Read \u003ca\u003ethis\u003c/a\u003e article to learn more about granting timed access to a course.",
+                                                            "choose_systeme_io_plan-2": "Choose {{brandName}} user plan"
+                                                        },
+                                                        "change_page_template_confirm": "You are about to apply a new template to the page. All changes will be lost. Continue?",
+                                                        "back": "Back",
+                                                        "price_plan": {
+                                                            "period": {
+                                                                "year_other": "{{count}} years",
+                                                                "year": "{{count}} year",
+                                                                "month_other": "{{count}} months",
+                                                                "month": "{{count}} month",
+                                                                "day_other": "{{count}} days",
+                                                                "day": "{{count}} day",
+                                                                "week_other": "{{count}} weeks",
+                                                                "week": "{{count}} week"
+                                                            },
+                                                            "subscription_plan": {
+                                                                "interval_label": "each",
+                                                                "limit_of_payments": "Number of payments",
+                                                                "trial_period": "Trial period",
+                                                                "customers_will_pay": "Customers will pay:"
+                                                            },
+                                                            "inner_name_label": "Price plan name displayed on your dashboard",
+                                                            "name_label": "Price plan name displayed on the order form",
+                                                            "statement_descriptor": "Statement descriptor",
+                                                            "type": "Price plan type",
+                                                            "direct_charge_amount": "Payment amount",
+                                                            "create_price_plan_footer": "Already have a price plan?",
+                                                            "create_price_plan_footer_link": "Choose it!",
+                                                            "remove_confirmation": "You are about to remove the \"{{ pricePlanName }}\" offer price plan. Continue?",
+                                                            "choose_existing": "Choose an existing price plan",
+                                                            "edit_title": "Edit selected price plan",
+                                                            "statement_descriptor_popover": "When a customer makes a purchase from you, a short description about that purchase will show up on the bank statement alongside the charge. Statement descriptors are limited to 22 characters, cannot use the special characters \u003c, \u003e, ', or \", and must not consist solely of numbers.",
+                                                            "type_label": "Choose a price plan type",
+                                                            "type_subscription": "Subscription",
+                                                            "type_limited_subscription": "Payment plan",
+                                                            "type_one_shot": "One-time",
+                                                            "payment_gateways_requirement": "To create payment pages, you need to connect to a payment gateway that is supported on systeme.io",
+                                                            "payment_gateways_requirement_link": "Please click here to connect to a payment gateway",
+                                                            "change_title": "Change this price plan",
+                                                            "statement_descriptor_katakana": "Statement descriptor Katakana",
+                                                            "statement_descriptor_katakana_popover": "When a customer makes a purchase from you, a short description about that purchase will show up on the bank statement alongside the charge. Katakana statement descriptors are limited to 22 characters, cannot use the special characters \u003c, \u003e, ', or \", and must consist only of Katakana, spaces, dashes, and dots",
+                                                            "remove_type": {
+                                                                "from_account": "Permanently remove this price plan from your account",
+                                                                "from_offer": "Remove the price plan from this offer only"
+                                                            },
+                                                            "remove_from_account_confirmation": "You are about to remove the \"{{ pricePlanName }}\" offer price plan from your account. This price plan is used in {{ numberOfSteps }} funnel steps. Removing it may affect some of your funnels. Continue?",
+                                                            "payment_gateways_requirement-2": "To create payment pages, you need to connect to a payment gateway that is supported on {{brandName}}"
+                                                        },
+                                                        "price_plans": {
+                                                            "period_price": "Free"
+                                                        },
+                                                        "for_label": "For",
+                                                        "with_the_coupon_label": "with the coupon",
+                                                        "url_path_popover": "URLs consist of 2 parts: the URL base and the URL path\nThe base is your website address (e.g. https://systeme.io/)\nThe path is the name of your specific page (e.g. “dashboard” in https://systeme.io/dashboard)",
+                                                        "coupon": {
+                                                            "expiration_date": "Expiration",
+                                                            "remove_confirmation": "You are going to remove the coupon from this offer. Customers will not be able to buy the offer with it. Continue?",
+                                                            "limit_of_use": "Coupons used: {{ count_used}} / {{ count_available}}",
+                                                            "limit_of_use_title": "Limit of use"
+                                                        },
+                                                        "digital_resources": {
+                                                            "placeholder": "Select a resource"
+                                                        },
+                                                        "courses": {
+                                                            "title": "Courses"
+                                                        },
+                                                        "course_bundles": {
+                                                            "title": "Course bundles"
+                                                        },
+                                                        "user_plans": {
+                                                            "title": "Systeme.io plans",
+                                                            "title-2": "{{brandName}} plans"
+                                                        },
+                                                        "tags": {
+                                                            "title": "Tags"
+                                                        },
+                                                        "campaign_steps": {
+                                                            "title": "Campaign steps"
+                                                        },
+                                                        "communities": {
+                                                            "title": "Communities"
+                                                        },
+                                                        "list": {
+                                                            "empty_title": {
+                                                                "list": {
+                                                                    "empty_list": "It looks like there are no funnel steps"
+                                                                },
+                                                                "first_line": "Oops!"
+                                                            }
+                                                        },
+                                                        "name_of_times": {
+                                                            "hours": "Hours",
+                                                            "minutes": "Minutes"
+                                                        },
+                                                        "in_split_test_not_available": "Not possible while an A/B test is running",
+                                                        "preview_running_split_test_title": "An A/B test using this step is running. Choose a page to preview",
+                                                        "preview_running_split_test_page_a": "Preview page A",
+                                                        "preview_running_split_test_page_b": "Preview page B"
+                                                    },
+                                                    "remote": {
+                                                        "script_tag": "Script tag",
+                                                        "embedded_form": "Embedded form",
+                                                        "script": "Script",
+                                                        "create_link": "Create a link",
+                                                        "modal_link_header": "Create a link that opens a popup",
+                                                        "anchor": "Anchor text",
+                                                        "anchor_name_placeholder": "Click me"
+                                                    },
+                                                    "offer": {
+                                                        "affiliate_commission": "Affiliate commissions",
+                                                        "payout_delay": "Commission payout delay",
+                                                        "sales_limit": "Sales limit",
+                                                        "sales_limit_popover": "Add a limit to the number of sales you can make with a specific offer. The sales limit applies to all price plans. Note that when selling physical products, the quantity per individual order is not taken into account, it will always be counted as one sale",
+                                                        "redirect_funnel_step": "Funnel step to redirect to once the sale limit has been reached",
+                                                        "choose_offer_type": "Choose offer type",
+                                                        "physical_product": "Physical product",
+                                                        "digital_product": "Digital product",
+                                                        "resources": "Resources",
+                                                        "resources_popover": "Resources are assets your customers will have access to after they've made a purchase. If a refund is issued or if a subscription is canceled, access to these resources will be automatically revoked",
+                                                        "resources_description": "Resources which the customer will have access to after the purchase",
+                                                        "price_plans": "Price plans",
+                                                        "price_plans_description": "The amount and frequency of the payment",
+                                                        "coupons": "Coupons",
+                                                        "coupons_description": "Coupons to offer discounts to customers",
+                                                        "order_bump": "Order bump",
+                                                        "order_bump_description": "Add this offer to your payment page using the \"Order bump\" element",
+                                                        "coupon_discount_type": "Discount type",
+                                                        "coupon": "Coupon",
+                                                        "choose_existing_coupon": "Choose an existing coupon",
+                                                        "add_coupon_footer": "Didn't find the right coupon?",
+                                                        "add_coupon_footer_link": "Create a new one!",
+                                                        "create_coupon_footer": "Already have coupon?",
+                                                        "create_coupon_footer_link": "Choose it!",
+                                                        "digital": {
+                                                            "course": "Course",
+                                                            "course_bundle": "Course bundle",
+                                                            "systemeio_plan": "Systeme.io user plan",
+                                                            "tag": "Tag",
+                                                            "systemeio_campaign_step": "Systeme.io campaign step",
+                                                            "community_access": "Community access"
+                                                        },
+                                                        "add_price_plan_footer_link": "Create a new one!",
+                                                        "add_price_plan_footer": "Did not find the right price plan?",
+                                                        "order_bump_add": "Add order bump",
+                                                        "sales_limit_sold": "{{ salesCount }} of {{ salesLimit }} sold!",
+                                                        "add_coupon": "Add coupon",
+                                                        "add_price_plan": "Add price plan",
+                                                        "add_digital_resource": "Add resource",
+                                                        "order_bump_confirmation": "Are you sure you would like to remove this order bump?",
+                                                        "remove_offer_sale_limit": "You are going to remove offer sale limit. Continue?",
+                                                        "create_digital_product": "Create a digital product",
+                                                        "edit_digital_product": "Edit digital product",
+                                                        "digital_product_name": "Digital product name",
+                                                        "order_bump_limit_description": "You have reached the limit of available order bumps for your current plan. Upgrade your plan to have more available order bumps",
+                                                        "select_digital_product": "Select digital product",
+                                                        "need_payment_methods_description": "To create order bumps, please connect a supported payment gateway.",
+                                                        "go_to_payment_gateway_link_description": "Click here to set up your payment gateway.",
+                                                        "digital_product_description": "Price plans and resources a customer can access after purchase",
+                                                        "physical_product_description": "Physical products that a customer receives after purchase",
+                                                        "no_product_selected": "Please add a digital or physical product. Otherwise, people won't be able to see the page!"
+                                                    },
+                                                    "templates": {
+                                                        "preview_template": "Preview Template"
+                                                    }
+                                                },
+                                                "marketplace_offer_create_title": "Create marketplace offer",
+                                                "emails": "Emails",
+                                                "emails_edit": {
+                                                    "send": {
+                                                        "email": "Edit email",
+                                                        "email_webinar": {
+                                                            "replay": {
+                                                                "link": "Link to the page with the webinar replay"
+                                                            },
+                                                            "show": {
+                                                                "link": "Link to the page with the webinar session"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "emails_registration_to_webinar": "Registration to webinar",
+                                                "emails_webinar_start": "Webinar starts",
+                                                "emails_webinar_start_after": "After",
+                                                "emails_webinar_start_before": "Before",
+                                                "emails_webinar": {
+                                                    "count_of_click": "Clicks",
+                                                    "opened_emails": "Opened emails",
+                                                    "number_of_sent_emails": "Number of emails sent",
+                                                    "certain_time": "Exact time",
+                                                    "delay": "Delay",
+                                                    "send_at_certain_time": "Send at an exact time",
+                                                    "remove_email": "Remove email",
+                                                    "edit_send_email": "Edit email",
+                                                    "modal_delete_confirm": "Are you sure you want to delete this email? It can not be restored.",
+                                                    "email_delete_success": "The email has been deleted successfully"
+                                                },
+                                                "breadcrumbs": {
+                                                    "funnel_list": "Funnels list"
+                                                },
+                                                "sales_type": "Type",
+                                                "sales_affiliate": "Affiliate",
+                                                "sales_referred_by_none": "none",
+                                                "currency_change_info": "By changing the funnel's currency, products, coupons, and offer price plans will be disconnected from any form, upsell, and downsell funnel steps",
+                                                "price_plan": {
+                                                    "one_shot": "One-time payment",
+                                                    "subscription": "Subscription",
+                                                    "limited_subscription": "Payment plan"
+                                                },
+                                                "leads_title_hint": "Counts the total number of email sign-ups on the funnel",
+                                                "creation_in_process": "Funnel duplication in progress. Please wait while we complete this action",
+                                                "funnel_step_source_choose_template": "Choose a template",
+                                                "funnel_step_source_start_from_scratch": "Start from scratch",
+                                                "domain_tooltip-2": "Your {{brandName}} account's subdomain will always be active, you can choose it to be your funnel's domain at any stage. However, if you want to add customized links to your funnel, you will need to \u003ca\u003econnect a custom domain name\u003c/a\u003e in your account settings beforehand"
+                                            },
+                                            "courses": {
+                                                "title": "Course"
+                                            },
+                                            "course": {
+                                                "module_title": "Module",
+                                                "lecture_title": "Lecture",
+                                                "access_type": {
+                                                    "full_access": "Full access",
+                                                    "partial_access": "Partial access",
+                                                    "drip_content": "Drip content"
+                                                }
+                                            },
+                                            "course_bundle": {
+                                                "title_one": "Course bundle"
+                                            },
+                                            "communities": {
+                                                "title": "Community"
+                                            },
+                                            "automation_rule": {
+                                                "create_tag_caption": "Create a new \"{{ tagName }}\" tag",
+                                                "trigger": {
+                                                    "title": "Trigger",
+                                                    "tag_added": "Tag added",
+                                                    "form_subscribed": "Funnel step form subscribed",
+                                                    "tag_removed": "Tag removed",
+                                                    "campaign_completed": "Campaign completed",
+                                                    "description": {
+                                                        "form_subscribed": "Occurs when a contact has just subscribed through a form",
+                                                        "tag_added": "Occurs when a tag has been added to a contact",
+                                                        "tag_removed": "Occurs when a tag has been removed from a contact",
+                                                        "campaign_completed": "Occurs when a contact has just completed a campaign",
+                                                        "registered_to_webinar": "Occurs when a contact has just registered to a webinar",
+                                                        "enrolled_in_course": "Occurs when a contact has just enrolled in a course",
+                                                        "enrolled_in_course_bundle": "Occurs when a contact has just enrolled in a course bundle",
+                                                        "new_sale": "Occurs when a customer makes a purchase",
+                                                        "email_link_clicked": "Occurs when a link from an email has been clicked",
+                                                        "page_visited": "Occurs when a person visits a selected page",
+                                                        "blog_page_form_subscribed": "Occurs when a contact has just subscribed through a blog form",
+                                                        "contact_us_request_sent": "Occurs when a person sends a contact us request",
+                                                        "sale_canceled": "Occurs when a subscription is canceled or a one-time payment is refunded",
+                                                        "enrolled_in_community": "Occurs when a contact has just enrolled in a community",
+                                                        "course_completed": "Occurs when a student has just completed a course",
+                                                        "module_completed": "Occurs when a student has just completed a module",
+                                                        "lecture_completed": "Occurs when a student has just completed a lecture",
+                                                        "email_opened": "Occurs when a contact opens an email"
+                                                    },
+                                                    "registered_to_webinar": "Registered to webinar",
+                                                    "enrolled_in_course": "Enrolled in course",
+                                                    "enrolled_in_course_bundle": "Enrolled in course bundle",
+                                                    "new_sale": "New sale",
+                                                    "email_link_clicked": "Email link clicked",
+                                                    "page_visited": "Page visited",
+                                                    "blog_page_form_subscribed": "Blog form subscribed",
+                                                    "contact_us_request_sent": "Contact us request sent",
+                                                    "sale_canceled": "Sale canceled",
+                                                    "enrolled_in_community": "Enrolled in community",
+                                                    "course_completed": "Course completed",
+                                                    "choose_module": "Choose module",
+                                                    "module_completed": "Module completed",
+                                                    "lecture_completed": "Lecture completed",
+                                                    "module": {
+                                                        "module_hint": "The action will be triggered when the selected module has been completed",
+                                                        "course_hint": "The action will be triggered when any module of the selected course has been completed"
+                                                    },
+                                                    "lecture": {
+                                                        "lecture_hint": "The action will be triggered when the selected lecture has been completed",
+                                                        "course_hint": "The action will be triggered when any lecture of the selected course has been completed",
+                                                        "module_hint": "The action will be triggered when any lecture of the selected module has been completed"
+                                                    },
+                                                    "choose_lecture": "Choose lecture",
+                                                    "email_opened": "Email opened"
+                                                },
+                                                "description": {
+                                                    "enroll_in_course_bundle": "Grants contact access to a course bundle"
+                                                },
+                                                "action": {
+                                                    "title": "Action",
+                                                    "add_campaign": "Subscribe to campaign",
+                                                    "add_tag": "Add a tag",
+                                                    "remove_campaign_from_contact": "Unsubscribe from campaign",
+                                                    "description": {
+                                                        "add_campaign": "Subscribe a contact to a campaign",
+                                                        "remove_campaign_from_contact": "Unsubscribe a contact from a campaign",
+                                                        "add_tag": "Add a tag to a contact",
+                                                        "remove_tag": "Remove a tag from a contact",
+                                                        "send_email": "Send an email to a contact",
+                                                        "enroll_in_course": "Enroll a contact in a course",
+                                                        "send_email_to_specific_address": "Send an email to a specific email address",
+                                                        "create_user": "Create new SIO free account with customer and affiliate roles",
+                                                        "send_webhook": "HTTP request will be sent to a URL when an event happens in systeme.io",
+                                                        "send_zapier_webhook": "Send webhook to Zapier when an event happens within Systeme.io",
+                                                        "grant_access_to_community": "Allow a contact to join a community",
+                                                        "create_wl_user": "Create a new WL free account with customer and affiliate roles",
+                                                        "send_webhook-2": "HTTP request will be sent to a URL when an event happens in {{brandName}}"
+                                                    },
+                                                    "remove_tag": "Remove tag",
+                                                    "send_email": "Send email",
+                                                    "enroll_in_course": "Enroll in course",
+                                                    "send_email_to_specific_address": "Send email to a specific email address",
+                                                    "create_user": "Create new SIO user",
+                                                    "send_webhook": "Send webhook",
+                                                    "send_zapier_webhook": "Send webhook to Zapier",
+                                                    "new_user_language": "New user language",
+                                                    "grant_access_to_community": "Grant access to a community",
+                                                    "enroll_in_course_bundle": "Enroll in a course bundle",
+                                                    "create_wl_user": "Create new WL user"
+                                                },
+                                                "webhook_url": "Webhook Url",
+                                                "choose_trigger_type": "Choose trigger type",
+                                                "choose_tag": "Choose tag",
+                                                "choose_funnel": "Choose funnel",
+                                                "choose_funnel_step": "Choose funnel step page",
+                                                "choose_blog": "Choose blog",
+                                                "choose_blog_entity": "Choose blog entity",
+                                                "choose_blog_post": "Choose blog post",
+                                                "choose_blog_page": "Choose blog page",
+                                                "choose_campaign": "Choose campaign",
+                                                "choose_webinar": "Choose webinar",
+                                                "choose_course": "Choose a course",
+                                                "choose_course_bundle": "Choose a course bundle",
+                                                "choose_email": "Choose email",
+                                                "choose_action_type": "Choose action type",
+                                                "choose_language_of_user": "Choose language of new user",
+                                                "type_webhook": "Type webhook url",
+                                                "edit": {
+                                                    "title": "Edit automation rule",
+                                                    "save": "Save rule",
+                                                    "disable": "Disable rule",
+                                                    "delete": "Delete rule",
+                                                    "add_action": "Add action",
+                                                    "enable": "Enable rule",
+                                                    "disable_success": "Rule has been disabled successfully",
+                                                    "enable_success": "Rule has been enabled successfully",
+                                                    "disable_confirm": "Are you sure you want to disable the rule?",
+                                                    "enable_confirm": "Are you sure you want to enable the rule?",
+                                                    "delete_success": "Rule has been deleted successfully",
+                                                    "delete_confirm": "Are you sure you want to delete the rule? It can not be restored.",
+                                                    "update_success": "Rule has been updated successfully",
+                                                    "add_trigger": "Add trigger",
+                                                    "create_success": "New rule has been created successfully",
+                                                    "create_email": "Create email message",
+                                                    "edit_email": "Edit email message"
+                                                },
+                                                "choose_status": "Choose status",
+                                                "choose_create_tag": "Choose a tag or create a new one",
+                                                "choose_community": "Choose a community",
+                                                "choose_email_link": "Choose link from email",
+                                                "email_link": "Email link"
+                                            }
+                                        }
+                                    },
+                                    "actions": {
+                                        "dashboard": {
+                                            "actions": {
+                                                "activate_confirmation": "You are about to {{activate}} this {{module}}. Continue?",
+                                                "remove_confirmation": "You are about to remove this {{module}}. Continue?",
+                                                "edit": "Edit {{module}}",
+                                                "activated": "This {{module}} was {{activated}}",
+                                                "remove": "remove {{module}}",
+                                                "removed": "The {{module}} has been removed",
+                                                "create": "Create {{module}}",
+                                                "title": {
+                                                    "open": "View",
+                                                    "duplicate": "Duplicate",
+                                                    "share": "Share",
+                                                    "activate": "Activate",
+                                                    "deactivate": "Deactivate",
+                                                    "edit": "Edit",
+                                                    "schedule": "Schedule",
+                                                    "stats": "Stats",
+                                                    "settings": "Settings",
+                                                    "remove": "Delete"
+                                                },
+                                                "created": "{{module}} has been successfully created",
+                                                "updated": "The {{module}} module has been successfully modified",
+                                                "deactivated_caption": "Deactivated",
+                                                "activated_caption": "Activated",
+                                                "removed_caption": "Removed",
+                                                "created_caption": "Created",
+                                                "remove_with_lectures_confirmation": "You are about to remove the {{module}} module and all its lectures. Continue?"
+                                            }
+                                        }
+                                    },
+                                    "payment": {
+                                        "dashboard": {
+                                            "payment": {
+                                                "price_plan": "Plan",
+                                                "stripe_card": "Credit cards (Stripe)",
+                                                "stripe_ideal": "iDeal (Stripe)",
+                                                "stripe_bancotact": "Bancontact (Stripe)",
+                                                "dlocal_card": "Credit cards (Dlocal)",
+                                                "dlocal_boleto": "Boleto (Dlocal)",
+                                                "dlocal_pix": "Pix (Dlocal)",
+                                                "paypal_soap": "PayPal",
+                                                "mercadopago_card": "Credit cards (Mercado Pago)",
+                                                "mercadopago_pix": "PIX (Mercado Pago)",
+                                                "mercadopago_boleto": "Boleto (Mercado Pago)",
+                                                "razorpay": "Razorpay",
+                                                "flutterwave": "Flutterwave",
+                                                "mollie": "Mollie",
+                                                "gocardless": "Gocardless",
+                                                "cash_on_delivery": "Cash on delivery",
+                                                "xendit_card": "Credit cards (Xendit)",
+                                                "paystack_card": "Credit cards (Paystack)",
+                                                "paypal_rest": "PayPal",
+                                                "secure_and_pay": "Secure and Pay",
+                                                "stripe_applepay": "Apple Pay",
+                                                "tax_behavior": {
+                                                    "title": "Tax behavior",
+                                                    "exclusive": "Exclusive",
+                                                    "inclusive": "Inclusive"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "confirmation": {
+                                        "confirmation_modal": {
+                                            "default_title": "Confirm action",
+                                            "confirm": "Confirm",
+                                            "cancel": "Cancel",
+                                            "confirm_text_before_exit": "Are you sure you want to exit? Unsaved changes will be lost"
+                                        }
+                                    },
+                                    "currency": {
+                                        "currency": {
+                                            "us_dollar": "U.S. Dollar",
+                                            "euro": "Euro",
+                                            "australian_dollar": "Australian Dollar",
+                                            "brazilian_real": "Brazilian real",
+                                            "canadian_dollar": "Canadian Dollar",
+                                            "danish_krone": "Danish Krone",
+                                            "hong_kong_dollar": "Hong Kong Dollar",
+                                            "indian_rupee": "Indian rupee",
+                                            "israeli_shekel": "Israeli New Shekel",
+                                            "japanese_yen": "Japanese Yen",
+                                            "malaysian_ringgit": "Malaysian ringgit",
+                                            "mexican_peso": "Mexican Peso",
+                                            "new_zealand_dollar": "New Zealand Dollar",
+                                            "norwegian_krone": "Norwegian Krone",
+                                            "philippine_peso": "Philippine Peso",
+                                            "polish_zloty": "Polish Zloty",
+                                            "pound_sterling": "Pound Sterling",
+                                            "russian_ruble": "Russian Ruble",
+                                            "singapore_dollar": "Singapore Dollar",
+                                            "swedish_krona": "Swedish Krona",
+                                            "swiss_franc": "Swiss Franc",
+                                            "thai_baht": "Thai Baht",
+                                            "czech_koruna": "Czech Koruna",
+                                            "romanian_leu": "Romanian leu",
+                                            "uae_dirham": "United Arab Emirates Dirham",
+                                            "hungarian_forint": "Hungarian forint",
+                                            "colombian_peso": "Colombian Peso",
+                                            "turkish_lira": "Turkish Lira",
+                                            "central_african_franc": "Central African CFA Franc",
+                                            "chilean_peso": "Chilean Peso",
+                                            "ghanaian_cedi": "Ghanaian Cedi",
+                                            "guinean_franc": "Guinean Franc",
+                                            "kenyan_shilling": "Kenyan Shilling",
+                                            "malawian_kwacha": "Malawian Kwacha",
+                                            "moroccan_dirham": "Moroccan Dirham",
+                                            "nigerian_naira": "Nigerian Naira",
+                                            "rwandan_franc": "Rwandan Franc",
+                                            "sierra_leonean_leone": "Sierra Leonean Leone",
+                                            "sao_tome_and_principe_dobra": "São Tomé and Príncipe dobra",
+                                            "south_african_rand": "South African Rand",
+                                            "tanzanian_shilling": "Tanzanian Shilling",
+                                            "ugandan_shilling": "Ugandan Shilling",
+                                            "west_african_cfa_franc_bceao": "West African CFA Franc BCEAO",
+                                            "zambian_kwacha": "Zambian Kwacha",
+                                            "bulgarian_lev": "Bulgarian Lev",
+                                            "icelandic_krona": "Icelandic Krona",
+                                            "egyptian_pound": "Egyptian Pound",
+                                            "argentine_peso": "Argentine Peso",
+                                            "saudi_riyal": "Saudi Riyal",
+                                            "indonesian_rupiah": "Indonesian rupiah",
+                                            "sri_lankan_rupee": "Sri Lankan Rupee",
+                                            "chinese_yuan": "Yuan (Renminbi)",
+                                            "serbian_dinar": "Serbian dinar",
+                                            "ukrainian_hryvnia": "Ukrainian hryvnia",
+                                            "albanian_lek": "Albanian lek",
+                                            "vietnam_dong": "Vietnamese dong",
+                                            "peruvian_sol": "Sol"
+                                        }
+                                    },
+                                    "list": {
+                                        "dashboard": {
+                                            "list": {
+                                                "empty_title": "Oops!",
+                                                "empty_list": "It looks like this list is empty"
+                                            }
+                                        }
+                                    },
+                                    "user": {
+                                        "dashboard": {
+                                            "user": {
+                                                "phone_number": "Phone number",
+                                                "address": "Address",
+                                                "city": "City",
+                                                "postal_code": "Postal code",
+                                                "country": "Country",
+                                                "state_province": "State/Province",
+                                                "select_country": "Select countries",
+                                                "company_number": "Company number",
+                                                "company_name": "Company name",
+                                                "tax_number": "Tax number",
+                                                "customer_type": "Customer type",
+                                                "street_address": "Street address",
+                                                "first_name": "First name",
+                                                "full_name": "Full name",
+                                                "personal": "Personal",
+                                                "company": "Company",
+                                                "affiliate": "Affiliate",
+                                                "display_name": "Display name",
+                                                "individual": "Individual",
+                                                "last_name": "Last name",
+                                                "utm_source": "UTM source",
+                                                "utm_medium": "UTM medium",
+                                                "utm_content": "UTM content",
+                                                "utm_campaign": "UTM campaign",
+                                                "utm_term": "UTM term",
+                                                "status": {
+                                                    "new_pending": "New user (pending) ",
+                                                    "pending": "Pending",
+                                                    "common": "Common",
+                                                    "new": "New",
+                                                    "approved": "Approved",
+                                                    "blocked": "Blocked",
+                                                    "new_common": "New/common",
+                                                    "new_common_description": "Mailing status will be chosen automatically based on the user pool. User's email sending is subject to standard verification and restrictions. Suspicious content or sudden large sending volumes may trigger delays, restrictions, or account review",
+                                                    "pending_description": "User's email sending is temporarily paused. New emails will not be sent automatically. This status is typically used during manual review or verification",
+                                                    "common_description": "User's email sending is subject to standard verification and restrictions. Suspicious content or sudden large sending volumes may trigger delays, restrictions, or account review",
+                                                    "blocked_description": "User is prohibited from sending any emails. All outgoing email actions are blocked immediately, and all deferred emails will be removed",
+                                                    "approved_description": "User is allowed to send emails without restrictions, including large volumes and potentially suspicious content, with no automatic blocking or delays. Specifically, the user can:\n\u003cul\u003e\n\u003cli\u003eUse suspicious words or links in emails without triggering ‘pending’ status\u003c/li\u003e\n\u003cli\u003eSend unlimited newsletters daily without suspension, regardless of the sending pool\u003c/li\u003e\n\u003cli\u003eImport up to 99,999 contacts without verification or suspension\u003c/li\u003e\n\u003c/ul\u003e",
+                                                    "new_description": "User's email sending is subject to standard verification and restrictions. Suspicious content or sudden large sending volumes may trigger delays, restrictions, or account review",
+                                                    "new_pending_description": "This status is part of the automated onboarding process for new users and cannot be selected manually. \u003ca\u003e[Click here to learn more]\u003c/a\u003e"
+                                                },
+                                                "display_name-info": "This name will be displayed when you add posts or comments to a community",
+                                                "profile_image": "Profile image",
+                                                "profile_image_hint": "This image will serve as your account profile picture and default profile photo in the systeme.io community. ",
+                                                "profile": {
+                                                    "data_used_in_invoice_hint": "Your profile information is used to generate invoices. Please ensure all information is accurate and up to date"
+                                                },
+                                                "blocked_user_account": "blocked user account",
+                                                "profile_image_hint-2": "This image will serve as your account profile picture and default profile photo in the {{brandName}} community. "
+                                            }
+                                        }
+                                    },
+                                    "payment_methods": {
+                                        "dashboard": {
+                                            "payment_methods": {
+                                                "allowed_payment_methods": "Accepted payment methods",
+                                                "currency": {
+                                                    "change_info": "By changing the store's currency, products, coupons, and offer price plans will be disconnected from any form"
+                                                },
+                                                "no_payment_methods_for_currency_warning": "\u003cb\u003eCurrency not supported!\u003c/b\u003e\u003cbr/\u003eNo available payment methods support this currency. \u003ca\u003ePlease add a compatible provider.\u003c/a\u003e"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "initialLocale": "en",
+                            "ns": [
+                                "global",
+                                "header",
+                                "notifications",
+                                "funnel",
+                                "actions",
+                                "payment",
+                                "confirmation",
+                                "currency",
+                                "list",
+                                "user",
+                                "payment_methods"
+                            ],
+                            "userConfig": {
+                                "i18n": {
+                                    "defaultLocale": "en",
+                                    "defaultNS": "global",
+                                    "locales": [
+                                        "fr",
+                                        "en",
+                                        "es",
+                                        "it",
+                                        "pt",
+                                        "de",
+                                        "nl",
+                                        "ru",
+                                        "jp",
+                                        "tr",
+                                        "zh",
+                                        "ar",
+                                        "sv",
+                                        "ro",
+                                        "cs",
+                                        "hu",
+                                        "sk",
+                                        "dk",
+                                        "id",
+                                        "pl",
+                                        "el",
+                                        "sr",
+                                        "no",
+                                        "th",
+                                        "sl",
+                                        "ua",
+                                        "sq",
+                                        "hi"
+                                    ],
+                                    "localeDetection": false,
+                                    "returnEmptyString": false
+                                },
+                                "default": {
+                                    "i18n": {
+                                        "defaultLocale": "en",
+                                        "defaultNS": "global",
+                                        "locales": [
+                                            "fr",
+                                            "en",
+                                            "es",
+                                            "it",
+                                            "pt",
+                                            "de",
+                                            "nl",
+                                            "ru",
+                                            "jp",
+                                            "tr",
+                                            "zh",
+                                            "ar",
+                                            "sv",
+                                            "ro",
+                                            "cs",
+                                            "hu",
+                                            "sk",
+                                            "dk",
+                                            "id",
+                                            "pl",
+                                            "el",
+                                            "sr",
+                                            "no",
+                                            "th",
+                                            "sl",
+                                            "ua",
+                                            "sq",
+                                            "hi"
+                                        ],
+                                        "localeDetection": false,
+                                        "returnEmptyString": false
+                                    }
+                                }
+                            }
+                        },
+                        "browserTabTitle": "header.top_menu.funnels"
+                    },
+                    "__N_SSP": true
+                },
+                "page": "/funnels",
+                "query": {
+                },
+                "buildId": "T6OLKfvUEntAYEK9BBYWa",
+                "assetPrefix": "https://d2pviq63ux9jcb.cloudfront.net",
+                "isFallback": false,
+                "isExperimentalCompile": false,
+                "gssp": true,
+                "locale": "en",
+                "locales": [
+                    "en",
+                    "fr",
+                    "es",
+                    "it",
+                    "pt",
+                    "de",
+                    "nl",
+                    "ru",
+                    "jp",
+                    "tr",
+                    "zh",
+                    "ar",
+                    "sv",
+                    "ro",
+                    "cs",
+                    "hu",
+                    "sk",
+                    "dk",
+                    "id",
+                    "pl",
+                    "el",
+                    "sr",
+                    "no",
+                    "th",
+                    "sl",
+                    "ua",
+                    "sq",
+                    "hi"
+                ],
+                "defaultLocale": "en",
+                "scriptLoader": [
+                ]
+            }</script>
+    </body>
+</html>
