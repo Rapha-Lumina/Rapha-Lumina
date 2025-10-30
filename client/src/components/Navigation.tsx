@@ -17,26 +17,16 @@ export function Navigation() {
   const [location] = useLocation();
   const { user, isAuthenticated, isLoading } = useAuth();
 
-  // Load systeme.io popup script only for non-authenticated users
+  // Load systeme.io popup script for all users
   useEffect(() => {
     const scriptId = "form-script-tag-21189482";
-    
-    // Only load for non-authenticated users
-    if (isAuthenticated) {
-      // Remove script if user is authenticated
-      const existingScript = document.getElementById(scriptId);
-      if (existingScript) {
-        existingScript.remove();
-      }
-      return;
-    }
     
     // Check if script is already loaded
     if (document.getElementById(scriptId)) {
       return;
     }
 
-    // Create and load script for non-authenticated users
+    // Create and load script
     const script = document.createElement("script");
     script.id = scriptId;
     script.src = "https://www.raphalumina.com/public/remote/page/34463995a1fbb90924e00d56deeefd448b749798.js";
@@ -50,7 +40,7 @@ export function Navigation() {
         existingScript.remove();
       }
     };
-  }, [isAuthenticated]);
+  }, []);
 
   const navItems = [
     { path: "/", label: "Home", icon: Home },

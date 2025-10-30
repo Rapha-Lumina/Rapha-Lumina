@@ -89,14 +89,15 @@ Implemented a comprehensive blog system with database persistence and SEO-friend
 - **SEO Optimization**: Slug-based URLs improve search engine discoverability and social sharing
 - **Content Format**: Blog posts support markdown-style formatting with headers (##), bold text (**), author attribution (—), and regular paragraphs
 
-### Newsletter Popup Prevention for Authenticated Users (October 30, 2025)
+### Newsletter Section Visibility (October 30, 2025)
 
-Updated newsletter signup behavior to prevent systeme.io popup for authenticated users:
-- **Landing Page**: Newsletter section and timed popup now hidden for authenticated users
-- **Join Awakening Page**: Shows "Start Chatting" button (links to /chat) instead of "Join Now" for authenticated users
+Newsletter section now appears for all users to match mobile experience:
+- **Landing Page**: "Join the Awakening" newsletter section now visible for all users (authenticated and non-authenticated)
+- **Systeme.io Script**: Popup script now loads for all users to enable newsletter signup functionality
+- **Desktop/Mobile Parity**: Desktop version now matches the preferred mobile layout
+- **Timed Popup**: Still only appears for non-authenticated users (10-second delay)
+- **Join Awakening Page**: Shows "Start Chatting" button for authenticated users, "Join Now" for non-authenticated
 - **Signup Page**: Automatically redirects authenticated users to /chat page
-- **Navigation**: Already correctly showing signup only for non-authenticated users
-- **Result**: Authenticated users no longer see unwanted newsletter popups and have a cleaner, more relevant experience
 
 ### Awakening to Consciousness Course Image (October 30, 2025)
 

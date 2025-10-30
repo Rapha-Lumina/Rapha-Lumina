@@ -402,39 +402,37 @@ export default function Landing() {
         </div>
       </div>
 
-      {/* Newsletter Section - Only show for non-authenticated users */}
-      {!isAuthenticated && (
-        <div className="py-20 px-4 bg-gradient-to-b from-background to-primary/5">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="mb-8">
-              <h2 className="font-display text-4xl md:text-5xl font-light text-foreground mb-4">
-                Join the Awakening
-              </h2>
-              <p className="text-lg text-muted-foreground">
-                Receive wisdom, insights, and updates on new offerings. Join our community of conscious seekers.
-              </p>
-            </div>
-
-            <Button 
-              asChild
-              size="lg" 
-              className="px-12 py-6 text-lg"
-            >
-              <a 
-                href="#" 
-                className="systeme-show-popup-21189482"
-                data-testid="button-newsletter-join"
-              >
-                Join Now
-              </a>
-            </Button>
-
-            <p className="text-xs text-muted-foreground mt-6">
-              We respect your privacy. Unsubscribe anytime.
+      {/* Newsletter Section */}
+      <div className="py-20 px-4 bg-gradient-to-b from-background to-primary/5">
+        <div className="max-w-3xl mx-auto text-center">
+          <div className="mb-8">
+            <h2 className="font-display text-4xl md:text-5xl font-light text-foreground mb-4">
+              Join the Awakening
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Receive wisdom, insights, and updates on new offerings. Join our community of conscious seekers.
             </p>
           </div>
+
+          <Button 
+            asChild
+            size="lg" 
+            className="px-12 py-6 text-lg"
+          >
+            <a 
+              href="#" 
+              className="systeme-show-popup-21189482"
+              data-testid="button-newsletter-join"
+            >
+              Join Now
+            </a>
+          </Button>
+
+          <p className="text-xs text-muted-foreground mt-6">
+            We respect your privacy. Unsubscribe anytime.
+          </p>
         </div>
-      )}
+      </div>
 
       {/* Newsletter Popup Modal */}
       <Dialog open={showNewsletterPopup} onOpenChange={setShowNewsletterPopup}>
