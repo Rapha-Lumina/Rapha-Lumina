@@ -74,6 +74,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates
 
+### Newsletter Popup Prevention for Authenticated Users (October 30, 2025)
+
+Updated newsletter signup behavior to prevent systeme.io popup for authenticated users:
+- **Landing Page**: Newsletter section and timed popup now hidden for authenticated users
+- **Join Awakening Page**: Shows "Start Chatting" button (links to /chat) instead of "Join Now" for authenticated users
+- **Signup Page**: Automatically redirects authenticated users to /chat page
+- **Navigation**: Already correctly showing signup only for non-authenticated users
+- **Result**: Authenticated users no longer see unwanted newsletter popups and have a cleaner, more relevant experience
+
 ### Awakening to Consciousness Course Image (October 30, 2025)
 
 Added custom spiritual artwork for the flagship "Awakening to Consciousness" course:
