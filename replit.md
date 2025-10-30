@@ -107,3 +107,12 @@ Added custom spiritual imagery for the flagship "Awakening to Consciousness" cou
 - **Applied To**: First course (Beginner level) in Rapha Lumina Academy courses catalog
 - **Visual Theme**: Reaching toward divine light, spiritual awakening, consciousness expansion, golden sunset symbolism
 - **Purpose**: Visually represents the journey from darkness to light, the core theme of awakening to consciousness
+
+### Courses Page Hero Image (October 30, 2025)
+
+Added inspiring background image to the Rapha Lumina Academy courses page:
+- **Hero Background**: Beautiful sunset image with hands reaching toward divine light (`/attached_assets/image_1761842537823.png`)
+- **Implementation**: Background image with 20% opacity and dark gradient overlay for text readability
+- **Location**: Hero section at top of `/courses` page
+- **Visual Impact**: Creates an inspiring, spiritual atmosphere while maintaining clean UI and text legibility
+- **Purpose**: Reinforces the platform's spiritual mission and creates visual consistency with course imagery

@@ -320,8 +320,16 @@ export default function Courses() {
       
       <main className="flex-1">
         {/* Hero Section */}
-        <div className="bg-gradient-to-b from-primary/10 to-background py-12 px-4">
-          <div className="max-w-6xl mx-auto">
+        <div className="relative bg-gradient-to-b from-primary/10 to-background py-16 px-4 overflow-hidden">
+          <div className="absolute inset-0 z-0">
+            <img 
+              src="/attached_assets/image_1761842537823.png" 
+              alt="Hands reaching toward divine light"
+              className="w-full h-full object-cover opacity-20"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/70 to-background" />
+          </div>
+          <div className="max-w-6xl mx-auto relative z-10">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
               <div>
                 <h1 className="font-display text-4xl sm:text-5xl mb-3">
