@@ -1,6 +1,7 @@
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { SystemeIoPopup } from "@/components/SystemeIoPopup";
 import { Check, Sparkles, Zap, Crown } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -26,6 +27,7 @@ function CurrencyToggle({ currency, onChange }: { currency: "USD" | "ZAR"; onCha
 export default function Shop() {
   const [currency, setCurrency] = useState<"USD" | "ZAR">("USD");
   const [isDetecting, setIsDetecting] = useState(true);
+  const [showPopup, setShowPopup] = useState(false);
 
   // Automatically detect currency based on user's location
   useEffect(() => {
@@ -183,8 +185,11 @@ export default function Shop() {
                     variant={tier.highlighted ? "default" : "outline"}
                     size="lg"
                     onClick={() => {
-                      const funnelUrl = currency === "USD" ? tier.funnelUrlUSD : tier.funnelUrlZAR;
-                      window.location.href = funnelUrl;
+                      if (tier.name === "Free Access") {
+                        window.location.href = "/chat";
+                      } else {
+                        setShowPopup(true);
+                      }
                     }}
                     data-testid={`button-select-${tier.name.toLowerCase().replace(/\s+/g, '-')}`}
                   >
@@ -221,6 +226,15 @@ export default function Shop() {
           </p>
         </div>
       </footer>
+
+      {/* Systeme.io Subscription Popup */}
+      <SystemeIoPopup
+        scriptSrc="https://www.raphalumina.com/public/remote/page/3446279680f5b9c3ddaa6ec65df7a8ed4b69587d.js"
+        scriptId="form-script-tag-21188886"
+        isOpen={showPopup}
+        onClose={() => setShowPopup(false)}
+        title="Complete Your Subscription"
+      />
     </div>
   );
 }
