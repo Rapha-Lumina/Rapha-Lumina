@@ -102,6 +102,8 @@ Updated newsletter signup behavior to prevent systeme.io popup for authenticated
 Added custom spiritual artwork for the flagship "Awakening to Consciousness" course:
 - **Generated Image**: Ethereal spiritual awakening scene with lotus flower blooming in cosmic space, golden light rays emanating from consciousness center, mystical purple and indigo nebula background
 - **Location**: `attached_assets/generated_images/Awakening_consciousness_spiritual_course_2d85b4fd.png`
+- **Database Path**: `/attached_assets/generated_images/Awakening_consciousness_spiritual_course_2d85b4fd.png`
 - **Applied To**: First course (Beginner level) in Rapha Lumina Academy courses catalog
 - **Visual Theme**: Peaceful meditation energy with sacred geometry patterns, third eye symbolism, enlightenment and transformation
 - **Purpose**: Visually distinguishes the flagship course from generic stock photos, enhancing course appeal and brand identity
+- **Fix Applied**: Updated database course thumbnail path to match the correct generated image location
