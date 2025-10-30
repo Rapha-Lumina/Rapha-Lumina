@@ -1,3 +1,4 @@
+import { Link } from "wouter";
 import { Navigation } from "@/components/Navigation";
 import { FloatingChatWidget } from "@/components/FloatingChatWidget";
 import { Button } from "@/components/ui/button";
@@ -154,13 +155,15 @@ export default function Landing() {
 
           <div className="flex flex-col sm:flex-row gap-4 animate-in slide-in-from-bottom-4 duration-1000 delay-700">
             <Button
+              asChild
               size="lg"
               className="text-lg px-10 py-7 bg-primary hover:bg-primary/90 border-2 border-primary-border shadow-xl"
-              onClick={() => window.location.href = "/api/login"}
-              data-testid="button-login"
+              data-testid="button-begin-journey"
             >
-              <MessageCircle className="mr-2 h-5 w-5" />
-              Begin Your Journey
+              <Link href="/blog">
+                <MessageCircle className="mr-2 h-5 w-5" />
+                Begin Your Journey
+              </Link>
             </Button>
             <Button
               size="lg"
