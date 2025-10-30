@@ -1,4 +1,5 @@
 import { Link, useLocation } from "wouter";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,6 +16,31 @@ import logo from "@assets/Rapha Lumina_1761161536763.png";
 export function Navigation() {
   const [location] = useLocation();
   const { user, isAuthenticated, isLoading } = useAuth();
+
+  // Load systeme.io popup script
+  useEffect(() => {
+    const scriptId = "form-script-tag-21189482";
+    
+    // Check if script is already loaded
+    if (document.getElementById(scriptId)) {
+      return;
+    }
+
+    // Create and load script
+    const script = document.createElement("script");
+    script.id = scriptId;
+    script.src = "https://www.raphalumina.com/public/remote/page/34463995a1fbb90924e00d56deeefd448b749798.js";
+    script.async = true;
+    document.body.appendChild(script);
+
+    // Cleanup
+    return () => {
+      const existingScript = document.getElementById(scriptId);
+      if (existingScript) {
+        existingScript.remove();
+      }
+    };
+  }, []);
 
   const navItems = [
     { path: "/", label: "Home", icon: Home },
@@ -117,8 +143,18 @@ export function Navigation() {
                     <Button onClick={handleLogin} variant="ghost" size="default" data-testid="button-login">
                       Log in
                     </Button>
-                    <Button onClick={handleLogin} variant="default" size="default" data-testid="button-signup">
-                      Sign up
+                    <Button 
+                      asChild
+                      variant="default" 
+                      size="default"
+                    >
+                      <a 
+                        href="#" 
+                        className="systeme-show-popup-21189482"
+                        data-testid="button-signup"
+                      >
+                        Sign up
+                      </a>
                     </Button>
                   </>
                 )}
@@ -184,9 +220,15 @@ export function Navigation() {
                           <User className="w-4 h-4 mr-2" />
                           Log in
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleLogin} data-testid="button-mobile-signup">
-                          <User className="w-4 h-4 mr-2" />
-                          Sign up
+                        <DropdownMenuItem asChild>
+                          <a 
+                            href="#" 
+                            className="systeme-show-popup-21189482 flex items-center"
+                            data-testid="button-mobile-signup"
+                          >
+                            <User className="w-4 h-4 mr-2" />
+                            Sign up
+                          </a>
                         </DropdownMenuItem>
                       </>
                     )}
