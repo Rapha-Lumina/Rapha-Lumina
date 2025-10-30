@@ -161,16 +161,46 @@ export default function Chat() {
     }
   };
 
-  const handleClearChat = () => {
-    if (window.confirm("Are you sure you want to clear all messages? This cannot be undone.")) {
-      setMessages([]);
-      localStorage.removeItem('chatMessages');
-      if (isSpeaking) {
-        stop();
+  const handleClearChat = async () => {
+    if (!window.confirm("Are you sure you want to clear all messages? This cannot be undone.")) {
+      return;
+    }
+
+    // Stop any ongoing speech
+    if (isSpeaking) {
+      stop();
+    }
+
+    try {
+      // If authenticated, delete messages from server
+      if (isAuthenticated) {
+        const response = await fetch('/api/messages', {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete messages from server');
+        }
       }
+
+      // Clear local state
+      setMessages([]);
+      
+      // Clear localStorage for non-authenticated users
+      if (!isAuthenticated) {
+        localStorage.removeItem('chatMessages');
+      }
+
       toast({
         title: "Conversation cleared",
         description: "Your chat history has been deleted.",
+      });
+    } catch (error) {
+      console.error("Error clearing chat:", error);
+      toast({
+        title: "Error",
+        description: "Failed to clear chat history. Please try again.",
+        variant: "destructive",
       });
     }
   };

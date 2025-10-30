@@ -29,6 +29,7 @@ export interface IStorage {
   // Message operations
   getMessagesByUser(userId: string): Promise<Message[]>;
   createMessage(message: InsertMessage): Promise<Message>;
+  deleteMessagesByUser(userId: string): Promise<void>;
   
   // Newsletter operations
   addNewsletterSubscriber(email: string): Promise<NewsletterSubscriber>;
@@ -181,6 +182,12 @@ export class DatabaseStorage implements IStorage {
       .values(insertMessage)
       .returning();
     return message;
+  }
+
+  async deleteMessagesByUser(userId: string): Promise<void> {
+    await db
+      .delete(messages)
+      .where(eq(messages.userId, userId));
   }
 
   // Newsletter operations

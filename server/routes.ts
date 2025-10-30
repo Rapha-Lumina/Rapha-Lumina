@@ -133,6 +133,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete all messages for logged-in user (PROTECTED)
+  app.delete("/api/messages", isAuthenticated, async (req: any, res) => {
+    try {
+      // Look up user by email (stable across OIDC sub changes)
+      const email = req.user.claims.email;
+      if (!email) {
+        return res.status(400).json({ error: "Email not found in claims" });
+      }
+      
+      const dbUser = await storage.getUserByEmail(email);
+      if (!dbUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      await storage.deleteMessagesByUser(dbUser.id);
+      res.json({ success: true, message: "All messages deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting messages:", error);
+      res.status(500).json({ error: "Failed to delete messages" });
+    }
+  });
+
   // Generate speech from text using ElevenLabs (PROTECTED)
   app.post("/api/tts", isAuthenticated, async (req: any, res) => {
     try {
