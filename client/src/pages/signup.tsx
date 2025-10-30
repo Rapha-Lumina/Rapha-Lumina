@@ -1,8 +1,20 @@
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Sparkles, MessageCircle, Zap, Crown } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Link, useLocation } from "wouter";
+import { useEffect } from "react";
 
 export default function Signup() {
+  const { isAuthenticated } = useAuth();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      setLocation("/chat");
+    }
+  }, [isAuthenticated, setLocation]);
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navigation />

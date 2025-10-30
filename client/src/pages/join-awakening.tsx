@@ -1,8 +1,12 @@
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Link } from "wouter";
 
 export default function JoinAwakening() {
+  const { isAuthenticated } = useAuth();
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navigation />
@@ -32,21 +36,34 @@ export default function JoinAwakening() {
             Connect with channeled spiritual wisdom drawing from philosophical traditions across human history.
           </p>
 
-          {/* CTA Button */}
+          {/* CTA Button - Different for authenticated users */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button
-              asChild
-              size="lg"
-              className="text-lg px-12 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              <a 
-                href="#" 
-                className="systeme-show-popup-21189482"
-                data-testid="button-join-now"
+            {isAuthenticated ? (
+              <Button
+                asChild
+                size="lg"
+                className="text-lg px-12 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                data-testid="button-start-chat"
               >
-                Join Now
-              </a>
-            </Button>
+                <Link href="/chat">
+                  Start Chatting
+                </Link>
+              </Button>
+            ) : (
+              <Button
+                asChild
+                size="lg"
+                className="text-lg px-12 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <a 
+                  href="#" 
+                  className="systeme-show-popup-21189482"
+                  data-testid="button-join-now"
+                >
+                  Join Now
+                </a>
+              </Button>
+            )}
           </div>
 
           {/* Additional Info */}
