@@ -100,11 +100,10 @@ Updated newsletter signup behavior to prevent systeme.io popup for authenticated
 
 ### Awakening to Consciousness Course Image (October 30, 2025)
 
-Added custom spiritual artwork for the flagship "Awakening to Consciousness" course:
-- **Generated Image**: Ethereal spiritual awakening scene with lotus flower blooming in cosmic space, golden light rays emanating from consciousness center, mystical purple and indigo nebula background
-- **Location**: `attached_assets/generated_images/Awakening_consciousness_spiritual_course_2d85b4fd.png`
-- **Database Path**: `/attached_assets/generated_images/Awakening_consciousness_spiritual_course_2d85b4fd.png`
+Added custom spiritual imagery for the flagship "Awakening to Consciousness" course:
+- **Course Image**: Beautiful sunset image with hands reaching toward the light, symbolizing awakening and consciousness expansion
+- **Location**: `attached_assets/image_1761840836558.png`
+- **Database Path**: `/attached_assets/image_1761840836558.png`
 - **Applied To**: First course (Beginner level) in Rapha Lumina Academy courses catalog
-- **Visual Theme**: Peaceful meditation energy with sacred geometry patterns, third eye symbolism, enlightenment and transformation
-- **Purpose**: Visually distinguishes the flagship course from generic stock photos, enhancing course appeal and brand identity
-- **Fix Applied**: Updated database course thumbnail path to match the correct generated image location
+- **Visual Theme**: Reaching toward divine light, spiritual awakening, consciousness expansion, golden sunset symbolism
+- **Purpose**: Visually represents the journey from darkness to light, the core theme of awakening to consciousness

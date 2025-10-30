@@ -353,7 +353,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         duration: "4 weeks",
         totalLessons: "15 lessons",
         level: "Beginner",
-        thumbnail: "/attached_assets/generated_images/Awakening_consciousness_spiritual_course_2d85b4fd.png",
+        thumbnail: "/attached_assets/image_1761840836558.png",
       });
 
       // Create modules
