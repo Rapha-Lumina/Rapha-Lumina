@@ -628,10 +628,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/blog/:slug - Get blog post by slug (PUBLIC)
-  app.get("/api/blog/:slug", async (req, res) => {
+  // GET /api/blog/slug/:slug - Get blog post by slug (PUBLIC)
+  app.get("/api/blog/slug/:slug", async (req, res) => {
     try {
       const { slug } = req.params;
+      
+      if (!slug || typeof slug !== 'string') {
+        return res.status(400).json({ error: "Invalid slug parameter" });
+      }
+
       const post = await storage.getBlogPostBySlug(slug);
       
       if (!post) {

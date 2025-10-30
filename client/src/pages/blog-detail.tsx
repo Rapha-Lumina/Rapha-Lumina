@@ -23,8 +23,8 @@ export default function BlogDetail() {
   const [, params] = useRoute("/blog/:slug");
   const slug = params?.slug;
 
-  const { data: post, isLoading } = useQuery<BlogPost>({
-    queryKey: ["/api/blog", slug],
+  const { data: post, isLoading, error } = useQuery<BlogPost>({
+    queryKey: ["/api/blog/slug", slug],
     enabled: !!slug,
   });
 
