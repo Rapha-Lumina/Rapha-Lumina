@@ -3,23 +3,14 @@ import { Navigation } from "@/components/Navigation";
 import { FloatingChatWidget } from "@/components/FloatingChatWidget";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sparkles, Brain, Heart, Lightbulb, MessageCircle, Shield, Zap } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
 import logo from "@assets/Rapha Lumina_1761161536763.png";
 import cosmicBg from "@assets/generated_images/Cosmic_nebula_spiritual_background_dfaaaa9e.png";
 
 export default function Landing() {
-  const [email, setEmail] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [location, setLocation] = useState("");
-  const [dateOfBirth, setDateOfBirth] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showNewsletterPopup, setShowNewsletterPopup] = useState(false);
-  const { toast} = useToast();
 
   useEffect(() => {
     const hasSeenPopup = sessionStorage.getItem('hasSeenNewsletterPopup');
@@ -33,87 +24,6 @@ export default function Landing() {
       return () => clearTimeout(timer);
     }
   }, []);
-
-  const handleNewsletterSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Basic client-side validation
-    const trimmedEmail = email.trim();
-    const trimmedFirstName = firstName.trim();
-    const trimmedLastName = lastName.trim();
-    const trimmedLocation = location.trim();
-    
-    if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-      toast({
-        title: "Invalid email",
-        description: "Please enter a valid email address.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!trimmedFirstName || !trimmedLastName || !trimmedLocation) {
-      toast({
-        title: "Missing information",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
-    try {
-      const response = await fetch("/api/newsletter/subscribe", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ 
-          email: trimmedEmail,
-          firstName: trimmedFirstName,
-          lastName: trimmedLastName,
-          location: trimmedLocation,
-          dateOfBirth: dateOfBirth || undefined,
-        }),
-      });
-
-      if (response.ok) {
-        toast({
-          title: "Welcome to the awakening!",
-          description: "Redirecting you to begin your journey...",
-        });
-        
-        // Clear form
-        setEmail("");
-        setFirstName("");
-        setLastName("");
-        setLocation("");
-        setDateOfBirth("");
-        setShowNewsletterPopup(false);
-        
-        // Redirect to systeme.io sales funnel after brief delay
-        setTimeout(() => {
-          window.location.href = "https://www.raphalumina.com/welcome-sequence";
-        }, 1500);
-      } else {
-        const data = await response.json();
-        toast({
-          title: "Subscription failed",
-          description: data.error || "Please try again later.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Connection error",
-        description: "Unable to subscribe. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -502,65 +412,21 @@ export default function Landing() {
             </p>
           </div>
 
-          <form onSubmit={handleNewsletterSignup} className="flex flex-col gap-4 max-w-lg mx-auto">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Input
-                type="text"
-                placeholder="First Name *"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                required
-                disabled={isSubmitting}
-                data-testid="input-newsletter-firstname"
-              />
-              <Input
-                type="text"
-                placeholder="Last Name *"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                required
-                disabled={isSubmitting}
-                data-testid="input-newsletter-lastname"
-              />
-            </div>
-            <Input
-              type="email"
-              placeholder="Email Address *"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={isSubmitting}
-              data-testid="input-newsletter-email"
-            />
-            <Input
-              type="text"
-              placeholder="Location (City, Country) *"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              required
-              disabled={isSubmitting}
-              data-testid="input-newsletter-location"
-            />
-            <Input
-              type="date"
-              placeholder="Date of Birth (Optional)"
-              value={dateOfBirth}
-              onChange={(e) => setDateOfBirth(e.target.value)}
-              disabled={isSubmitting}
-              data-testid="input-newsletter-dob"
-            />
-            <Button 
-              type="submit" 
-              size="lg" 
-              className="w-full" 
-              disabled={isSubmitting}
-              data-testid="button-newsletter-submit"
+          <Button 
+            asChild
+            size="lg" 
+            className="px-12 py-6 text-lg"
+          >
+            <a 
+              href="#" 
+              className="systeme-show-popup-21189482"
+              data-testid="button-newsletter-join"
             >
-              {isSubmitting ? "Joining..." : "Join Now"}
-            </Button>
-          </form>
+              Join Now
+            </a>
+          </Button>
 
-          <p className="text-xs text-muted-foreground mt-4">
+          <p className="text-xs text-muted-foreground mt-6">
             We respect your privacy. Unsubscribe anytime.
           </p>
         </div>
@@ -578,63 +444,21 @@ export default function Landing() {
             </DialogDescription>
           </DialogHeader>
           
-          <form onSubmit={handleNewsletterSignup} className="flex flex-col gap-4 pt-4">
-            <div className="grid grid-cols-2 gap-3">
-              <Input
-                type="text"
-                placeholder="First Name *"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                required
-                disabled={isSubmitting}
-                data-testid="input-popup-newsletter-firstname"
-              />
-              <Input
-                type="text"
-                placeholder="Last Name *"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                required
-                disabled={isSubmitting}
-                data-testid="input-popup-newsletter-lastname"
-              />
-            </div>
-            <Input
-              type="email"
-              placeholder="Email Address *"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={isSubmitting}
-              data-testid="input-popup-newsletter-email"
-            />
-            <Input
-              type="text"
-              placeholder="Location (City, Country) *"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              required
-              disabled={isSubmitting}
-              data-testid="input-popup-newsletter-location"
-            />
-            <Input
-              type="date"
-              placeholder="Date of Birth (Optional)"
-              value={dateOfBirth}
-              onChange={(e) => setDateOfBirth(e.target.value)}
-              disabled={isSubmitting}
-              data-testid="input-popup-newsletter-dob"
-            />
+          <div className="pt-4">
             <Button 
-              type="submit" 
+              asChild
               size="lg" 
-              className="w-full" 
-              disabled={isSubmitting}
-              data-testid="button-popup-newsletter-submit"
+              className="w-full"
             >
-              {isSubmitting ? "Joining..." : "Join Now"}
+              <a 
+                href="#" 
+                className="systeme-show-popup-21189482"
+                data-testid="button-popup-newsletter-join"
+              >
+                Join Now
+              </a>
             </Button>
-          </form>
+          </div>
 
           <p className="text-xs text-muted-foreground text-center">
             We respect your privacy. Unsubscribe anytime.
