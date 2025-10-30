@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useState, useMemo } from "react";
 import courseImg from "@assets/stock_images/online_course_educat_d7aabae3.jpg";
+import awakeningCourseImg from "@assets/generated_images/Awakening_consciousness_spiritual_course_2d85b4fd.png";
 
 interface User {
   id: string;
@@ -54,7 +55,7 @@ const FALLBACK_COURSES: Course[] = [
     level: "Beginner",
     price: "$97",
     instructor: "Rapha Lumina",
-    thumbnail: courseImg,
+    thumbnail: awakeningCourseImg,
   },
   {
     id: "shadow-work-journey",

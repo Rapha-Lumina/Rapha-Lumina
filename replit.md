@@ -71,3 +71,14 @@ Preferred communication style: Simple, everyday language.
 - Tailwind CSS: Utility-first styling.
 
 **Environment Variables**: `ANTHROPIC_API_KEY`, `DATABASE_URL`, `SESSION_SECRET`, `REPL_ID`, `REPLIT_DOMAINS`, `ISSUER_URL`, `ELEVENLABS_API_KEY`, `SYSTEME_IO_API_KEY`, `VITE_SYSTEME_IO_JOIN_URL`.
+
+## Recent Updates
+
+### Awakening to Consciousness Course Image (October 30, 2025)
+
+Added custom spiritual artwork for the flagship "Awakening to Consciousness" course:
+- **Generated Image**: Ethereal spiritual awakening scene with lotus flower blooming in cosmic space, golden light rays emanating from consciousness center, mystical purple and indigo nebula background
+- **Location**: `attached_assets/generated_images/Awakening_consciousness_spiritual_course_2d85b4fd.png`
+- **Applied To**: First course (Beginner level) in Rapha Lumina Academy courses catalog
+- **Visual Theme**: Peaceful meditation energy with sacred geometry patterns, third eye symbolism, enlightenment and transformation
+- **Purpose**: Visually distinguishes the flagship course from generic stock photos, enhancing course appeal and brand identity
