@@ -1,0 +1,2 @@
+img { max-width:100%; height:auto; display:block; }
+.hero img, .cover img, .picture img { width:100%; height:auto; object-fit:cover; }
