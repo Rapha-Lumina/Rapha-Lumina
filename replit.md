@@ -242,16 +242,17 @@ Automatic PWA install prompt for mobile users:
 
 ### Systeme.io Embedded Form Integration (October 30, 2025)
 
-Direct systeme.io subscription form embedding:
-- **Form Script**: `<script id="form-script-tag-21188886" src="https://www.raphalumina.com/public/remote/page/3446279680f5b9c3ddaa6ec65df7a8ed4b69587d.js"></script>`
+Direct systeme.io subscription form embedding with two separate forms:
+- **Join Awakening Form Script**: `<script id="form-script-tag-21188886" src="https://www.raphalumina.com/public/remote/page/3446279680f5b9c3ddaa6ec65df7a8ed4b69587d.js"></script>`
+- **Signup Form Script**: `<script id="form-script-tag-21189482" src="https://www.raphalumina.com/public/remote/page/34463995a1fbb90924e00d56deeefd448b749798.js"></script>`
 - **Implementation**:
   - Created `SystemeIoForm` component for inline form embedding
   - Created `SystemeIoPopup` component for modal/popup display
-  - Script loads dynamically when component mounts
+  - Scripts load dynamically when components mount
   - Automatic cleanup to prevent duplicate scripts
 - **Form Locations**:
-  - `/join-awakening` page: Full-page subscription form experience
-  - `/signup` page: Alternative signup page with embedded form
+  - `/join-awakening` page: Full-page subscription form experience (uses form-script-tag-21188886)
+  - `/signup` page: Alternative signup page with dedicated signup form (uses form-script-tag-21189482)
   - Landing page: "Join the Awakening" section remains with existing newsletter signup (redirects to systeme.io welcome sequence)
 - **Shop Page Behavior**:
   - All subscription tier buttons redirect directly to systeme.io funnel URLs
