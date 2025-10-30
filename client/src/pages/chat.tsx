@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useSpeechSynthesis } from "@/hooks/useVoice";
+import { useAuth } from "@/hooks/useAuth";
 import { Trash2 } from "lucide-react";
 
 export default function Chat() {
@@ -17,25 +18,48 @@ export default function Chat() {
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { speak, stop, isSpeaking } = useSpeechSynthesis();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
-  // Load messages from localStorage on mount
+  // Load messages on mount - from server if authenticated, localStorage if not
   useEffect(() => {
-    const savedMessages = localStorage.getItem('chatMessages');
-    if (savedMessages) {
-      try {
-        setMessages(JSON.parse(savedMessages));
-      } catch (error) {
-        console.error("Failed to load saved messages:", error);
+    if (authLoading) return;
+
+    async function loadMessages() {
+      if (isAuthenticated) {
+        // Load from server for authenticated users
+        try {
+          const response = await fetch('/api/messages');
+          if (response.ok) {
+            const serverMessages = await response.json();
+            setMessages(serverMessages);
+          } else {
+            console.error("Failed to load messages from server");
+          }
+        } catch (error) {
+          console.error("Error loading messages from server:", error);
+        }
+      } else {
+        // Load from localStorage for non-authenticated users
+        const savedMessages = localStorage.getItem('chatMessages');
+        if (savedMessages) {
+          try {
+            setMessages(JSON.parse(savedMessages));
+          } catch (error) {
+            console.error("Failed to load saved messages:", error);
+          }
+        }
       }
     }
-  }, []);
 
-  // Save messages to localStorage whenever they change
+    loadMessages();
+  }, [isAuthenticated, authLoading]);
+
+  // Save messages to localStorage only for non-authenticated users
   useEffect(() => {
-    if (messages.length > 0) {
+    if (!authLoading && !isAuthenticated && messages.length > 0) {
       localStorage.setItem('chatMessages', JSON.stringify(messages));
     }
-  }, [messages]);
+  }, [messages, isAuthenticated, authLoading]);
 
   // Stop speech on component unmount
   useEffect(() => {
@@ -67,7 +91,7 @@ export default function Chat() {
     // Create user message
     const userMessage: Message = {
       id: Date.now().toString(),
-      sessionId: "local", // Local session for non-authenticated users
+      sessionId: "local",
       role: "user",
       content,
       timestamp: new Date().toISOString()
@@ -77,13 +101,20 @@ export default function Chat() {
     setMessages((prev) => [...prev, userMessage]);
 
     try {
-      // Call the Anthropic API directly without authentication requirement
+      // Prepare request body
+      const requestBody: any = { content };
+      
+      // For non-authenticated users, send conversation history
+      if (!isAuthenticated) {
+        requestBody.history = messages;
+      }
+
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify(requestBody),
       });
 
       if (response.ok) {

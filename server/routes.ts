@@ -199,7 +199,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Send a message and get AI response (PUBLIC - no auth required)
+  // Send a message and get AI response (PUBLIC - but stores messages for authenticated users)
   app.post("/api/chat", async (req: any, res) => {
     try {
       if (!process.env.ANTHROPIC_API_KEY) {
@@ -214,17 +214,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Message content is required" });
       }
 
-      // Create temporary message objects (not stored in database)
-      const userMessage = {
-        id: Date.now().toString(),
-        sessionId: "local",
-        role: "user" as const,
-        content,
-        timestamp: new Date().toISOString(),
-      };
+      // Check if user is authenticated
+      const isAuth = req.isAuthenticated && req.isAuthenticated() && req.user?.claims?.email;
+      let dbUser = null;
+      let conversationHistory: any[] = [];
 
-      // Convert history to Anthropic format (if provided by client)
-      const anthropicMessages = [...history, { role: "user", content }]
+      if (isAuth) {
+        // Get user from database
+        const email = req.user.claims.email;
+        dbUser = await storage.getUserByEmail(email);
+        
+        if (dbUser) {
+          // Load user's conversation history from database
+          conversationHistory = await storage.getMessagesByUser(dbUser.id);
+        }
+      } else {
+        // For non-authenticated users, use history from request
+        conversationHistory = history;
+      }
+
+      // Convert history to Anthropic format
+      const anthropicMessages = [...conversationHistory, { role: "user", content }]
         .filter((msg: any) => msg.role === "user" || msg.role === "assistant")
         .map((msg: any) => ({
           role: msg.role,
@@ -243,19 +253,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? response.content[0].text 
         : "";
 
-      // Create assistant message object (not stored in database)
-      const assistantMessage = {
-        id: (Date.now() + 1).toString(),
-        sessionId: "local",
-        role: "assistant" as const,
-        content: assistantContent,
-        timestamp: new Date().toISOString(),
-      };
+      // If user is authenticated, save messages to database
+      if (dbUser) {
+        // Save user message
+        const savedUserMessage = await storage.createMessage({
+          userId: dbUser.id,
+          role: "user",
+          content,
+        });
 
-      res.json({
-        userMessage,
-        assistantMessage,
-      });
+        // Save assistant message
+        const savedAssistantMessage = await storage.createMessage({
+          userId: dbUser.id,
+          role: "assistant",
+          content: assistantContent,
+        });
+
+        // Return saved messages with database IDs
+        res.json({
+          userMessage: savedUserMessage,
+          assistantMessage: savedAssistantMessage,
+        });
+      } else {
+        // For non-authenticated users, create temporary message objects
+        const userMessage = {
+          id: Date.now().toString(),
+          sessionId: "local",
+          role: "user" as const,
+          content,
+          timestamp: new Date().toISOString(),
+        };
+
+        const assistantMessage = {
+          id: (Date.now() + 1).toString(),
+          sessionId: "local",
+          role: "assistant" as const,
+          content: assistantContent,
+          timestamp: new Date().toISOString(),
+        };
+
+        res.json({
+          userMessage,
+          assistantMessage,
+        });
+      }
     } catch (error) {
       console.error("Error processing chat:", error);
       const errorMessage = error instanceof Error ? error.message : "Failed to process chat message";
