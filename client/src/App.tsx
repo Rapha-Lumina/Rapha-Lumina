@@ -10,6 +10,7 @@ import About from "@/pages/about";
 import Chat from "@/pages/chat";
 import Shop from "@/pages/shop";
 import Signup from "@/pages/signup";
+import JoinAwakening from "@/pages/join-awakening";
 import Courses from "@/pages/courses";
 import CourseDetail from "@/pages/course-detail";
 import LMSDashboard from "@/pages/lms-dashboard";
@@ -29,6 +30,7 @@ function Router() {
       <Route path="/chat" component={Chat} />
       <Route path="/shop" component={Shop} />
       <Route path="/signup" component={Signup} />
+      <Route path="/join-awakening" component={JoinAwakening} />
       <Route path="/courses" component={Courses} />
       <Route path="/course-detail" component={CourseDetail} />
       <Route path="/lms-dashboard" component={LMSDashboard} />

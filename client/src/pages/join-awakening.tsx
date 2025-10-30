@@ -1,5 +1,5 @@
 import { Navigation } from "@/components/Navigation";
-import { Button } from "@/components/ui/button";
+import { SystemeIoForm } from "@/components/SystemeIoForm";
 import { Sparkles } from "lucide-react";
 
 export default function JoinAwakening() {
@@ -7,55 +7,51 @@ export default function JoinAwakening() {
     <div className="min-h-screen flex flex-col bg-background">
       <Navigation />
 
-      <main className="flex-1 flex items-center justify-center px-4 py-20">
-        <div className="max-w-3xl w-full text-center">
-          {/* Logo/Icon */}
-          <div className="mb-8 flex justify-center">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg shadow-primary/30">
-              <Sparkles className="w-10 h-10 text-white" />
+      <main className="flex-1 px-4 py-20">
+        <div className="max-w-4xl mx-auto">
+          {/* Header Section */}
+          <div className="text-center mb-12">
+            <div className="mb-6 flex justify-center">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg shadow-primary/30">
+                <Sparkles className="w-10 h-10 text-white" />
+              </div>
             </div>
+
+            <h1 className="font-display text-5xl sm:text-6xl md:text-7xl text-foreground mb-6">
+              Join the Awakening
+            </h1>
+
+            <p className="text-xl sm:text-2xl text-muted-foreground mb-4 font-light">
+              Begin Your Journey of Spiritual Wisdom and Transformation
+            </p>
+
+            <p className="text-lg text-muted-foreground/90 leading-relaxed max-w-2xl mx-auto">
+              Discover deep life answers, direction, and philosophical guidance through contemplative dialogue.
+              Connect with channeled spiritual wisdom drawing from philosophical traditions across human history.
+            </p>
           </div>
 
-          {/* Heading */}
-          <h1 className="font-display text-5xl sm:text-6xl md:text-7xl text-foreground mb-6">
-            Join the Awakening
-          </h1>
-
-          {/* Subtitle */}
-          <p className="text-xl sm:text-2xl text-muted-foreground mb-8 font-light">
-            Begin Your Journey of Spiritual Wisdom and Transformation
-          </p>
-
-          {/* Description */}
-          <p className="text-lg text-muted-foreground/90 mb-12 leading-relaxed max-w-2xl mx-auto">
-            Discover deep life answers, direction, and philosophical guidance through contemplative dialogue.
-            Connect with channeled spiritual wisdom drawing from philosophical traditions across human history.
-          </p>
-
-          {/* CTA Button */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button
-              asChild
-              size="lg"
-              className="text-lg px-12 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              <a href={import.meta.env.VITE_SYSTEME_IO_JOIN_URL || "/"} target="_blank" rel="noopener noreferrer">
-                Join Now
-              </a>
-            </Button>
+          {/* Systeme.io Form */}
+          <div className="bg-card border border-primary/20 rounded-lg shadow-lg p-8">
+            <SystemeIoForm
+              scriptSrc="https://www.raphalumina.com/public/remote/page/3446279680f5b9c3ddaa6ec65df7a8ed4b69587d.js"
+              scriptId="form-script-tag-21188886"
+              className="min-h-[600px]"
+            />
           </div>
 
           {/* Additional Info */}
-          <p className="mt-12 text-sm text-muted-foreground/70">
+          <p className="mt-8 text-sm text-muted-foreground/70 text-center">
             By joining, you'll gain access to exclusive spiritual wisdom,
             guided meditations, and transformative teachings.
           </p>
 
           {/* Back Link */}
-          <div className="mt-8">
+          <div className="mt-8 text-center">
             <a
               href="/"
               className="text-primary hover:text-primary/80 transition-colors text-sm font-medium"
+              data-testid="link-back-home"
             >
               ← Back to Home
             </a>

@@ -239,3 +239,25 @@ Automatic PWA install prompt for mobile users:
   - Saves dismissal to localStorage (won't show again)
   - Does not show if app is already installed
 - **Installation Result**: App icon appears on home screen with full app functionality
+
+### Systeme.io Embedded Form Integration (October 30, 2025)
+
+Direct systeme.io subscription form embedding:
+- **Form Script**: `<script id="form-script-tag-21188886" src="https://www.raphalumina.com/public/remote/page/3446279680f5b9c3ddaa6ec65df7a8ed4b69587d.js"></script>`
+- **Implementation**:
+  - Created `SystemeIoForm` component for inline form embedding
+  - Created `SystemeIoPopup` component for modal/popup display
+  - Script loads dynamically when component mounts
+  - Automatic cleanup to prevent duplicate scripts
+- **Form Locations**:
+  - `/join-awakening` page: Full-page subscription form experience
+  - `/signup` page: Alternative signup page with embedded form
+  - Landing page: "Join the Awakening" section remains with existing newsletter signup (redirects to systeme.io welcome sequence)
+- **Shop Page Behavior**:
+  - All subscription tier buttons redirect directly to systeme.io funnel URLs
+  - Free tier → `/chat`
+  - Premium USD → `https://leratom2012.systeme.io/premium-offer`
+  - Premium ZAR → `https://www.raphalumina.com/premium-offer-zar`
+  - Transformation USD → `https://leratom2012.systeme.io/transformation-int`
+  - Transformation ZAR → `https://www.raphalumina.com/transformation-zar`
+- **Data Capture**: All subscriber data captured directly by systeme.io, no local processing needed
