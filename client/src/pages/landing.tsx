@@ -154,17 +154,16 @@ export default function Landing() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 animate-in slide-in-from-bottom-4 duration-1000 delay-700">
-            <Button
-              asChild
-              size="lg"
-              className="text-lg px-10 py-7 bg-primary hover:bg-primary/90 border-2 border-primary-border shadow-xl"
-              data-testid="button-begin-journey"
-            >
-              <Link href="/blog">
+            <Link href="/blog">
+              <Button
+                size="lg"
+                className="text-lg px-10 py-7 bg-primary hover:bg-primary/90 border-2 border-primary-border shadow-xl"
+                data-testid="button-begin-journey"
+              >
                 <MessageCircle className="mr-2 h-5 w-5" />
                 Begin Your Journey
-              </Link>
-            </Button>
+              </Button>
+            </Link>
             <Button
               size="lg"
               variant="outline"
