@@ -311,3 +311,69 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
 
 export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
 export type BlogPost = typeof blogPosts.$inferSelect;
+
+// Community Forum Posts table
+export const forumPosts = pgTable("forum_posts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  title: varchar("title").notNull(),
+  content: text("content").notNull(),
+  category: varchar("category", { 
+    enum: ["general", "meditation", "philosophy", "guidance", "community"] 
+  }).notNull().default("general"),
+  likeCount: varchar("like_count").notNull().default("0"),
+  replyCount: varchar("reply_count").notNull().default("0"),
+  isPinned: varchar("is_pinned").notNull().default("false"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertForumPostSchema = createInsertSchema(forumPosts).omit({
+  id: true,
+  likeCount: true,
+  replyCount: true,
+  isPinned: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertForumPost = z.infer<typeof insertForumPostSchema>;
+export type ForumPost = typeof forumPosts.$inferSelect;
+
+// Forum Replies table
+export const forumReplies = pgTable("forum_replies", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  postId: varchar("post_id").notNull().references(() => forumPosts.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  content: text("content").notNull(),
+  likeCount: varchar("like_count").notNull().default("0"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertForumReplySchema = createInsertSchema(forumReplies).omit({
+  id: true,
+  likeCount: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertForumReply = z.infer<typeof insertForumReplySchema>;
+export type ForumReply = typeof forumReplies.$inferSelect;
+
+// Forum Likes table (tracks who liked what)
+export const forumLikes = pgTable("forum_likes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  postId: varchar("post_id").references(() => forumPosts.id),
+  replyId: varchar("reply_id").references(() => forumReplies.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertForumLikeSchema = createInsertSchema(forumLikes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertForumLike = z.infer<typeof insertForumLikeSchema>;
+export type ForumLike = typeof forumLikes.$inferSelect;

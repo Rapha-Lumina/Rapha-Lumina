@@ -18,6 +18,8 @@ import Academy from "@/pages/academy";
 import EBooks from "@/pages/ebooks";
 import Blog from "@/pages/blog";
 import BlogDetail from "@/pages/blog-detail";
+import Forum from "@/pages/forum";
+import ForumPost from "@/pages/forum-post";
 import Contact from "@/pages/contact";
 import Admin from "@/pages/admin";
 import Privacy from "@/pages/privacy";
@@ -39,6 +41,8 @@ function Router() {
       <Route path="/ebooks" component={EBooks} />
       <Route path="/blog/:slug" component={BlogDetail} />
       <Route path="/blog" component={Blog} />
+      <Route path="/forum/:id" component={ForumPost} />
+      <Route path="/forum" component={Forum} />
       <Route path="/contact" component={Contact} />
       <Route path="/admin" component={Admin} />
       <Route path="/privacy" component={Privacy} />

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage.ts";
-import { insertMessageSchema, insertNewsletterSubscriberSchema, type InsertStudentProgress } from "../shared/schema.ts";
+import { insertMessageSchema, insertNewsletterSubscriberSchema, type InsertStudentProgress, insertForumPostSchema, insertForumReplySchema, insertForumLikeSchema } from "../shared/schema.ts";
 import Anthropic from "@anthropic-ai/sdk";
 import { setupAuth, isAuthenticated, isAdmin } from "./replitAuth";
 import { generateSpeech } from "./elevenlabs";
@@ -1095,6 +1095,179 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching music tracks:", error);
       res.status(500).json({ error: "Failed to fetch music tracks" });
+    }
+  });
+
+  // GET /api/forum/posts - Get all forum posts (PROTECTED)
+  app.get("/api/forum/posts", isAuthenticated, async (req: any, res) => {
+    try {
+      const posts = await storage.getAllForumPosts();
+      res.json(posts);
+    } catch (error) {
+      console.error("Error fetching forum posts:", error);
+      res.status(500).json({ error: "Failed to fetch forum posts" });
+    }
+  });
+
+  // GET /api/forum/posts/:id - Get a single forum post (PROTECTED)
+  app.get("/api/forum/posts/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const post = await storage.getForumPost(id);
+      if (!post) {
+        return res.status(404).json({ error: "Post not found" });
+      }
+      res.json(post);
+    } catch (error) {
+      console.error("Error fetching forum post:", error);
+      res.status(500).json({ error: "Failed to fetch forum post" });
+    }
+  });
+
+  // POST /api/forum/posts - Create a new forum post (PROTECTED)
+  app.post("/api/forum/posts", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUserByEmail(req.user.email);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const result = insertForumPostSchema.safeParse({
+        userId: user.id,
+        title: req.body.title,
+        content: req.body.content,
+        category: req.body.category || "general",
+      });
+
+      if (!result.success) {
+        return res.status(400).json({ error: "Invalid post data", details: result.error.errors });
+      }
+
+      const post = await storage.createForumPost(result.data);
+      res.json(post);
+    } catch (error) {
+      console.error("Error creating forum post:", error);
+      res.status(500).json({ error: "Failed to create forum post" });
+    }
+  });
+
+  // GET /api/forum/posts/:id/replies - Get all replies for a post (PROTECTED)
+  app.get("/api/forum/posts/:id/replies", isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const replies = await storage.getForumRepliesByPost(id);
+      res.json(replies);
+    } catch (error) {
+      console.error("Error fetching forum replies:", error);
+      res.status(500).json({ error: "Failed to fetch forum replies" });
+    }
+  });
+
+  // POST /api/forum/posts/:id/replies - Create a reply to a post (PROTECTED)
+  app.post("/api/forum/posts/:id/replies", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUserByEmail(req.user.email);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const { id } = req.params;
+      
+      const result = insertForumReplySchema.safeParse({
+        postId: id,
+        userId: user.id,
+        content: req.body.content,
+      });
+
+      if (!result.success) {
+        return res.status(400).json({ error: "Invalid reply data", details: result.error.errors });
+      }
+
+      const reply = await storage.createForumReply(result.data);
+      res.json(reply);
+    } catch (error) {
+      console.error("Error creating forum reply:", error);
+      res.status(500).json({ error: "Failed to create forum reply" });
+    }
+  });
+
+  // POST /api/forum/posts/:id/like - Toggle like on a post (PROTECTED)
+  app.post("/api/forum/posts/:id/like", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUserByEmail(req.user.email);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const { id } = req.params;
+      
+      // Check if user already liked this post
+      const existingLike = await storage.getUserLikeForPost(user.id, id);
+      
+      if (existingLike) {
+        // Unlike the post - delete first, then decrement count
+        await storage.toggleForumPostLike(id, false);
+        await storage.deleteForumLike(existingLike.id);
+        res.json({ liked: false });
+      } else {
+        // Like the post - validate and create
+        const result = insertForumLikeSchema.safeParse({
+          userId: user.id,
+          postId: id,
+          replyId: null,
+        });
+        
+        if (!result.success) {
+          return res.status(400).json({ error: "Invalid like data", details: result.error.errors });
+        }
+        
+        await storage.createForumLike(result.data);
+        await storage.toggleForumPostLike(id, true);
+        res.json({ liked: true });
+      }
+    } catch (error) {
+      console.error("Error toggling forum post like:", error);
+      res.status(500).json({ error: "Failed to toggle like" });
+    }
+  });
+
+  // POST /api/forum/replies/:id/like - Toggle like on a reply (PROTECTED)
+  app.post("/api/forum/replies/:id/like", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUserByEmail(req.user.email);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const { id } = req.params;
+      
+      // Check if user already liked this reply
+      const existingLike = await storage.getUserLikeForReply(user.id, id);
+      
+      if (existingLike) {
+        // Unlike the reply - delete first, then decrement count
+        await storage.toggleForumReplyLike(id, false);
+        await storage.deleteForumLike(existingLike.id);
+        res.json({ liked: false });
+      } else {
+        // Like the reply - validate and create
+        const result = insertForumLikeSchema.safeParse({
+          userId: user.id,
+          postId: null,
+          replyId: id,
+        });
+        
+        if (!result.success) {
+          return res.status(400).json({ error: "Invalid like data", details: result.error.errors });
+        }
+        
+        await storage.createForumLike(result.data);
+        await storage.toggleForumReplyLike(id, true);
+        res.json({ liked: true });
+      }
+    } catch (error) {
+      console.error("Error toggling forum reply like:", error);
+      res.status(500).json({ error: "Failed to toggle like" });
     }
   });
 

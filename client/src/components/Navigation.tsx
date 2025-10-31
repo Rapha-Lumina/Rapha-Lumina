@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu, Home, Info, MessageCircle, ShoppingBag, BookOpen, Book, Newspaper, Mail, Settings, LogOut, User } from "lucide-react";
+import { Menu, Home, Info, MessageCircle, ShoppingBag, BookOpen, Book, Newspaper, Mail, Settings, LogOut, User, Users } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import logo from "@assets/Rapha Lumina_1761161536763.png";
 
@@ -49,6 +49,7 @@ export function Navigation() {
     { path: "/shop", label: "Shop", icon: ShoppingBag },
     { path: "/courses", label: "Courses", icon: BookOpen },
     { path: "/ebooks", label: "eBooks", icon: Book },
+    { path: "/forum", label: "Forum", icon: Users },
     { path: "/blog", label: "Blog", icon: Newspaper },
     { path: "/contact", label: "Contact", icon: Mail },
   ];

@@ -12,9 +12,13 @@ import {
   type MeditationTrack, type InsertMeditationTrack,
   type MusicTrack, type InsertMusicTrack,
   type BlogPost, type InsertBlogPost,
+  type ForumPost, type InsertForumPost,
+  type ForumReply, type InsertForumReply,
+  type ForumLike, type InsertForumLike,
   messages, users, newsletterSubscribers, subscriptions,
   courses, modules, lessons, studentProgress, enrollments,
-  flashcards, meditationTracks, musicTracks, blogPosts
+  flashcards, meditationTracks, musicTracks, blogPosts,
+  forumPosts, forumReplies, forumLikes
 } from "../shared/schema.ts";
 import { db } from "./db.ts";
 import { eq, and, desc } from "drizzle-orm";
@@ -89,6 +93,24 @@ export interface IStorage {
   getBlogPost(id: string): Promise<BlogPost | undefined>;
   getBlogPostBySlug(slug: string): Promise<BlogPost | undefined>;
   createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
+  
+  // Forum operations - Posts
+  getAllForumPosts(): Promise<ForumPost[]>;
+  getForumPost(id: string): Promise<ForumPost | undefined>;
+  createForumPost(post: InsertForumPost): Promise<ForumPost>;
+  incrementForumPostReplyCount(postId: string): Promise<void>;
+  toggleForumPostLike(postId: string, increment: boolean): Promise<void>;
+  
+  // Forum operations - Replies
+  getForumRepliesByPost(postId: string): Promise<ForumReply[]>;
+  createForumReply(reply: InsertForumReply): Promise<ForumReply>;
+  toggleForumReplyLike(replyId: string, increment: boolean): Promise<void>;
+  
+  // Forum operations - Likes
+  getUserLikeForPost(userId: string, postId: string): Promise<ForumLike | undefined>;
+  getUserLikeForReply(userId: string, replyId: string): Promise<ForumLike | undefined>;
+  createForumLike(like: InsertForumLike): Promise<ForumLike>;
+  deleteForumLike(likeId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -511,6 +533,113 @@ export class DatabaseStorage implements IStorage {
   async createBlogPost(post: InsertBlogPost): Promise<BlogPost> {
     const [created] = await db.insert(blogPosts).values(post).returning();
     return created;
+  }
+
+  // Forum operations - Posts
+  async getAllForumPosts(): Promise<ForumPost[]> {
+    return await db
+      .select()
+      .from(forumPosts)
+      .orderBy(desc(forumPosts.isPinned), desc(forumPosts.createdAt));
+  }
+
+  async getForumPost(id: string): Promise<ForumPost | undefined> {
+    const [post] = await db
+      .select()
+      .from(forumPosts)
+      .where(eq(forumPosts.id, id));
+    return post;
+  }
+
+  async createForumPost(post: InsertForumPost): Promise<ForumPost> {
+    const [created] = await db.insert(forumPosts).values(post).returning();
+    return created;
+  }
+
+  async incrementForumPostReplyCount(postId: string): Promise<void> {
+    const post = await this.getForumPost(postId);
+    if (post) {
+      const currentCount = parseInt(post.replyCount || "0");
+      await db
+        .update(forumPosts)
+        .set({ replyCount: String(currentCount + 1) })
+        .where(eq(forumPosts.id, postId));
+    }
+  }
+
+  async toggleForumPostLike(postId: string, increment: boolean): Promise<void> {
+    const post = await this.getForumPost(postId);
+    if (post) {
+      const currentCount = parseInt(post.likeCount || "0");
+      const newCount = increment ? currentCount + 1 : Math.max(0, currentCount - 1);
+      await db
+        .update(forumPosts)
+        .set({ likeCount: String(newCount) })
+        .where(eq(forumPosts.id, postId));
+    }
+  }
+
+  // Forum operations - Replies
+  async getForumRepliesByPost(postId: string): Promise<ForumReply[]> {
+    return await db
+      .select()
+      .from(forumReplies)
+      .where(eq(forumReplies.postId, postId))
+      .orderBy(forumReplies.createdAt);
+  }
+
+  async createForumReply(reply: InsertForumReply): Promise<ForumReply> {
+    const [created] = await db.insert(forumReplies).values(reply).returning();
+    await this.incrementForumPostReplyCount(reply.postId);
+    return created;
+  }
+
+  async toggleForumReplyLike(replyId: string, increment: boolean): Promise<void> {
+    const [reply] = await db
+      .select()
+      .from(forumReplies)
+      .where(eq(forumReplies.id, replyId));
+    
+    if (reply) {
+      const currentCount = parseInt(reply.likeCount || "0");
+      const newCount = increment ? currentCount + 1 : Math.max(0, currentCount - 1);
+      await db
+        .update(forumReplies)
+        .set({ likeCount: String(newCount) })
+        .where(eq(forumReplies.id, replyId));
+    }
+  }
+
+  // Forum operations - Likes
+  async getUserLikeForPost(userId: string, postId: string): Promise<ForumLike | undefined> {
+    const [like] = await db
+      .select()
+      .from(forumLikes)
+      .where(and(
+        eq(forumLikes.userId, userId),
+        eq(forumLikes.postId, postId)
+      ));
+    return like;
+  }
+
+  async getUserLikeForReply(userId: string, replyId: string): Promise<ForumLike | undefined> {
+    const [like] = await db
+      .select()
+      .from(forumLikes)
+      .where(and(
+        eq(forumLikes.userId, userId),
+        eq(forumLikes.replyId, replyId)
+      ));
+    return like;
+  }
+
+  async createForumLike(like: InsertForumLike): Promise<ForumLike> {
+    const [created] = await db.insert(forumLikes).values(like).returning();
+    return created;
+  }
+
+  async deleteForumLike(likeId: string): Promise<void> {
+    await db.delete(forumLikes).where(eq(forumLikes.id, likeId));
   }
 }
 
