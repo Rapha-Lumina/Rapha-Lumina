@@ -24,6 +24,8 @@ import { useState, useMemo } from "react";
 import courseImg from "@assets/stock_images/online_course_educat_d7aabae3.jpg";
 import awakeningCourseImg from "@assets/generated_images/Awakening_consciousness_spiritual_course_2d85b4fd.png";
 
+import Screenshot_2025_10_30_211849 from "@assets/Screenshot 2025-10-30 211849.png";
+
 interface User {
   id: string;
   email: string;
@@ -173,7 +175,7 @@ function CourseCard({
     >
       <div className="relative h-48 w-full overflow-hidden">
         <img
-          src={course.thumbnail || courseImg}
+          src={Screenshot_2025_10_30_211849}
           alt={course.title}
           className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
         />
@@ -190,7 +192,6 @@ function CourseCard({
           )}
         </div>
       </div>
-
       <CardHeader className="flex-1">
         <CardTitle className="text-xl font-serif line-clamp-2">
           {course.title}
@@ -199,7 +200,6 @@ function CourseCard({
           {course.description}
         </CardDescription>
       </CardHeader>
-
       <CardContent className="space-y-3">
         <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
@@ -239,7 +239,6 @@ function CourseCard({
           </div>
         </div>
       </CardContent>
-
       <CardFooter className="gap-2">
         <Button
           className="flex-1"
