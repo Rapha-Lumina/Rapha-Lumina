@@ -1,125 +1,51 @@
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, Sparkles, Zap, Crown } from "lucide-react";
-import { useState, useEffect } from "react";
-
-function CurrencyToggle({ currency, onChange }: { currency: "USD" | "ZAR"; onChange: (c: "USD" | "ZAR") => void }) {
-  return (
-    <div className="inline-flex items-center rounded-lg border bg-background p-1 shadow-sm">
-      {(["USD", "ZAR"] as const).map((c) => (
-        <button
-          key={c}
-          onClick={() => onChange(c)}
-          className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${
-            currency === c ? "bg-primary text-primary-foreground" : "text-muted-foreground hover-elevate"
-          }`}
-          data-testid={`button-currency-${c.toLowerCase()}`}
-        >
-          {c}
-        </button>
-      ))}
-    </div>
-  );
-}
+import { Badge } from "@/components/ui/badge";
+import { Download, FileText, Package, Sparkles } from "lucide-react";
+import booksImg from "@assets/stock_images/books_wisdom_learnin_36011055.jpg";
 
 export default function Shop() {
-  const [currency, setCurrency] = useState<"USD" | "ZAR">("USD");
-  const [isDetecting, setIsDetecting] = useState(true);
-
-  // Automatically detect currency based on user's location
-  useEffect(() => {
-    async function detectCurrency() {
-      try {
-        // Use ipapi.co for free IP geolocation (no API key required)
-        const response = await fetch('https://ipapi.co/json/');
-        const data = await response.json();
-        
-        // If user is in South Africa, set ZAR, otherwise USD
-        if (data.country_code === 'ZA') {
-          setCurrency('ZAR');
-        } else {
-          setCurrency('USD');
-        }
-      } catch (error) {
-        // If geolocation fails, default to USD
-        console.log('Currency detection failed, defaulting to USD');
-        setCurrency('USD');
-      } finally {
-        setIsDetecting(false);
-      }
-    }
-
-    detectCurrency();
-  }, []);
-
-  const tiers = [
+  const ebooks = [
     {
-      name: "Free Access",
-      icon: Sparkles,
-      priceUSD: "$0",
-      priceZAR: "R0",
-      period: "forever",
-      description: "Begin your spiritual journey with foundational wisdom",
-      features: [
-        "5 chat sessions with Rapha Lumina",
-        "Access to core philosophical wisdom",
-        "Socratic dialogue method",
-        "Basic spiritual guidance",
-        "Community forum access"
-      ],
-      cta: "Start Free",
-      highlighted: false,
-      chatLimit: 5,
-      funnelUrlUSD: "/chat",
-      funnelUrlZAR: "/chat"
+      title: "The Awakened Path: A Modern Guide to Consciousness",
+      description: "Navigate the journey from unconscious living to awakened awareness. This comprehensive guide integrates ancient wisdom with modern psychology and quantum insights.",
+      pages: "280 pages",
+      format: "PDF, EPUB, MOBI",
+      price: "$27",
+      topics: ["Consciousness", "Awakening", "Integration", "Practice"]
     },
     {
-      name: "Premium Wisdom",
-      icon: Zap,
-      priceUSD: "$20",
-      priceZAR: "R290",
-      period: "per month",
-      description: "Deepen your practice with advanced features and personalized support. 7-day free trial before billing.",
-      features: [
-        "10 chat sessions per month with Rapha Lumina",
-        "Voice interaction enabled",
-        "Priority response times",
-        "Advanced wisdom content library",
-        "Personalized spiritual guidance",
-        "Monthly group meditation sessions",
-        "Downloadable contemplation exercises",
-        "Email support"
-      ],
-      cta: "Upgrade to Premium",
-      highlighted: true,
-      chatLimit: 10,
-      funnelUrlUSD: "https://leratom2012.systeme.io/premium-offer",
-      funnelUrlZAR: "https://www.raphalumina.com/premium-offer-zar"
+      title: "Shadow to Light: Embracing Your Whole Self",
+      description: "A profound exploration of Jungian shadow work and integration practices. Learn to transform your hidden aspects into sources of power and wisdom.",
+      pages: "196 pages",
+      format: "PDF, EPUB, MOBI",
+      price: "$24",
+      topics: ["Shadow Work", "Jung", "Integration", "Transformation"]
     },
     {
-      name: "Transformation Package",
-      icon: Crown,
-      priceUSD: "$470",
-      priceZAR: "R4970",
-      period: "one-time",
-      description: "Complete awakening program with comprehensive support and resources. One-time investment, lifetime access.",
-      features: [
-        "Unlimited chat sessions with Rapha Lumina AI chatbot",
-        "12-week guided transformation program",
-        "Weekly 1-on-1 spiritual coaching calls",
-        "Complete eBook collection (5 books)",
-        "Full course access (all 3 courses)",
-        "Private community access",
-        "Lifetime updates and content",
-        "Personalized meditation practices",
-        "Integration of your unique path"
-      ],
-      cta: "Begin Transformation",
-      highlighted: false,
-      chatLimit: null,
-      funnelUrlUSD: "https://leratom2012.systeme.io/transformation-int",
-      funnelUrlZAR: "https://www.raphalumina.com/transformation-zar"
+      title: "Quantum Mind: Where Science Meets Spirit",
+      description: "Discover the fascinating convergence of quantum physics and mystical teachings. Understand consciousness from both scientific and spiritual perspectives.",
+      pages: "312 pages",
+      format: "PDF, EPUB, MOBI",
+      price: "$29",
+      topics: ["Quantum Physics", "Consciousness", "Mysticism", "Science"]
+    },
+    {
+      title: "The Stoic Soul: Ancient Wisdom for Modern Life",
+      description: "Practical applications of Stoic philosophy for contemporary spiritual seekers. Learn resilience, equanimity, and the art of living well.",
+      pages: "224 pages",
+      format: "PDF, EPUB, MOBI",
+      price: "$22",
+      topics: ["Stoicism", "Philosophy", "Practice", "Wisdom"]
+    },
+    {
+      title: "Conversations with the Infinite: A Dialogue Journal",
+      description: "A guided journal for deep self-inquiry and dialogue with your higher self. Includes prompts, meditations, and contemplation practices.",
+      pages: "168 pages",
+      format: "PDF, EPUB, MOBI",
+      price: "$19",
+      topics: ["Self-Inquiry", "Journaling", "Meditation", "Practice"]
     }
   ];
 
@@ -128,85 +54,141 @@ export default function Shop() {
       <Navigation />
       
       <main className="flex-1">
-        {/* Hero Section */}
-        <div className="bg-gradient-to-b from-primary/10 to-background py-16 px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-6">
-              <div className="text-center md:text-left">
-                <h1 className="font-display text-5xl sm:text-6xl mb-3">
-                  Choose Your Path
-                </h1>
-                <p className="text-xl text-muted-foreground max-w-2xl">
-                  From free exploration to complete transformation, find the level of support that resonates with your journey.
-                </p>
-              </div>
-              <div className="flex justify-center md:justify-end">
-                <CurrencyToggle currency={currency} onChange={setCurrency} />
-              </div>
+        {/* Coming Soon Hero */}
+        <div className="bg-gradient-to-b from-primary/10 to-background py-20 px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-6">
+              <Package className="w-10 h-10 text-primary" />
+            </div>
+            <h1 className="font-display text-5xl sm:text-6xl mb-4">
+              Physical Products Coming Soon
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+              We're preparing a carefully curated collection of spiritual tools, wellness products, and sacred items to support your journey. Stay tuned for nootropics, meditation essentials, sacred geometry art, and more.
+            </p>
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="bg-primary/5 border-primary/20"
+              asChild
+            >
+              <a 
+                href="#" 
+                className="systeme-show-popup-21189482 inline-flex items-center gap-2"
+                data-testid="button-notify-launch"
+              >
+                <Sparkles className="w-5 h-5" />
+                <span>Get Notified When Shop Launches</span>
+              </a>
+            </Button>
+          </div>
+        </div>
+
+        {/* eBooks Section */}
+        <div className="relative py-16 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="font-display text-4xl sm:text-5xl mb-4">
+                Wisdom Library
+              </h2>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                Deep dive into transformative teachings through our curated collection of eBooks
+              </p>
+            </div>
+
+            {/* eBooks Grid */}
+            <div className="grid md:grid-cols-2 gap-6">
+              {ebooks.map((ebook, index) => (
+                <Card key={index} className="hover-elevate flex flex-col" data-testid={`card-ebook-${index}`}>
+                  <CardHeader>
+                    <div className="flex items-start gap-3">
+                      <div className="bg-primary/10 p-3 rounded-lg shrink-0">
+                        <FileText className="w-6 h-6 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <CardTitle className="text-xl font-serif mb-2">{ebook.title}</CardTitle>
+                        <CardDescription>{ebook.description}</CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="flex-1">
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {ebook.topics.map((topic, idx) => (
+                        <Badge key={idx} variant="secondary" className="text-xs">
+                          {topic}
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <p>{ebook.pages}</p>
+                      <p className="flex items-center gap-1">
+                        <Download className="w-3 h-3" />
+                        {ebook.format}
+                      </p>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex items-center justify-between gap-4">
+                    <span className="text-2xl font-bold">{ebook.price}</span>
+                    <Button 
+                      onClick={() => {
+                        window.location.href = '/membership';
+                      }}
+                      data-testid={`button-purchase-ebook-${index}`}
+                    >
+                      Purchase eBook
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Pricing Tiers */}
-        <div className="max-w-7xl mx-auto px-4 py-16">
-          <div className="grid md:grid-cols-3 gap-8">
-            {tiers.map((tier, index) => (
-              <Card 
-                key={index}
-                className={`flex flex-col ${tier.highlighted ? 'border-primary shadow-lg scale-105' : ''}`}
-                data-testid={`card-tier-${tier.name.toLowerCase().replace(/\s+/g, '-')}`}
-              >
-                <CardHeader>
-                  <div className="flex items-center gap-2 mb-2">
-                    <tier.icon className={`w-6 h-6 ${tier.highlighted ? 'text-primary' : 'text-muted-foreground'}`} />
-                    <CardTitle className="text-2xl font-serif">{tier.name}</CardTitle>
-                  </div>
-                  <div className="flex items-baseline gap-1 mb-2">
-                    <span className="text-4xl font-bold">{currency === "USD" ? tier.priceUSD : tier.priceZAR}</span>
-                    <span className="text-muted-foreground">/ {tier.period}</span>
-                  </div>
-                  <CardDescription>{tier.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="flex-1">
-                  <ul className="space-y-3">
-                    {tier.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                        <span className="text-sm">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    className="w-full" 
-                    variant={tier.highlighted ? "default" : "outline"}
-                    size="lg"
-                    onClick={() => {
-                      const funnelUrl = currency === "USD" ? tier.funnelUrlUSD : tier.funnelUrlZAR;
-                      window.location.href = funnelUrl;
-                    }}
-                    data-testid={`button-select-${tier.name.toLowerCase().replace(/\s+/g, '-')}`}
-                  >
-                    {tier.cta}
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
+        {/* Bundle Offer */}
+        <div className="bg-gradient-to-b from-primary/10 to-background py-16 px-4">
+          <div className="max-w-4xl mx-auto">
+            <Card className="border-primary">
+              <CardHeader className="text-center">
+                <CardTitle className="text-3xl font-display mb-2">Complete eBook Collection</CardTitle>
+                <CardDescription className="text-base">
+                  Get all 5 eBooks at a special bundle price
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-center">
+                <div className="flex items-center justify-center gap-4 mb-6">
+                  <span className="text-2xl text-muted-foreground line-through">$121</span>
+                  <span className="text-4xl font-bold text-primary">$79</span>
+                  <Badge variant="default" className="text-sm">Save $42</Badge>
+                </div>
+                <p className="text-muted-foreground mb-6">
+                  Lifetime access to all current and future eBooks in the collection
+                </p>
+              </CardContent>
+              <CardFooter className="justify-center">
+                <Button 
+                  size="lg" 
+                  onClick={() => {
+                    window.location.href = '/membership';
+                  }}
+                  data-testid="button-purchase-bundle"
+                >
+                  Get Complete Collection
+                </Button>
+              </CardFooter>
+            </Card>
           </div>
         </div>
 
-        {/* Additional Info */}
+        {/* Included in Package */}
         <div className="bg-muted/30 py-12 px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="font-display text-3xl mb-4">Not Sure Which Path?</h2>
+            <h2 className="font-display text-3xl mb-4">Included in Transformation Package</h2>
             <p className="text-muted-foreground mb-6">
-              Start with our free access to explore the wisdom of Rapha Lumina. 
-              You can always upgrade as your journey deepens.
+              All eBooks are included in the Transformation Package, along with courses, coaching, and more.
             </p>
             <Button variant="outline" size="lg" asChild>
-              <a href="/chat" data-testid="link-start-free-chat">
-                Start a Free Conversation
+              <a href="/membership" data-testid="link-view-transformation-package">
+                View Membership Options
               </a>
             </Button>
           </div>

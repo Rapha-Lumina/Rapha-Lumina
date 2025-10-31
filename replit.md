@@ -17,7 +17,7 @@ Preferred communication style: Simple, everyday language.
 **State Management**: TanStack Query for server state and caching; in-memory for session-based chat history.
 **Voice Features**: Browser Web Speech API for speech-to-text, ElevenLabs API for text-to-speech (with browser TTS fallback).
 **PWA**: Installable PWA with service worker for offline capabilities and custom manifest.
-**Multi-Page Structure**: Includes public pages (Landing, About, Shop, Contact, Blog), feature pages (Chat, Courses, E-books), user dashboard (Academy/LMS, profile, course progress), and admin dashboard.
+**Multi-Page Structure**: Includes public pages (Landing, About, Shop, Contact, Blog), feature pages (Chat, Courses, Membership), user dashboard (Academy/LMS, profile, course progress), admin dashboard, and Community Forum. Shop page includes eBooks section and "Coming Soon" area for future physical products.
 
 ### Backend
 
@@ -117,3 +117,28 @@ Added inspiring background image to the Rapha Lumina Academy courses page:
 - **Location**: Hero section at top of `/courses` page
 - **Visual Impact**: Creates an inspiring, spiritual atmosphere while maintaining clean UI and text legibility
 - **Purpose**: Reinforces the platform's spiritual mission and creates visual consistency with course imagery
+
+### Page Reorganization: Shop, Membership, and eBooks (October 31, 2025)
+
+Restructured navigation and pages to better align with product strategy:
+- **Shop Page** (`/shop`): Now serves dual purpose with "Coming Soon" section for future physical products (clothes, nootropics, spiritual tools) and complete eBooks library section with all 5 eBooks and bundle offer
+- **Membership Page** (`/membership`): New dedicated page for subscription tiers (Free, Premium, Transformation) with currency toggle (USD/ZAR), replaced previous /ebooks route
+- **Navigation Update**: "eBooks" navigation item replaced with "Membership" item, linking to /membership
+- **eBooks Integration**: All eBook content (5 books, bundle offer, topics, pricing) now displayed on Shop page under "Wisdom Library" section
+- **Coming Soon Section**: Shop page hero announces upcoming physical products with newsletter signup prompt
+- **Cross-linking**: eBooks section links to Membership page for Transformation Package (includes all eBooks)
+- **Route Changes**: `/ebooks` route removed, replaced with `/membership` route
+- **Purpose**: Clearer separation between subscription memberships and product purchases, while preparing for physical product launch
+
+### Community Forum Implementation (October 31, 2025)
+
+Implemented a comprehensive community forum feature accessible to all authenticated users:
+- **Database Schema**: Three tables - `forumPosts` (title, content, category, likeCount, replyCount, isPinned), `forumReplies` (postId, content, likeCount), `forumLikes` (userId, postId/replyId references)
+- **Categories**: general, meditation, philosophy, guidance, community
+- **API Routes**: All protected with isAuthenticated middleware, using Zod validation (insertForumPostSchema, insertForumReplySchema, insertForumLikeSchema)
+- **Forum Listing** (`/forum`): Displays all posts with category filters, create post dialog, like/reply counts, sorted by pinned then date
+- **Post Detail** (`/forum/:id`): Full post with replies, like buttons for posts and replies, reply form
+- **Like System**: Toggle functionality with proper database synchronization (decrements count before deleting like record)
+- **Frontend Guards**: Queries enabled only when authenticated, mutations check authentication and postId before API calls
+- **Navigation**: Added "Forum" link to main navigation with Users icon
+- **Access Level**: Available to all authenticated users as part of free tier benefits

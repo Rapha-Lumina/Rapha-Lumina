@@ -15,7 +15,7 @@ import Courses from "@/pages/courses";
 import CourseDetail from "@/pages/course-detail";
 import LMSDashboard from "@/pages/lms-dashboard";
 import Academy from "@/pages/academy";
-import EBooks from "@/pages/ebooks";
+import Membership from "@/pages/membership";
 import Blog from "@/pages/blog";
 import BlogDetail from "@/pages/blog-detail";
 import Forum from "@/pages/forum";
@@ -38,7 +38,7 @@ function Router() {
       <Route path="/course-detail" component={CourseDetail} />
       <Route path="/lms-dashboard" component={LMSDashboard} />
       <Route path="/academy" component={Academy} />
-      <Route path="/ebooks" component={EBooks} />
+      <Route path="/membership" component={Membership} />
       <Route path="/blog/:slug" component={BlogDetail} />
       <Route path="/blog" component={Blog} />
       <Route path="/forum/:id" component={ForumPost} />

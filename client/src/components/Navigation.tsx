@@ -48,7 +48,7 @@ export function Navigation() {
     { path: "/chat", label: "Chat", icon: MessageCircle },
     { path: "/shop", label: "Shop", icon: ShoppingBag },
     { path: "/courses", label: "Courses", icon: BookOpen },
-    { path: "/ebooks", label: "eBooks", icon: Book },
+    { path: "/membership", label: "Membership", icon: Book },
     { path: "/forum", label: "Forum", icon: Users },
     { path: "/blog", label: "Blog", icon: Newspaper },
     { path: "/contact", label: "Contact", icon: Mail },
