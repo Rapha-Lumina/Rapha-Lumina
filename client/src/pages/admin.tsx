@@ -18,7 +18,7 @@ export default function Admin() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [courseSeeded, setCourseSeeded] = useState(false);
   const [selectedTier, setSelectedTier] = useState<string>("premium");
-  const [selectedUserId, setSelectedUserId] = useState<string>("");
+  const [selectedEmail, setSelectedEmail] = useState<string>("");
   const [showTestUsers, setShowTestUsers] = useState(true);
   const [showTestSubscribers, setShowTestSubscribers] = useState(true);
   
@@ -34,6 +34,25 @@ export default function Admin() {
     queryKey: ["/api/admin/newsletter/subscribers"],
     retry: false,
   });
+
+  // Combine users and newsletter subscribers for the grant access dropdown
+  const allMembers = [
+    ...(users?.filter(u => u.isTestUser !== "true" && u.email).map(u => ({
+      email: u.email!,
+      name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email!,
+      type: 'user' as const,
+      id: u.id
+    })) || []),
+    ...(subscribers?.filter(s => s.isTestUser !== "true" && s.email)
+      // Only include subscribers who are not already users
+      .filter(s => !users?.some(u => u.email === s.email))
+      .map(s => ({
+        email: s.email!,
+        name: `${s.firstName || ''} ${s.lastName || ''}`.trim() || s.email!,
+        type: 'subscriber' as const,
+        id: s.id
+      })) || [])
+  ].sort((a, b) => a.email.localeCompare(b.email));
 
   // Fetch current user subscription
   const { data: currentSubscription, refetch: refetchSubscription } = useQuery<Subscription>({
@@ -186,13 +205,15 @@ export default function Admin() {
   });
 
   const grantPremiumMutation = useMutation({
-    mutationFn: async ({ tier, userId }: { tier: string; userId?: string }) => {
-      const res = await apiRequest("POST", "/api/admin/grant-premium", { tier, userId });
+    mutationFn: async ({ tier, email }: { tier: string; email: string }) => {
+      const res = await apiRequest("POST", "/api/admin/grant-access-by-email", { tier, email });
       return await res.json();
     },
     onSuccess: (data: any) => {
       refetchSubscription();
       queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/newsletter/subscribers"] });
       
       const tierName = data.subscription.tier === "transformation" 
         ? "Transformation Package" 
@@ -200,8 +221,11 @@ export default function Admin() {
       
       toast({
         title: "Subscription Updated",
-        description: `Successfully granted ${tierName} access with ${data.subscription.chatLimit} chat limit`,
+        description: `Successfully granted ${tierName} access to ${data.email || 'user'} with ${data.subscription.chatLimit} chat limit`,
       });
+      
+      // Reset selection
+      setSelectedEmail("");
     },
     onError: (error: Error) => {
       toast({
@@ -358,19 +382,19 @@ export default function Admin() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                       <label className="text-sm font-medium text-foreground mb-2 block">
-                        Select User (Real Users Only)
+                        Select User or Newsletter Subscriber
                       </label>
                       <Select
-                        value={selectedUserId}
-                        onValueChange={setSelectedUserId}
+                        value={selectedEmail}
+                        onValueChange={setSelectedEmail}
                       >
                         <SelectTrigger data-testid="select-user-email">
-                          <SelectValue placeholder="Choose a user..." />
+                          <SelectValue placeholder="Choose a member..." />
                         </SelectTrigger>
                         <SelectContent>
-                          {users?.filter(u => u.isTestUser !== "true").map((u) => (
-                            <SelectItem key={u.id} value={u.id}>
-                              {u.email}
+                          {allMembers.map((member) => (
+                            <SelectItem key={member.email} value={member.email}>
+                              {member.email} {member.type === 'subscriber' && '(Newsletter)'}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -399,17 +423,17 @@ export default function Admin() {
 
                   <Button
                     onClick={() => {
-                      if (!selectedUserId) {
+                      if (!selectedEmail) {
                         toast({
-                          title: "No User Selected",
-                          description: "Please select a user first",
+                          title: "No Member Selected",
+                          description: "Please select a member first",
                           variant: "destructive",
                         });
                         return;
                       }
-                      grantPremiumMutation.mutate({ tier: selectedTier, userId: selectedUserId });
+                      grantPremiumMutation.mutate({ tier: selectedTier, email: selectedEmail });
                     }}
-                    disabled={grantPremiumMutation.isPending || !selectedUserId}
+                    disabled={grantPremiumMutation.isPending || !selectedEmail}
                     className="w-full"
                     data-testid="button-grant-premium"
                   >
@@ -427,7 +451,7 @@ export default function Admin() {
                   </Button>
 
                   <p className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-md">
-                    <strong className="text-foreground">Admin Control:</strong> Select a real user from the dropdown and grant them premium or transformation tier access. This allows you to manually upgrade users for testing or special cases.
+                    <strong className="text-foreground">Admin Control:</strong> Select a registered user or newsletter subscriber and grant them premium or transformation tier access. For newsletter subscribers, a user account will be created automatically if one doesn't exist.
                   </p>
                 </div>
               </CardContent>

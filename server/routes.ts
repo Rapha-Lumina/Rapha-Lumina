@@ -918,6 +918,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // POST /api/admin/grant-access-by-email - Grant premium access by email (ADMIN ONLY)
+  // This endpoint supports both users and newsletter subscribers
+  app.post("/api/admin/grant-access-by-email", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { tier, email } = req.body;
+
+      if (!tier || !email) {
+        return res.status(400).json({ error: "Tier and email are required" });
+      }
+
+      if (!["free", "premium", "transformation"].includes(tier)) {
+        return res.status(400).json({ error: "Invalid tier" });
+      }
+
+      // Try to find existing user
+      let targetUser = await storage.getUserByEmail(email);
+
+      // If no user exists, check if there's a newsletter subscriber and create a user from it
+      if (!targetUser) {
+        const subscribers = await storage.getNewsletterSubscribers();
+        const subscriber = subscribers.find((s: any) => s.email === email);
+        
+        if (subscriber) {
+          // Create a user account from the subscriber data
+          // Note: Auth fields (authProvider, oidcSub) will be populated when user first logs in
+          targetUser = await storage.upsertUser({
+            email: subscriber.email,
+            firstName: subscriber.firstName,
+            lastName: subscriber.lastName,
+            location: subscriber.location,
+            // Skip age field - dateOfBirth is a string but age should be a number
+          });
+          
+          console.log(`Created user account for newsletter subscriber: ${email}`);
+        } else {
+          return res.status(404).json({ error: "No user or newsletter subscriber found with that email" });
+        }
+      }
+
+      // Determine chat limit based on tier
+      const chatLimitMap = {
+        free: "5",
+        premium: "10",
+        transformation: "unlimited",
+      };
+
+      // Update subscription for the target user
+      const subscription = await storage.updateSubscriptionTier(
+        targetUser.id,
+        tier as "free" | "premium" | "transformation",
+        chatLimitMap[tier as keyof typeof chatLimitMap]
+      );
+
+      // Sync to systeme.io
+      if (targetUser.email) {
+        systemeIoClient.syncSubscriptionTier(
+          targetUser.email,
+          tier as "free" | "premium" | "transformation"
+        ).catch(err => {
+          console.error("Failed to sync subscription tier to systeme.io:", err);
+        });
+      }
+
+      res.json({ success: true, subscription, email: targetUser.email });
+    } catch (error) {
+      console.error("Error granting access by email:", error);
+      res.status(500).json({ error: "Failed to grant access" });
+    }
+  });
+
   // PATCH /api/admin/users/:id/test-status - Toggle user test status (ADMIN ONLY)
   app.patch("/api/admin/users/:id/test-status", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
