@@ -179,7 +179,7 @@ function CourseCard({
         />
         {/* overlay texture */}
         <img
-          src="/attached_assets/image_1761840836558.png"
+          src="/attached_assets/Screenshot 2025-10-30 211849_1761882366912.png"
           alt=""
           className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-overlay pointer-events-none"
         />
