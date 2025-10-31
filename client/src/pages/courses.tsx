@@ -183,7 +183,6 @@ function CourseCard({
           alt=""
           className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-overlay pointer-events-none"
         />
-        <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-accent/20 mix-blend-multiply" />
         <div className="absolute left-3 top-3 flex gap-2">
           <Badge variant="secondary">{course.level}</Badge>
           {isEnrolled && (
