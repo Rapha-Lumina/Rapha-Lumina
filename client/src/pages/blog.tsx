@@ -7,6 +7,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import meditationImg from "@assets/stock_images/meditation_spiritual_555a3c50.jpg";
 
+import Screenshot_2025_10_30_211749 from "@assets/Screenshot 2025-10-30 211749.png";
+
 type BlogPost = {
   id: string;
   slug: string;
@@ -83,7 +85,6 @@ export default function Blog() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navigation />
-      
       <main className="flex-1">
         {/* Hero Section */}
         <div className="bg-gradient-to-b from-primary/10 to-background py-16 px-4">
@@ -136,7 +137,7 @@ export default function Blog() {
                   <Card key={post.id || index} className="hover-elevate flex flex-col" data-testid={`card-post-${index}`}>
                     <div className="overflow-hidden rounded-t-lg">
                       <img 
-                        src={displayPost.image} 
+                        src={Screenshot_2025_10_30_211749} 
                         alt={post.title}
                         className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
                       />
@@ -190,7 +191,6 @@ export default function Blog() {
           </div>
         </div>
       </main>
-
       {/* Footer */}
       <footer className="py-8 px-4 border-t bg-muted/30">
         <div className="max-w-6xl mx-auto text-center">
