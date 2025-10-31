@@ -1,0 +1,24 @@
+{
+  "name": "Rapha Lumina - Spiritual Wisdom Guide",
+  "short_name": "Rapha Lumina",
+  "description": "Channeled spiritual wisdom drawing from philosophical traditions across human history",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0a1a",
+  "theme_color": "#9d7dc8",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
