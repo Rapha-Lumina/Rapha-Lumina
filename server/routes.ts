@@ -209,14 +209,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       await storage.updateResetToken(user.id, resetToken, resetExpires);
 
-      // In production, send email via systeme.io with reset link
-      // For now, we'll just return success
+      // TEMPORARY: Return reset link directly (until email integration is complete)
+      // In production, this should send an email via systeme.io instead
       // TODO: Integrate with systeme.io to send reset email
+      const resetLink = `https://${req.hostname}/reset-password?token=${resetToken}`;
       
-      console.log(`Password reset token for ${email}: ${resetToken}`);
-      console.log(`Reset link would be: https://${req.hostname}/reset-password?token=${resetToken}`);
+      console.log(`⚠️  [SECURITY WARNING] Password reset link generated for ${email}: ${resetLink}`);
+      console.log(`⚠️  [SECURITY WARNING] This link is being sent in API response. In production, send via email only!`);
 
-      res.json({ success: true, message: "If an account exists with this email, a password reset link has been sent." });
+      res.json({ 
+        success: true, 
+        message: "Password reset link generated.",
+        resetLink: resetLink, // TEMPORARY: Remove this when email is implemented
+        expiresIn: "1 hour"
+      });
     } catch (error: any) {
       console.error("Error in forgot password:", error);
       if (error instanceof z.ZodError) {

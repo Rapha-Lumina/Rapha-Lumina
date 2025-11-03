@@ -106,8 +106,15 @@ Replaced social login (Replit Auth) with traditional email/password authenticati
 - `POST /api/create-password` - Creates password for user account (validates user exists, no existing password)
 - `POST /api/login` - Authenticates user with email/password using Passport
 - `POST /api/logout` - Destroys session and logs out user
-- `POST /api/forgot-password` - Generates reset token and expiry (email placeholder logs to console)
+- `POST /api/forgot-password` - Generates reset token and returns reset link directly in response (TEMPORARY: until email integration is complete). Returns `{ success: true, resetLink: string, expiresIn: "1 hour" }`
 - `POST /api/reset-password` - Validates token/expiry and updates password
+
+**Password Reset Flow (Updated - November 3, 2025)**:
+- The forgot password feature currently displays the reset link directly on the page with a prominent yellow warning banner
+- This is a temporary solution until email integration via systeme.io is implemented
+- Frontend shows: "⚠️ Temporary Development Mode" notice + clickable "Reset My Password" button
+- Security: Reset tokens are still cryptographically secure (32-byte random), expire in 1 hour, and are single-use
+- In production: Reset links should be sent via email instead of displayed on screen
 
 **Removed Features**: All social login options (Google, GitHub, X, Apple) removed
 
