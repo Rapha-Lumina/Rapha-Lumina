@@ -1514,6 +1514,209 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ========================================
+  // ALTERNATIVE WEBHOOK ENDPOINTS FOR TESTING
+  // ========================================
+
+  // GET /webhook/test - Test endpoint to verify server is reachable (PUBLIC)
+  app.get("/webhook/test", (req, res) => {
+    console.log("✅ [Webhook Test] GET request received at /webhook/test");
+    res.json({ 
+      status: "ok", 
+      message: "Webhook server is reachable!",
+      timestamp: new Date().toISOString(),
+      paths: [
+        "/webhook/test (GET) - This endpoint",
+        "/webhook/systeme (POST) - Main webhook",
+        "/api/webhook/contact (POST) - Alternative webhook",
+        "/webhook (POST) - Simple webhook"
+      ]
+    });
+  });
+
+  // POST /webhook/systeme - Alternative webhook endpoint #1 (PUBLIC)
+  app.post("/webhook/systeme", async (req, res) => {
+    console.log("🔔 [WEBHOOK] POST request received at /webhook/systeme");
+    console.log("📦 [WEBHOOK] Body:", JSON.stringify(req.body, null, 2));
+    console.log("📋 [WEBHOOK] Headers:", JSON.stringify(req.headers, null, 2));
+    
+    try {
+      const event = req.body;
+      
+      // Acknowledge immediately
+      res.status(200).json({ 
+        received: true, 
+        endpoint: "/webhook/systeme",
+        timestamp: new Date().toISOString() 
+      });
+
+      // Process contact.created events
+      if (event.type === "contact.created" || event.event === "contact.created") {
+        const contactEmail = event.data?.email || event.email;
+        const firstName = event.data?.first_name || event.data?.firstName || event.first_name || "";
+        const lastName = event.data?.last_name || event.data?.lastName || event.last_name || "";
+
+        console.log("👤 [WEBHOOK] Creating user:", { contactEmail, firstName, lastName });
+
+        if (!contactEmail) {
+          console.error("❌ [WEBHOOK] No email found in event");
+          return;
+        }
+
+        try {
+          let user = await storage.getUserByEmail(contactEmail);
+          
+          if (!user) {
+            user = await storage.upsertUser({
+              id: `systeme_${Date.now()}`,
+              email: contactEmail,
+              firstName: firstName || null,
+              lastName: lastName || null,
+              location: null,
+              age: null,
+              profileImageUrl: null,
+            });
+            
+            console.log("✅ [WEBHOOK] User created:", user.email);
+            
+            await storage.updateSubscriptionTier(user.id, "free", "5");
+            console.log("✅ [WEBHOOK] Free tier initialized");
+          } else {
+            console.log("ℹ️ [WEBHOOK] User already exists:", user.email);
+          }
+        } catch (error) {
+          console.error("❌ [WEBHOOK] Error creating user:", error);
+        }
+      } else {
+        console.log("ℹ️ [WEBHOOK] Event type not handled:", event.type || event.event || "unknown");
+      }
+    } catch (error) {
+      console.error("❌ [WEBHOOK] Error processing webhook:", error);
+    }
+  });
+
+  // POST /api/webhook/contact - Alternative webhook endpoint #2 (PUBLIC)
+  app.post("/api/webhook/contact", async (req, res) => {
+    console.log("🔔 [WEBHOOK] POST request received at /api/webhook/contact");
+    console.log("📦 [WEBHOOK] Body:", JSON.stringify(req.body, null, 2));
+    console.log("📋 [WEBHOOK] Headers:", JSON.stringify(req.headers, null, 2));
+    
+    try {
+      const event = req.body;
+      
+      // Acknowledge immediately
+      res.status(200).json({ 
+        received: true, 
+        endpoint: "/api/webhook/contact",
+        timestamp: new Date().toISOString() 
+      });
+
+      // Process contact.created events
+      if (event.type === "contact.created" || event.event === "contact.created") {
+        const contactEmail = event.data?.email || event.email;
+        const firstName = event.data?.first_name || event.data?.firstName || event.first_name || "";
+        const lastName = event.data?.last_name || event.data?.lastName || event.last_name || "";
+
+        console.log("👤 [WEBHOOK] Creating user:", { contactEmail, firstName, lastName });
+
+        if (!contactEmail) {
+          console.error("❌ [WEBHOOK] No email found in event");
+          return;
+        }
+
+        try {
+          let user = await storage.getUserByEmail(contactEmail);
+          
+          if (!user) {
+            user = await storage.upsertUser({
+              id: `systeme_${Date.now()}`,
+              email: contactEmail,
+              firstName: firstName || null,
+              lastName: lastName || null,
+              location: null,
+              age: null,
+              profileImageUrl: null,
+            });
+            
+            console.log("✅ [WEBHOOK] User created:", user.email);
+            
+            await storage.updateSubscriptionTier(user.id, "free", "5");
+            console.log("✅ [WEBHOOK] Free tier initialized");
+          } else {
+            console.log("ℹ️ [WEBHOOK] User already exists:", user.email);
+          }
+        } catch (error) {
+          console.error("❌ [WEBHOOK] Error creating user:", error);
+        }
+      } else {
+        console.log("ℹ️ [WEBHOOK] Event type not handled:", event.type || event.event || "unknown");
+      }
+    } catch (error) {
+      console.error("❌ [WEBHOOK] Error processing webhook:", error);
+    }
+  });
+
+  // POST /webhook - Simplest possible webhook endpoint (PUBLIC)
+  app.post("/webhook", async (req, res) => {
+    console.log("🔔 [WEBHOOK] POST request received at /webhook");
+    console.log("📦 [WEBHOOK] Body:", JSON.stringify(req.body, null, 2));
+    console.log("📋 [WEBHOOK] Headers:", JSON.stringify(req.headers, null, 2));
+    
+    try {
+      const event = req.body;
+      
+      // Acknowledge immediately
+      res.status(200).json({ 
+        received: true, 
+        endpoint: "/webhook",
+        timestamp: new Date().toISOString() 
+      });
+
+      // Process contact.created events
+      if (event.type === "contact.created" || event.event === "contact.created") {
+        const contactEmail = event.data?.email || event.email;
+        const firstName = event.data?.first_name || event.data?.firstName || event.first_name || "";
+        const lastName = event.data?.last_name || event.data?.lastName || event.last_name || "";
+
+        console.log("👤 [WEBHOOK] Creating user:", { contactEmail, firstName, lastName });
+
+        if (!contactEmail) {
+          console.error("❌ [WEBHOOK] No email found in event");
+          return;
+        }
+
+        try {
+          let user = await storage.getUserByEmail(contactEmail);
+          
+          if (!user) {
+            user = await storage.upsertUser({
+              id: `systeme_${Date.now()}`,
+              email: contactEmail,
+              firstName: firstName || null,
+              lastName: lastName || null,
+              location: null,
+              age: null,
+              profileImageUrl: null,
+            });
+            
+            console.log("✅ [WEBHOOK] User created:", user.email);
+            
+            await storage.updateSubscriptionTier(user.id, "free", "5");
+            console.log("✅ [WEBHOOK] Free tier initialized");
+          } else {
+            console.log("ℹ️ [WEBHOOK] User already exists:", user.email);
+          }
+        } catch (error) {
+          console.error("❌ [WEBHOOK] Error creating user:", error);
+        }
+      } else {
+        console.log("ℹ️ [WEBHOOK] Event type not handled:", event.type || event.event || "unknown");
+      }
+    } catch (error) {
+      console.error("❌ [WEBHOOK] Error processing webhook:", error);
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
