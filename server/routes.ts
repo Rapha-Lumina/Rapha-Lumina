@@ -1445,7 +1445,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error("[Systeme.io Webhook] Error processing sale:", error);
         }
       } else if (event.type === "contact.created" || event.type === "funnel.subscribed") {
-        console.log("[Systeme.io Webhook] Contact/funnel event:", event.data?.email);
+        // Handle new contact creation (signup event)
+        const contactEmail = event.data?.email || event.data?.contact?.email;
+        const firstName = event.data?.first_name || event.data?.contact?.first_name || "";
+        const lastName = event.data?.last_name || event.data?.contact?.last_name || "";
+
+        console.log("[Systeme.io Webhook] Processing contact:", {
+          email: contactEmail,
+          firstName,
+          lastName
+        });
+
+        if (!contactEmail) {
+          console.error("[Systeme.io Webhook] No email in contact event");
+          return;
+        }
+
+        try {
+          // Check if user already exists
+          let user = await storage.getUserByEmail(contactEmail);
+          
+          if (!user) {
+            // Create new user from contact
+            user = await storage.upsertUser({
+              id: `systeme_${Date.now()}`,
+              email: contactEmail,
+              firstName: firstName || null,
+              lastName: lastName || null,
+              location: null,
+              age: null,
+              profileImageUrl: null,
+            });
+            
+            console.log("[Systeme.io Webhook] Created new user from contact:", user.email);
+            
+            // Initialize with free tier subscription
+            await storage.updateSubscriptionTier(user.id, "free", "5");
+            console.log("[Systeme.io Webhook] Initialized free tier for:", user.email);
+          } else {
+            console.log("[Systeme.io Webhook] User already exists:", user.email);
+          }
+        } catch (error) {
+          console.error("[Systeme.io Webhook] Error creating user from contact:", error);
+        }
       } else {
         console.log("[Systeme.io Webhook] Unhandled event type:", event.type);
       }
