@@ -14,10 +14,11 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table for Replit Auth
+// User storage table for email/password authentication
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: varchar("email").unique(),
+  password: varchar("password"), // bcrypt hashed password
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   location: varchar("location"),
@@ -25,6 +26,8 @@ export const users = pgTable("users", {
   profileImageUrl: varchar("profile_image_url"),
   isAdmin: varchar("is_admin").default("false").notNull(),
   isTestUser: varchar("is_test_user").default("false").notNull(),
+  resetPasswordToken: varchar("reset_password_token"),
+  resetPasswordExpires: timestamp("reset_password_expires"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
