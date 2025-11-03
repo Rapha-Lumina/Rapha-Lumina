@@ -17,7 +17,7 @@ Preferred communication style: Simple, everyday language.
 **State Management**: TanStack Query for server state and caching; in-memory for session-based chat history.
 **Voice Features**: Browser Web Speech API for speech-to-text, ElevenLabs API for text-to-speech (with browser TTS fallback).
 **PWA**: Installable PWA with service worker for offline capabilities and custom manifest.
-**Multi-Page Structure**: Includes public pages (Landing, About, Shop, Contact, Blog), feature pages (Chat, Courses, Membership), user dashboard (Academy/LMS, profile, course progress), admin dashboard, and Community Forum. Shop page includes eBooks section and "Coming Soon" area for future physical products.
+**Multi-Page Structure**: Includes public pages (Landing, About, Shop, Contact, Blog, Confirm Signup), feature pages (Chat, Courses, Membership), user dashboard (Academy/LMS, profile, course progress), admin dashboard, and Community Forum. Shop page includes eBooks section and "Coming Soon" area for future physical products.
 
 ### Backend
 
