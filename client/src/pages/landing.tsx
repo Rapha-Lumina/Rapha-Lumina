@@ -425,7 +425,7 @@ export default function Landing() {
           >
             <a 
               href="#" 
-              className="systeme-show-popup-21189482"
+              className="systeme-show-popup-21249339"
               data-testid="button-newsletter-join"
             >
               Join Now
@@ -458,7 +458,7 @@ export default function Landing() {
             >
               <a 
                 href="#" 
-                className="systeme-show-popup-21189482"
+                className="systeme-show-popup-21249339"
                 data-testid="button-popup-newsletter-join"
               >
                 Join Now

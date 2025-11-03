@@ -57,7 +57,7 @@ export default function JoinAwakening() {
               >
                 <a 
                   href="#" 
-                  className="systeme-show-popup-21189482"
+                  className="systeme-show-popup-21249339"
                   data-testid="button-join-now"
                 >
                   Join Now
