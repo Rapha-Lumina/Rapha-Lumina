@@ -1347,15 +1347,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const event = req.body;
       
       console.log("[Systeme.io Webhook] Received event:", JSON.stringify(event, null, 2));
+      console.log("[Systeme.io Webhook] Headers:", JSON.stringify(req.headers, null, 2));
 
       // Optional webhook secret validation (recommended for production)
       const webhookSecret = process.env.SYSTEME_IO_WEBHOOK_SECRET;
       if (webhookSecret) {
-        const receivedSecret = req.headers['x-webhook-secret'] || req.body.secret;
+        // Check multiple possible locations for the secret
+        const receivedSecret = 
+          req.headers['x-webhook-secret'] || 
+          req.headers['x-systeme-signature'] ||
+          req.headers['x-signature'] ||
+          req.body.secret ||
+          req.body.signature;
+          
+        console.log("[Systeme.io Webhook] Expected secret:", webhookSecret);
+        console.log("[Systeme.io Webhook] Received secret:", receivedSecret);
+        
         if (receivedSecret !== webhookSecret) {
-          console.error("[Systeme.io Webhook] Invalid webhook secret");
+          console.error("[Systeme.io Webhook] Invalid webhook secret - rejecting request");
           return res.status(401).json({ error: "Unauthorized" });
         }
+        
+        console.log("[Systeme.io Webhook] Secret validated successfully");
       }
 
       // Acknowledge receipt immediately to prevent retries
