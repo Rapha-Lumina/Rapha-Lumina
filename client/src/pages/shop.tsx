@@ -73,8 +73,10 @@ export default function Shop() {
               asChild
             >
               <a 
-                href="#" 
-                className="systeme-show-popup-21189482 inline-flex items-center gap-2"
+                href="https://www.raphalumina.com/sign-up"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2"
                 data-testid="button-notify-launch"
               >
                 <Sparkles className="w-5 h-5" />

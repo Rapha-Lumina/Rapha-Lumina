@@ -72,8 +72,10 @@ export default function Landing() {
               asChild
             >
               <a 
-                href="#" 
-                className="systeme-show-popup-21189482 inline-flex items-center"
+                href="https://www.raphalumina.com/sign-up"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center"
                 data-testid="button-begin-journey"
               >
                 <MessageCircle className="mr-2 h-5 w-5" />

@@ -156,8 +156,9 @@ export function Navigation() {
                       size="default"
                     >
                       <a 
-                        href="#" 
-                        className="systeme-show-popup-21189482"
+                        href="https://www.raphalumina.com/sign-up"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         data-testid="button-signup"
                       >
                         Sign up
@@ -229,8 +230,10 @@ export function Navigation() {
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <a 
-                            href="#" 
-                            className="systeme-show-popup-21189482 flex items-center"
+                            href="https://www.raphalumina.com/sign-up"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center"
                             data-testid="button-mobile-signup"
                           >
                             <User className="w-4 h-4 mr-2" />
