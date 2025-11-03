@@ -42,8 +42,9 @@ export default function Signup() {
               className="text-lg px-12 py-6"
             >
               <a 
-                href="#" 
-                className="systeme-show-popup-21189482"
+                href="https://www.raphalumina.com/sign-up"
+                target="_blank"
+                rel="noopener noreferrer"
                 data-testid="button-signup-hero"
               >
                 Sign Up Now
@@ -106,8 +107,9 @@ export default function Signup() {
               size="lg"
             >
               <a 
-                href="#" 
-                className="systeme-show-popup-21189482"
+                href="https://www.raphalumina.com/sign-up"
+                target="_blank"
+                rel="noopener noreferrer"
                 data-testid="button-signup-cta"
               >
                 Sign Up Now

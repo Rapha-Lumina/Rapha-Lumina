@@ -142,3 +142,13 @@ Implemented a comprehensive community forum feature accessible to all authentica
 - **Frontend Guards**: Queries enabled only when authenticated, mutations check authentication and postId before API calls
 - **Navigation**: Added "Forum" link to main navigation with Users icon
 - **Access Level**: Available to all authenticated users as part of free tier benefits
+
+### Systeme.io Direct Links Integration (November 3, 2025)
+
+Switched from popup-based forms to direct links for systeme.io signup and newsletter:
+- **Sign Up URL**: `https://www.raphalumina.com/sign-up` - All "Sign up" buttons now use direct navigation
+- **Join Now URL**: `https://www.raphalumina.com/join-now` - All "Join Now" newsletter buttons use direct navigation
+- **Implementation**: Removed popup script loading from Navigation component, replaced all popup classes with direct `href` links
+- **Button Targets**: All external systeme.io links open in new tabs with `target="_blank"` and `rel="noopener noreferrer"` for security
+- **Affected Pages**: Landing, Shop, Signup, Join Awakening, Navigation (desktop/mobile)
+- **Benefits**: Consistent behavior across development and production environments, simpler implementation, better reliability

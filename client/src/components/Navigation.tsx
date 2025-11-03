@@ -1,5 +1,4 @@
 import { Link, useLocation } from "wouter";
-import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,36 +16,6 @@ export function Navigation() {
   const [location] = useLocation();
   const { user, isAuthenticated, isLoading } = useAuth();
 
-  // Load systeme.io popup scripts for all users
-  useEffect(() => {
-    // Sign up script
-    const signupScriptId = "form-script-tag-21189482";
-    if (!document.getElementById(signupScriptId)) {
-      const signupScript = document.createElement("script");
-      signupScript.id = signupScriptId;
-      signupScript.src = "https://www.raphalumina.com/public/remote/page/34752019ec85c008fbe5437c59c4b70c165daf94.js";
-      signupScript.async = true;
-      document.body.appendChild(signupScript);
-    }
-
-    // Join Now script
-    const joinScriptId = "form-script-tag-21249339";
-    if (!document.getElementById(joinScriptId)) {
-      const joinScript = document.createElement("script");
-      joinScript.id = joinScriptId;
-      joinScript.src = "https://www.raphalumina.com/public/remote/page/347545335d9b083a0ccf3b21c78537ba81890889.js";
-      joinScript.async = true;
-      document.body.appendChild(joinScript);
-    }
-
-    // Cleanup
-    return () => {
-      const signupScriptEl = document.getElementById(signupScriptId);
-      const joinScriptEl = document.getElementById(joinScriptId);
-      if (signupScriptEl) signupScriptEl.remove();
-      if (joinScriptEl) joinScriptEl.remove();
-    };
-  }, []);
 
   const navItems = [
     { path: "/", label: "Home", icon: Home },

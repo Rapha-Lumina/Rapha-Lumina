@@ -426,8 +426,9 @@ export default function Landing() {
             className="px-12 py-6 text-lg"
           >
             <a 
-              href="#" 
-              className="systeme-show-popup-21249339"
+              href="https://www.raphalumina.com/join-now"
+              target="_blank"
+              rel="noopener noreferrer"
               data-testid="button-newsletter-join"
             >
               Join Now
@@ -459,8 +460,9 @@ export default function Landing() {
               className="w-full"
             >
               <a 
-                href="#" 
-                className="systeme-show-popup-21249339"
+                href="https://www.raphalumina.com/join-now"
+                target="_blank"
+                rel="noopener noreferrer"
                 data-testid="button-popup-newsletter-join"
               >
                 Join Now

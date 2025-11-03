@@ -56,8 +56,9 @@ export default function JoinAwakening() {
                 className="text-lg px-12 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 <a 
-                  href="#" 
-                  className="systeme-show-popup-21249339"
+                  href="https://www.raphalumina.com/join-now"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   data-testid="button-join-now"
                 >
                   Join Now
