@@ -1,11 +1,13 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage.ts";
-import { insertMessageSchema, insertNewsletterSubscriberSchema, type InsertStudentProgress, insertForumPostSchema, insertForumReplySchema, insertForumLikeSchema } from "../shared/schema.ts";
+import { insertMessageSchema, insertNewsletterSubscriberSchema, type InsertStudentProgress, insertForumPostSchema, insertForumReplySchema, insertForumLikeSchema, type User } from "../shared/schema.ts";
 import Anthropic from "@anthropic-ai/sdk";
-import { setupAuth, isAuthenticated, isAdmin } from "./replitAuth";
+import { setupAuth, isAuthenticated, isAdmin, hashPassword, generateResetToken, validatePassword } from "./auth";
 import { generateSpeech } from "./elevenlabs";
 import { systemeIoClient } from "./systemeio";
+import passport from "passport";
+import { z } from "zod";
 
 if (!process.env.ANTHROPIC_API_KEY) {
   console.warn("Warning: ANTHROPIC_API_KEY not configured. Chat functionality will not work.");
@@ -73,30 +75,187 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
   await setupAuth(app);
 
-  // Auth routes - NOTE: This endpoint is NOT protected so frontend can detect auth state
+  // Password validation schema
+  const createPasswordSchema = z.object({
+    email: z.string().email(),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    token: z.string().optional(),
+  });
+
+  const loginSchema = z.object({
+    email: z.string().email(),
+    password: z.string(),
+  });
+
+  const forgotPasswordSchema = z.object({
+    email: z.string().email(),
+  });
+
+  const resetPasswordSchema = z.object({
+    token: z.string(),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+  });
+
+  // Auth routes - Get current user
   app.get('/api/auth/user', async (req: any, res) => {
     try {
-      // Check if user is authenticated
-      if (!req.isAuthenticated() || !req.user?.claims) {
+      if (!req.isAuthenticated() || !req.user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
       
-      // Look up user by email (stable across OIDC sub changes)
-      const email = req.user.claims.email;
-      if (!email) {
-        return res.status(400).json({ message: "Email not found in claims" });
-      }
+      const user = req.user as User;
       
-      const user = await storage.getUserByEmail(email);
+      // Don't send password hash to client
+      const { password, resetPasswordToken, resetPasswordExpires, ...safeUser } = user;
       
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      
-      res.json(user);
+      res.json(safeUser);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Create password (first-time setup after email confirmation)
+  app.post('/api/create-password', async (req: any, res) => {
+    try {
+      const validatedData = createPasswordSchema.parse(req.body);
+      const { email, password } = validatedData;
+
+      // Find user by email
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(404).json({ message: "User not found. Please sign up first." });
+      }
+
+      // Check if password already exists
+      if (user.password) {
+        return res.status(400).json({ message: "Password already set. Please use login instead." });
+      }
+
+      // Hash password and update user
+      const hashedPassword = await hashPassword(password);
+      await storage.updateUserPassword(user.id, hashedPassword);
+
+      res.json({ success: true, message: "Password created successfully. You can now log in." });
+    } catch (error: any) {
+      console.error("Error creating password:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      res.status(500).json({ message: "Failed to create password" });
+    }
+  });
+
+  // Login with email/password
+  app.post('/api/login', (req, res, next) => {
+    try {
+      const validatedData = loginSchema.parse(req.body);
+      
+      passport.authenticate('local', (err: any, user: any, info: any) => {
+        if (err) {
+          console.error("Login error:", err);
+          return res.status(500).json({ message: "Login failed" });
+        }
+        
+        if (!user) {
+          return res.status(401).json({ message: info?.message || "Invalid email or password" });
+        }
+        
+        req.login(user, (err) => {
+          if (err) {
+            console.error("Session error:", err);
+            return res.status(500).json({ message: "Failed to create session" });
+          }
+          
+          // Don't send password to client
+          const { password, resetPasswordToken, resetPasswordExpires, ...safeUser } = user;
+          return res.json({ success: true, user: safeUser });
+        });
+      })(req, res, next);
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  // Logout
+  app.post('/api/logout', (req, res) => {
+    req.logout((err) => {
+      if (err) {
+        console.error("Logout error:", err);
+        return res.status(500).json({ message: "Logout failed" });
+      }
+      res.json({ success: true, message: "Logged out successfully" });
+    });
+  });
+
+  // Forgot password - generate reset token
+  app.post('/api/forgot-password', async (req: any, res) => {
+    try {
+      const validatedData = forgotPasswordSchema.parse(req.body);
+      const { email } = validatedData;
+
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        // Don't reveal if user exists
+        return res.json({ success: true, message: "If an account exists with this email, a password reset link has been sent." });
+      }
+
+      // Generate reset token (valid for 1 hour)
+      const resetToken = generateResetToken();
+      const resetExpires = new Date(Date.now() + 3600000); // 1 hour from now
+
+      await storage.updateResetToken(user.id, resetToken, resetExpires);
+
+      // In production, send email via systeme.io with reset link
+      // For now, we'll just return success
+      // TODO: Integrate with systeme.io to send reset email
+      
+      console.log(`Password reset token for ${email}: ${resetToken}`);
+      console.log(`Reset link would be: https://${req.hostname}/reset-password?token=${resetToken}`);
+
+      res.json({ success: true, message: "If an account exists with this email, a password reset link has been sent." });
+    } catch (error: any) {
+      console.error("Error in forgot password:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      res.status(500).json({ message: "Failed to process password reset request" });
+    }
+  });
+
+  // Reset password with token
+  app.post('/api/reset-password', async (req: any, res) => {
+    try {
+      const validatedData = resetPasswordSchema.parse(req.body);
+      const { token, password } = validatedData;
+
+      const user = await storage.getUserByResetToken(token);
+      if (!user) {
+        return res.status(400).json({ message: "Invalid or expired reset token" });
+      }
+
+      // Check if token is expired
+      if (user.resetPasswordExpires && user.resetPasswordExpires < new Date()) {
+        return res.status(400).json({ message: "Reset token has expired" });
+      }
+
+      // Hash new password
+      const hashedPassword = await hashPassword(password);
+
+      // Update password and clear reset token
+      await storage.updateUserPassword(user.id, hashedPassword);
+      await storage.clearResetToken(user.id);
+
+      res.json({ success: true, message: "Password reset successfully. You can now log in." });
+    } catch (error: any) {
+      console.error("Error resetting password:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      res.status(500).json({ message: "Failed to reset password" });
     }
   });
 
@@ -114,18 +273,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get conversation history for logged-in user (PROTECTED)
   app.get("/api/messages", isAuthenticated, async (req: any, res) => {
     try {
-      // Look up user by email (stable across OIDC sub changes)
-      const email = req.user.claims.email;
-      if (!email) {
-        return res.status(400).json({ error: "Email not found in claims" });
-      }
-      
-      const dbUser = await storage.getUserByEmail(email);
-      if (!dbUser) {
-        return res.status(404).json({ error: "User not found" });
-      }
-      
-      const messages = await storage.getMessagesByUser(dbUser.id);
+      const user = req.user as User;
+      const messages = await storage.getMessagesByUser(user.id);
       res.json(messages);
     } catch (error) {
       console.error("Error fetching messages:", error);
@@ -136,18 +285,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delete all messages for logged-in user (PROTECTED)
   app.delete("/api/messages", isAuthenticated, async (req: any, res) => {
     try {
-      // Look up user by email (stable across OIDC sub changes)
-      const email = req.user.claims.email;
-      if (!email) {
-        return res.status(400).json({ error: "Email not found in claims" });
-      }
-      
-      const dbUser = await storage.getUserByEmail(email);
-      if (!dbUser) {
-        return res.status(404).json({ error: "User not found" });
-      }
-      
-      await storage.deleteMessagesByUser(dbUser.id);
+      const user = req.user as User;
+      await storage.deleteMessagesByUser(user.id);
       res.json({ success: true, message: "All messages deleted successfully" });
     } catch (error) {
       console.error("Error deleting messages:", error);
@@ -237,19 +376,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if user is authenticated
-      const isAuth = req.isAuthenticated && req.isAuthenticated() && req.user?.claims?.email;
-      let dbUser = null;
+      const isAuth = req.isAuthenticated && req.isAuthenticated() && req.user;
       let conversationHistory: any[] = [];
 
       if (isAuth) {
-        // Get user from database
-        const email = req.user.claims.email;
-        dbUser = await storage.getUserByEmail(email);
-        
-        if (dbUser) {
-          // Load user's conversation history from database
-          conversationHistory = await storage.getMessagesByUser(dbUser.id);
-        }
+        const user = req.user as User;
+        // Load user's conversation history from database
+        conversationHistory = await storage.getMessagesByUser(user.id);
       } else {
         // For non-authenticated users, use history from request
         conversationHistory = history;
@@ -276,17 +409,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : "";
 
       // If user is authenticated, save messages to database
-      if (dbUser) {
+      if (isAuth) {
+        const user = req.user as User;
         // Save user message
         const savedUserMessage = await storage.createMessage({
-          userId: dbUser.id,
+          userId: user.id,
           role: "user",
           content,
         });
 
         // Save assistant message
         const savedAssistantMessage = await storage.createMessage({
-          userId: dbUser.id,
+          userId: user.id,
           role: "assistant",
           content: assistantContent,
         });
@@ -653,18 +787,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // POST /api/enroll - Enroll user in course (PROTECTED - after payment)
   app.post("/api/enroll", isAuthenticated, async (req: any, res) => {
     try {
-      // Look up user by email (stable across OIDC sub changes)
-      const email = req.user.claims.email;
-      if (!email) {
-        return res.status(400).json({ error: "Email not found in claims" });
-      }
-      
-      const dbUser = await storage.getUserByEmail(email);
-      if (!dbUser) {
-        return res.status(404).json({ error: "User not found" });
-      }
-      
-      const userId = dbUser.id;
+      const user = req.user as User;
       const { courseId, paymentId } = req.body;
 
       if (!courseId) {
@@ -672,13 +795,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if already enrolled
-      const existingEnrollment = await storage.getEnrollment(userId, courseId);
+      const existingEnrollment = await storage.getEnrollment(user.id, courseId);
       if (existingEnrollment) {
         return res.status(400).json({ error: "Already enrolled in this course" });
       }
 
       const enrollment = await storage.enrollUserInCourse({
-        userId,
+        userId: user.id,
         courseId,
         paymentId,
         status: "active",
@@ -694,25 +817,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // GET /api/my-courses - Get user's enrolled courses (PROTECTED)
   app.get("/api/my-courses", isAuthenticated, async (req: any, res) => {
     try {
-      // Look up user by email (stable across OIDC sub changes)
-      const email = req.user.claims.email;
-      if (!email) {
-        return res.status(400).json({ error: "Email not found in claims" });
-      }
-      
-      const dbUser = await storage.getUserByEmail(email);
-      if (!dbUser) {
-        return res.status(404).json({ error: "User not found" });
-      }
-      
-      const userId = dbUser.id;
-      const userEnrollments = await storage.getUserEnrollments(userId);
+      const user = req.user as User;
+      const userEnrollments = await storage.getUserEnrollments(user.id);
 
       // Fetch full course details for each enrollment
       const enrolledCourses = await Promise.all(
         userEnrollments.map(async (enrollment) => {
           const course = await storage.getCourse(enrollment.courseId);
-          const progress = await storage.getStudentProgress(userId, enrollment.courseId);
+          const progress = await storage.getStudentProgress(user.id, enrollment.courseId);
           
           return {
             ...enrollment,
@@ -735,18 +847,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // POST /api/progress/:lessonId - Update lesson progress (PROTECTED)
   app.post("/api/progress/:lessonId", isAuthenticated, async (req: any, res) => {
     try {
-      // Look up user by email (stable across OIDC sub changes)
-      const email = req.user.claims.email;
-      if (!email) {
-        return res.status(400).json({ error: "Email not found in claims" });
-      }
-      
-      const dbUser = await storage.getUserByEmail(email);
-      if (!dbUser) {
-        return res.status(404).json({ error: "User not found" });
-      }
-      
-      const userId = dbUser.id;
+      const user = req.user as User;
       const { lessonId } = req.params;
       const { completed, lastWatchedPosition } = req.body;
 
@@ -756,7 +857,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const progressData: InsertStudentProgress = {
-        userId,
+        userId: user.id,
         courseId: lesson.courseId,
         lessonId,
         completed: completed ? "true" : "false",
@@ -775,21 +876,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // GET /api/progress/:courseId - Get user's course progress (PROTECTED)
   app.get("/api/progress/:courseId", isAuthenticated, async (req: any, res) => {
     try {
-      // Look up user by email (stable across OIDC sub changes)
-      const email = req.user.claims.email;
-      if (!email) {
-        return res.status(400).json({ error: "Email not found in claims" });
-      }
-      
-      const dbUser = await storage.getUserByEmail(email);
-      if (!dbUser) {
-        return res.status(404).json({ error: "User not found" });
-      }
-      
-      const userId = dbUser.id;
+      const user = req.user as User;
       const { courseId } = req.params;
 
-      const progress = await storage.getStudentProgress(userId, courseId);
+      const progress = await storage.getStudentProgress(user.id, courseId);
       const courseLessons = await storage.getLessonsByCourse(courseId);
 
       // Create progress entries for all lessons if they don't exist
@@ -797,7 +887,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const completeProgress = courseLessons.map(lesson => {
         const existing = progressMap.get(lesson.id);
         return existing || {
-          userId,
+          userId: user.id,
           courseId,
           lessonId: lesson.id,
           completed: "false",
@@ -828,20 +918,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // GET /api/subscription - Get current user's subscription (PROTECTED)
   app.get("/api/subscription", isAuthenticated, async (req: any, res) => {
     try {
-      // Look up user in database by email (stable across OIDC sub changes)
-      const email = req.user.claims.email;
-      if (!email) {
-        return res.status(400).json({ error: "Email not found in claims" });
-      }
-      
-      const dbUser = await storage.getUserByEmail(email);
-      
-      if (!dbUser) {
-        return res.status(404).json({ error: "User not found" });
-      }
-      
-      // Use the database user's ID for subscription lookup (this is stable across logins)
-      const subscription = await storage.getUserSubscription(dbUser.id);
+      const user = req.user as User;
+      const subscription = await storage.getUserSubscription(user.id);
       
       if (!subscription) {
         return res.json({ tier: "free", chatLimit: "5", chatsUsed: "0" });
@@ -874,16 +952,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         targetUserId = userId;
       } else {
         // Fallback to current user for backward compatibility
-        const email = req.user.claims.email;
-        if (!email) {
-          return res.status(400).json({ error: "Email not found in claims" });
-        }
-        
-        const dbUser = await storage.getUserByEmail(email);
-        if (!dbUser) {
-          return res.status(404).json({ error: "User not found" });
-        }
-        targetUserId = dbUser.id;
+        const user = req.user as User;
+        targetUserId = user.id;
       }
 
       // Determine chat limit based on tier

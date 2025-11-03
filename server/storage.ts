@@ -24,12 +24,16 @@ import { db } from "./db.ts";
 import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
-  // User operations (required for Replit Auth)
+  // User operations (required for email/password auth)
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   getAllUsers(): Promise<User[]>;
   updateUserTestStatus(userId: string, isTestUser: "true" | "false"): Promise<User>;
+  updateUserPassword(userId: string, hashedPassword: string): Promise<void>;
+  getUserByResetToken(token: string): Promise<User | undefined>;
+  updateResetToken(userId: string, token: string, expires: Date): Promise<void>;
+  clearResetToken(userId: string): Promise<void>;
   
   // Message operations
   getMessagesByUser(userId: string): Promise<Message[]>;
@@ -194,6 +198,43 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     return updated;
+  }
+
+  async updateUserPassword(userId: string, hashedPassword: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ password: hashedPassword, updatedAt: new Date() })
+      .where(eq(users.id, userId));
+  }
+
+  async getUserByResetToken(token: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.resetPasswordToken, token));
+    return user;
+  }
+
+  async updateResetToken(userId: string, token: string, expires: Date): Promise<void> {
+    await db
+      .update(users)
+      .set({ 
+        resetPasswordToken: token, 
+        resetPasswordExpires: expires,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async clearResetToken(userId: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ 
+        resetPasswordToken: null, 
+        resetPasswordExpires: null,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId));
   }
 
   // Message operations
