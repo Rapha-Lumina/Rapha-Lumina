@@ -65,3 +65,53 @@ Preferred communication style: Simple, everyday language.
 - Tailwind CSS: Utility-first styling.
 
 **Environment Variables**: `ANTHROPIC_API_KEY`, `DATABASE_URL`, `SESSION_SECRET`, `ELEVENLABS_API_KEY`, `SYSTEME_IO_API_KEY`, `SYSTEME_IO_WEBHOOK_SECRET` (optional), `VITE_SYSTEME_IO_JOIN_URL`.
+
+## Recent Updates
+
+### Email/Password Authentication System (November 3, 2025)
+
+Replaced social login (Replit Auth) with traditional email/password authentication for better user control and security:
+
+**Database Schema Changes**:
+- Added `password` field to users table (text, nullable, stores bcrypt hash)
+- Added `resetToken` field (text, nullable, 32-byte hex string)
+- Added `resetTokenExpires` field (timestamp, nullable, 1-hour expiry)
+
+**Authentication Flow**:
+1. User signs up via systeme.io (external site: `https://www.raphalumina.com/sign-up`)
+2. systeme.io webhook (`POST /api/webhooks/systemeio` with type: "contact.created") creates user record in database without password
+3. systeme.io sends confirmation email with "create password" link to user
+4. User clicks link → `/create-password?email={email}` page
+5. User creates password (minimum 8 characters, mixed case, number required) → stored as bcrypt hash
+6. User logs in at `/login` with email/password credentials
+
+**Security Features**:
+- Bcrypt password hashing with 10 salt rounds
+- Passport Local Strategy for authentication
+- Session-based authentication with PostgreSQL storage (connect-pg-simple) or in-memory fallback for development
+- Environment-based cookie security (secure: true in production, false in development)
+- CSRF protection with sameSite: 'lax' cookie setting
+- Password complexity requirements: minimum 8 characters, at least one uppercase letter, one lowercase letter, and one number
+- Password reset flow with time-limited tokens (1-hour expiry)
+- 32-byte cryptographically secure random reset tokens (crypto.randomBytes)
+- Admin access restricted to hardcoded email (leratom2012@gmail.com)
+
+**New Frontend Pages**:
+- `/login` - Email/password login form with "Forgot password?" link
+- `/create-password` - Initial password creation with email verification
+- `/forgot-password` - Email submission to request password reset
+- `/reset-password` - Token-validated password reset form
+
+**Backend Routes**:
+- `POST /api/create-password` - Creates password for user account (validates user exists, no existing password)
+- `POST /api/login` - Authenticates user with email/password using Passport
+- `POST /api/logout` - Destroys session and logs out user
+- `POST /api/forgot-password` - Generates reset token and expiry (email placeholder logs to console)
+- `POST /api/reset-password` - Validates token/expiry and updates password
+
+**Removed Features**: All social login options (Google, GitHub, X, Apple) removed
+
+**Webhook Configuration**: User must configure webhook in systeme.io dashboard:
+- Settings → Webhooks → Add webhook URL: `https://raphalumina.com/api/webhooks/systemeio`
+- Event type: "contact.created" (triggers user account creation)
+- Optional: Set webhook secret in `SYSTEME_IO_WEBHOOK_SECRET` environment variable for validation

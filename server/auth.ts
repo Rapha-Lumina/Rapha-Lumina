@@ -11,21 +11,42 @@ import type { User } from "../shared/schema";
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
-  const pgStore = connectPg(session);
-  const sessionStore = new pgStore({
-    conString: process.env.DATABASE_URL,
-    createTableIfMissing: false,
-    ttl: sessionTtl,
-    tableName: "sessions",
-  });
+  const isProduction = process.env.NODE_ENV === 'production';
+  
+  // Get session secret (required)
+  const sessionSecret = process.env.SESSION_SECRET;
+  if (!sessionSecret) {
+    throw new Error('SESSION_SECRET environment variable is required for authentication');
+  }
+
+  // Use PostgreSQL store if DATABASE_URL is available, otherwise use memory store
+  let sessionStore;
+  const databaseUrl = process.env.DATABASE_URL;
+  
+  if (databaseUrl) {
+    const pgStore = connectPg(session);
+    sessionStore = new pgStore({
+      conString: databaseUrl,
+      createTableIfMissing: false,
+      ttl: sessionTtl,
+      tableName: "sessions",
+    });
+    console.log('[Auth] Using PostgreSQL session store');
+  } else {
+    // Fallback to memory store for development
+    console.warn('[Auth] DATABASE_URL not found, using in-memory session store (not suitable for production)');
+    sessionStore = new session.MemoryStore();
+  }
+
   return session({
-    secret: process.env.SESSION_SECRET!,
+    secret: sessionSecret,
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: true,
+      secure: isProduction, // Only use secure cookies in production (HTTPS required)
+      sameSite: 'lax', // CSRF protection
       maxAge: sessionTtl,
     },
   });
@@ -118,10 +139,24 @@ export function generateResetToken(): string {
   return crypto.randomBytes(32).toString('hex');
 }
 
-// Helper function to check password strength (min 8 characters)
+// Helper function to check password strength (min 8 characters with complexity requirements)
 export function validatePassword(password: string): { valid: boolean; message?: string } {
   if (password.length < 8) {
     return { valid: false, message: 'Password must be at least 8 characters long' };
   }
+  
+  // Check for mixed case (at least one uppercase and one lowercase)
+  if (!/[a-z]/.test(password)) {
+    return { valid: false, message: 'Password must contain at least one lowercase letter' };
+  }
+  if (!/[A-Z]/.test(password)) {
+    return { valid: false, message: 'Password must contain at least one uppercase letter' };
+  }
+  
+  // Check for at least one number
+  if (!/[0-9]/.test(password)) {
+    return { valid: false, message: 'Password must contain at least one number' };
+  }
+  
   return { valid: true };
 }
