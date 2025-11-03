@@ -29,7 +29,7 @@ export function Navigation() {
     // Create and load script
     const script = document.createElement("script");
     script.id = scriptId;
-    script.src = "https://www.raphalumina.com/public/remote/page/34463995a1fbb90924e00d56deeefd448b749798.js";
+    script.src = "https://www.raphalumina.com/public/remote/page/34752019ec85c008fbe5437c59c4b70c165daf94.js";
     script.async = true;
     document.body.appendChild(script);
 
