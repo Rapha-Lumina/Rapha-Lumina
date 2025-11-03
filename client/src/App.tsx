@@ -25,6 +25,10 @@ import ForumPost from "@/pages/forum-post";
 import Contact from "@/pages/contact";
 import Admin from "@/pages/admin";
 import Privacy from "@/pages/privacy";
+import Login from "@/pages/login";
+import CreatePassword from "@/pages/create-password";
+import ForgotPassword from "@/pages/forgot-password";
+import ResetPassword from "@/pages/reset-password";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -38,6 +42,10 @@ function Router() {
       <Route path="/confirm-signup" component={ConfirmSignup} />
       <Route path="/thank-you" component={ThankYou} />
       <Route path="/join-awakening" component={JoinAwakening} />
+      <Route path="/login" component={Login} />
+      <Route path="/create-password" component={CreatePassword} />
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
       <Route path="/courses" component={Courses} />
       <Route path="/course-detail" component={CourseDetail} />
       <Route path="/lms-dashboard" component={LMSDashboard} />

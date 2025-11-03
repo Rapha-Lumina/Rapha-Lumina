@@ -30,11 +30,18 @@ export function Navigation() {
   ];
 
   const handleLogin = () => {
-    window.location.href = '/api/login';
+    window.location.href = '/login';
   };
 
-  const handleLogout = () => {
-    window.location.href = '/api/logout';
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/logout', { method: 'POST' });
+      if (response.ok) {
+        window.location.href = '/';
+      }
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   return (
