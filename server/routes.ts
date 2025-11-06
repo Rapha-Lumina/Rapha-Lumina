@@ -507,6 +507,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update password and clear reset token
       await storage.updateUserPassword(user.id, hashedPassword);
       await storage.clearResetToken(user.id);
+      
+      // Mark email as verified (if they can receive reset emails, email is valid)
+      if (user.emailVerified !== "true") {
+        await storage.markEmailAsVerified(user.id);
+        console.log('[RESET-PASSWORD] Email auto-verified for:', user.email);
+      }
 
       console.log('[RESET-PASSWORD] ✅ Password reset successfully for:', user.email);
       res.json({ success: true, message: "Password reset successfully. You can now log in." });
