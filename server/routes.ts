@@ -174,7 +174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            from: 'Rapha Lumina <onboarding@resend.dev>',
+            from: 'Rapha Lumina <support@raphalumina.com>',
             to: [email],
             subject: 'Verify your Rapha Lumina account',
             html: `
@@ -415,7 +415,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            from: 'Rapha Lumina <onboarding@resend.dev>',
+            from: 'Rapha Lumina <support@raphalumina.com>',
             to: [email],
             subject: 'Reset your Rapha Lumina password',
             html: `
