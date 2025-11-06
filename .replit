@@ -7,9 +7,10 @@ channel = "stable-24_05"
 packages = ["python312Packages.flask", "nano", "mailutils", "graphicsmagick-imagemagick-compat"]
 
 [deployment]
-deploymentTarget = "static"
+deploymentTarget = "cloudrun"
 build = ["npm", "run", "build"]
 publicDir = "dist"
+run = ["sh", "-c", "Test Website"]
 
 [[ports]]
 localPort = 3000
