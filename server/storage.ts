@@ -34,6 +34,10 @@ export interface IStorage {
   getUserByResetToken(token: string): Promise<User | undefined>;
   updateResetToken(userId: string, token: string, expires: Date): Promise<void>;
   clearResetToken(userId: string): Promise<void>;
+  getUserByVerificationToken(token: string): Promise<User | undefined>;
+  updateVerificationToken(userId: string, token: string, expires: Date): Promise<void>;
+  clearVerificationToken(userId: string): Promise<void>;
+  markEmailAsVerified(userId: string): Promise<void>;
   
   // Message operations
   getMessagesByUser(userId: string): Promise<Message[]>;
@@ -232,6 +236,46 @@ export class DatabaseStorage implements IStorage {
       .set({ 
         resetPasswordToken: null, 
         resetPasswordExpires: null,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.verificationToken, token));
+    return user;
+  }
+
+  async updateVerificationToken(userId: string, token: string, expires: Date): Promise<void> {
+    await db
+      .update(users)
+      .set({ 
+        verificationToken: token, 
+        verificationTokenExpires: expires,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async clearVerificationToken(userId: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ 
+        verificationToken: null, 
+        verificationTokenExpires: null,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async markEmailAsVerified(userId: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ 
+        emailVerified: "true",
         updatedAt: new Date() 
       })
       .where(eq(users.id, userId));
