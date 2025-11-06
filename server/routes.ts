@@ -481,16 +481,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Reset password with token
   app.post('/api/reset-password', async (req: any, res) => {
     try {
+      console.log('[RESET-PASSWORD] Request received:', { hasToken: !!req.body.token, hasPassword: !!req.body.password });
+      
       const validatedData = resetPasswordSchema.parse(req.body);
       const { token, password } = validatedData;
 
+      console.log('[RESET-PASSWORD] Looking up user with token:', token.substring(0, 10) + '...');
       const user = await storage.getUserByResetToken(token);
       if (!user) {
+        console.log('[RESET-PASSWORD] No user found with this token');
         return res.status(400).json({ message: "Invalid or expired reset token" });
       }
 
+      console.log('[RESET-PASSWORD] User found:', user.email, 'Token expires:', user.resetPasswordExpires);
+      
       // Check if token is expired
       if (user.resetPasswordExpires && user.resetPasswordExpires < new Date()) {
+        console.log('[RESET-PASSWORD] Token has expired');
         return res.status(400).json({ message: "Reset token has expired" });
       }
 
@@ -501,10 +508,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.updateUserPassword(user.id, hashedPassword);
       await storage.clearResetToken(user.id);
 
+      console.log('[RESET-PASSWORD] ✅ Password reset successfully for:', user.email);
       res.json({ success: true, message: "Password reset successfully. You can now log in." });
     } catch (error: any) {
-      console.error("Error resetting password:", error);
+      console.error("[RESET-PASSWORD] Error:", error);
       if (error instanceof z.ZodError) {
+        console.error("[RESET-PASSWORD] Validation error:", error.errors);
         return res.status(400).json({ message: error.errors[0].message });
       }
       res.status(500).json({ message: "Failed to reset password" });
