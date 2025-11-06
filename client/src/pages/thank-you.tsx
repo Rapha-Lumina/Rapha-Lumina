@@ -29,7 +29,7 @@ export default function ThankYou() {
               <span>Check Your Email</span>
             </div>
             <p className="text-lg text-muted-foreground/90 leading-relaxed max-w-xl mx-auto">
-              We've sent you a confirmation email with next steps to begin your spiritual journey with Rapha Lumina.
+              We've sent you a verification email. Please click the link in the email to verify your account and activate your free tier access.
             </p>
           </div>
 

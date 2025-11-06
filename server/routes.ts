@@ -5,7 +5,6 @@ import { insertMessageSchema, insertNewsletterSubscriberSchema, type InsertStude
 import Anthropic from "@anthropic-ai/sdk";
 import { setupAuth, isAuthenticated, isAdmin, hashPassword, generateResetToken, validatePassword } from "./auth";
 import { generateSpeech } from "./elevenlabs";
-import { systemeIoClient } from "./systemeio";
 import passport from "passport";
 import { z } from "zod";
 
@@ -96,6 +95,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     password: z.string().min(8, "Password must be at least 8 characters"),
   });
 
+  const signupSchema = z.object({
+    firstName: z.string().trim().min(1, "First name is required"),
+    lastName: z.string().trim().min(1, "Last name is required"),
+    address: z.string().trim().min(1, "Address is required"),
+    dateOfBirth: z.string()
+      .regex(/^\d{2}\/\d{2}\/\d{4}$/, "Date must be in DD/MM/YYYY format"),
+    email: z.string().trim().email("Please enter a valid email address"),
+    password: z.string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+      .regex(/[0-9]/, "Password must contain at least one number"),
+  });
+
   // Auth routes - Get current user
   app.get('/api/auth/user', async (req: any, res) => {
     try {
@@ -112,6 +125,181 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Signup - Create new user account and send verification email
+  app.post('/api/signup', async (req: any, res) => {
+    try {
+      const validatedData = signupSchema.parse(req.body);
+      const { firstName, lastName, address, dateOfBirth, email, password } = validatedData;
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ message: "An account with this email already exists." });
+      }
+
+      // Hash password
+      const hashedPassword = await hashPassword(password);
+
+      // Generate verification token (valid for 24 hours)
+      const verificationToken = generateResetToken();
+      const verificationExpires = new Date(Date.now() + 24 * 3600000); // 24 hours
+
+      // Create user
+      const user = await storage.upsertUser({
+        email,
+        password: hashedPassword,
+        firstName,
+        lastName,
+        address,
+        dateOfBirth,
+        emailVerified: "false",
+        verificationToken,
+        verificationTokenExpires: verificationExpires,
+      });
+
+      // Update verification token with expiry
+      await storage.updateVerificationToken(user.id, verificationToken, verificationExpires);
+
+      // Send verification email using Resend
+      const verificationLink = `https://${req.hostname}/verify-email?token=${verificationToken}`;
+      
+      try {
+        const response = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            from: 'Rapha Lumina <noreply@raphalumina.com>',
+            to: [email],
+            subject: 'Verify your Rapha Lumina account',
+            html: `
+              <!DOCTYPE html>
+              <html>
+                <head>
+                  <meta charset="utf-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                </head>
+                <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+                  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                    <h1 style="color: white; margin: 0; font-size: 28px;">Welcome to Rapha Lumina</h1>
+                  </div>
+                  <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+                    <h2 style="color: #333; margin-top: 0;">Hi ${firstName},</h2>
+                    <p>Thank you for joining Rapha Lumina! We're excited to guide you on your spiritual journey.</p>
+                    <p>Please verify your email address by clicking the button below:</p>
+                    <div style="text-align: center; margin: 30px 0;">
+                      <a href="${verificationLink}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Verify Email Address</a>
+                    </div>
+                    <p style="color: #666; font-size: 14px;">Or copy and paste this link into your browser:</p>
+                    <p style="color: #667eea; word-break: break-all; font-size: 14px;">${verificationLink}</p>
+                    <p style="color: #666; font-size: 14px; margin-top: 30px;">This link will expire in 24 hours.</p>
+                    <p style="color: #666; font-size: 14px;">If you didn't create an account with Rapha Lumina, please ignore this email.</p>
+                  </div>
+                  <div style="text-align: center; padding: 20px; color: #999; font-size: 12px;">
+                    <p>© 2025 Rapha Lumina. All rights reserved.</p>
+                  </div>
+                </body>
+              </html>
+            `
+          })
+        });
+
+        if (!response.ok) {
+          console.error('Failed to send verification email:', await response.text());
+        } else {
+          console.log(`✅ Verification email sent to ${email}`);
+        }
+      } catch (emailError) {
+        console.error('Error sending verification email:', emailError);
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Account created successfully. Please check your email to verify your account." 
+      });
+    } catch (error: any) {
+      console.error("Error in signup:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      res.status(500).json({ message: "Failed to create account" });
+    }
+  });
+
+  // Verify email with token
+  app.get('/api/verify-email', async (req: any, res) => {
+    try {
+      const { token } = req.query;
+
+      if (!token) {
+        return res.status(400).json({ message: "Verification token is required" });
+      }
+
+      const user = await storage.getUserByVerificationToken(token);
+      if (!user) {
+        return res.status(400).json({ message: "Invalid or expired verification token" });
+      }
+
+      // Check if token is expired
+      if (user.verificationTokenExpires && user.verificationTokenExpires < new Date()) {
+        return res.status(400).json({ message: "Verification token has expired. Please request a new one." });
+      }
+
+      // Mark email as verified
+      await storage.markEmailAsVerified(user.id);
+      await storage.clearVerificationToken(user.id);
+
+      // Grant free tier access
+      const existingSubscription = await storage.getUserSubscription(user.id);
+      if (!existingSubscription) {
+        await storage.createSubscription({
+          userId: user.id,
+          tier: "free",
+          chatLimit: "5",
+          chatsUsed: "0",
+          status: "active",
+        });
+      }
+
+      // Send webhook to Zapier for FlowyTeam CRM
+      try {
+        const zapierWebhookUrl = process.env.ZAPIER_WEBHOOK_URL;
+        if (zapierWebhookUrl) {
+          await fetch(zapierWebhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              event: 'user_verified',
+              user: {
+                id: user.id,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                address: user.address,
+                dateOfBirth: user.dateOfBirth,
+                verifiedAt: new Date().toISOString(),
+                tier: 'free',
+              }
+            })
+          });
+          console.log(`✅ Sent verification webhook to Zapier for ${user.email}`);
+        }
+      } catch (webhookError) {
+        console.error('Error sending Zapier webhook:', webhookError);
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Email verified successfully! Your free tier access has been activated. You can now log in." 
+      });
+    } catch (error: any) {
+      console.error("Error in email verification:", error);
+      res.status(500).json({ message: "Failed to verify email" });
     }
   });
 
@@ -210,8 +398,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.updateResetToken(user.id, resetToken, resetExpires);
 
       // TEMPORARY: Return reset link directly (until email integration is complete)
-      // In production, this should send an email via systeme.io instead
-      // TODO: Integrate with systeme.io to send reset email
       const resetLink = `https://${req.hostname}/reset-password?token=${resetToken}`;
       
       console.log(`⚠️  [SECURITY WARNING] Password reset link generated for ${email}: ${resetLink}`);
@@ -338,11 +524,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { email } = result.data;
       const subscriber = await storage.addNewsletterSubscriber(email);
-      
-      // Sync to systeme.io in background (don't block response)
-      systemeIoClient.syncNewsletterSubscriber(email).catch(err => {
-        console.error("Failed to sync newsletter subscriber to systeme.io:", err);
-      });
       
       res.json({ 
         success: true,
@@ -976,17 +1157,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         chatLimitMap[tier as keyof typeof chatLimitMap]
       );
 
-      // Get user email for systeme.io sync
-      const targetUser = await storage.getUser(targetUserId);
-      if (targetUser?.email) {
-        systemeIoClient.syncSubscriptionTier(
-          targetUser.email,
-          tier as "free" | "premium" | "transformation"
-        ).catch(err => {
-          console.error("Failed to sync subscription tier to systeme.io:", err);
-        });
-      }
-
       res.json({ success: true, subscription });
     } catch (error) {
       console.error("Error granting premium access:", error);
@@ -1046,16 +1216,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         tier as "free" | "premium" | "transformation",
         chatLimitMap[tier as keyof typeof chatLimitMap]
       );
-
-      // Sync to systeme.io
-      if (targetUser.email) {
-        systemeIoClient.syncSubscriptionTier(
-          targetUser.email,
-          tier as "free" | "premium" | "transformation"
-        ).catch(err => {
-          console.error("Failed to sync subscription tier to systeme.io:", err);
-        });
-      }
 
       res.json({ success: true, subscription, email: targetUser.email });
     } catch (error) {
@@ -1344,382 +1504,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error toggling forum reply like:", error);
       res.status(500).json({ error: "Failed to toggle like" });
-    }
-  });
-
-  // POST /api/webhooks/systemeio - Webhook receiver for systeme.io events (PUBLIC)
-  app.post("/api/webhooks/systemeio", async (req, res) => {
-    try {
-      const event = req.body;
-      
-      console.log("[Systeme.io Webhook] Received event:", JSON.stringify(event, null, 2));
-      console.log("[Systeme.io Webhook] Headers:", JSON.stringify(req.headers, null, 2));
-
-      // Optional webhook secret validation (recommended for production)
-      const webhookSecret = process.env.SYSTEME_IO_WEBHOOK_SECRET;
-      if (webhookSecret) {
-        // Check multiple possible locations for the secret
-        const receivedSecret = 
-          req.headers['x-webhook-secret'] || 
-          req.headers['x-systeme-signature'] ||
-          req.headers['x-signature'] ||
-          req.body.secret ||
-          req.body.signature;
-          
-        console.log("[Systeme.io Webhook] Expected secret:", webhookSecret);
-        console.log("[Systeme.io Webhook] Received secret:", receivedSecret);
-        
-        // TEMPORARILY DISABLED FOR DEBUGGING - Will re-enable after we see what systeme.io sends
-        // if (receivedSecret !== webhookSecret) {
-        //   console.error("[Systeme.io Webhook] Invalid webhook secret - rejecting request");
-        //   return res.status(401).json({ error: "Unauthorized" });
-        // }
-        
-        if (receivedSecret === webhookSecret) {
-          console.log("[Systeme.io Webhook] Secret validated successfully");
-        } else {
-          console.warn("[Systeme.io Webhook] SECRET MISMATCH - But allowing request for debugging");
-        }
-      }
-
-      // Acknowledge receipt immediately to prevent retries
-      res.status(200).json({ received: true });
-
-      // Product ID to tier mapping - UPDATE THESE WITH YOUR ACTUAL SYSTEME.IO PRODUCT IDS
-      const PRODUCT_TIER_MAP: Record<string, "premium" | "transformation"> = {
-        // Example: "prod_abc123": "premium",
-        // Example: "prod_xyz789": "transformation",
-      };
-
-      // Process webhook events asynchronously
-      if (event.type === "sale.created" || event.type === "order.created") {
-        // Handle purchase completion - grant subscription tier
-        const customerEmail = event.data?.customer?.email || event.data?.email;
-        const productId = event.data?.product_id || event.data?.productId;
-        const productName = event.data?.product_name || event.data?.productName || "";
-        const amount = event.data?.amount || event.data?.total || 0;
-
-        console.log("[Systeme.io Webhook] Processing sale:", {
-          email: customerEmail,
-          productId,
-          productName,
-          amount
-        });
-
-        if (!customerEmail) {
-          console.error("[Systeme.io Webhook] No customer email in sale event");
-          return;
-        }
-
-        // Determine subscription tier based on product ID (preferred) or fallback to amount
-        let subscriptionTier: "free" | "premium" | "transformation" = "free";
-        
-        if (productId && PRODUCT_TIER_MAP[productId]) {
-          // Use product ID mapping (most reliable)
-          subscriptionTier = PRODUCT_TIER_MAP[productId];
-          console.log("[Systeme.io Webhook] Tier from product ID:", productId, "->", subscriptionTier);
-        } else {
-          // Fallback to amount-based detection (configure product IDs for production)
-          if (amount >= 400) {
-            subscriptionTier = "transformation";
-          } else if (amount >= 25) {
-            subscriptionTier = "premium";
-          }
-          console.log("[Systeme.io Webhook] Tier from amount:", amount, "->", subscriptionTier);
-        }
-
-        console.log("[Systeme.io Webhook] Final tier assignment:", subscriptionTier);
-
-        try {
-          // Get or create user
-          let user = await storage.getUserByEmail(customerEmail);
-          
-          if (!user) {
-            // Create new user from purchase
-            const firstName = event.data?.customer?.first_name || event.data?.firstName || "";
-            const lastName = event.data?.customer?.last_name || event.data?.lastName || "";
-            
-            user = await storage.upsertUser({
-              id: `systeme_${Date.now()}`,
-              email: customerEmail,
-              firstName: firstName || null,
-              lastName: lastName || null,
-              location: null,
-              age: null,
-              profileImageUrl: null,
-            });
-            
-            console.log("[Systeme.io Webhook] Created new user:", user.email);
-          }
-
-          // Create or update subscription record
-          const chatLimit = subscriptionTier === "transformation" ? "unlimited" : (subscriptionTier === "premium" ? "10" : "5");
-          await storage.updateSubscriptionTier(user.id, subscriptionTier as "free" | "premium" | "transformation", chatLimit);
-          
-          console.log("[Systeme.io Webhook] Updated subscription tier:", user.email, "->", subscriptionTier);
-
-          // Sync tier update back to systeme.io
-          if (user.email) {
-            systemeIoClient.syncSubscriptionTier(user.email, subscriptionTier).catch((err: Error) => {
-              console.error("[Systeme.io Webhook] Failed to sync tier back to systeme.io:", err);
-            });
-          }
-
-        } catch (error) {
-          console.error("[Systeme.io Webhook] Error processing sale:", error);
-        }
-      } else if (event.type === "contact.created" || event.type === "funnel.subscribed") {
-        // Handle new contact creation (signup event)
-        const contactEmail = event.data?.email || event.data?.contact?.email;
-        const firstName = event.data?.first_name || event.data?.contact?.first_name || "";
-        const lastName = event.data?.last_name || event.data?.contact?.last_name || "";
-
-        console.log("[Systeme.io Webhook] Processing contact:", {
-          email: contactEmail,
-          firstName,
-          lastName
-        });
-
-        if (!contactEmail) {
-          console.error("[Systeme.io Webhook] No email in contact event");
-          return;
-        }
-
-        try {
-          // Check if user already exists
-          let user = await storage.getUserByEmail(contactEmail);
-          
-          if (!user) {
-            // Create new user from contact
-            user = await storage.upsertUser({
-              id: `systeme_${Date.now()}`,
-              email: contactEmail,
-              firstName: firstName || null,
-              lastName: lastName || null,
-              location: null,
-              age: null,
-              profileImageUrl: null,
-            });
-            
-            console.log("[Systeme.io Webhook] Created new user from contact:", user.email);
-            
-            // Initialize with free tier subscription
-            await storage.updateSubscriptionTier(user.id, "free", "5");
-            console.log("[Systeme.io Webhook] Initialized free tier for:", user.email);
-          } else {
-            console.log("[Systeme.io Webhook] User already exists:", user.email);
-          }
-        } catch (error) {
-          console.error("[Systeme.io Webhook] Error creating user from contact:", error);
-        }
-      } else {
-        console.log("[Systeme.io Webhook] Unhandled event type:", event.type);
-      }
-    } catch (error) {
-      console.error("[Systeme.io Webhook] Error processing webhook:", error);
-    }
-  });
-
-  // ========================================
-  // ALTERNATIVE WEBHOOK ENDPOINTS FOR TESTING
-  // ========================================
-
-  // GET /webhook/test - Test endpoint to verify server is reachable (PUBLIC)
-  app.get("/webhook/test", (req, res) => {
-    console.log("✅ [Webhook Test] GET request received at /webhook/test");
-    res.json({ 
-      status: "ok", 
-      message: "Webhook server is reachable!",
-      timestamp: new Date().toISOString(),
-      paths: [
-        "/webhook/test (GET) - This endpoint",
-        "/webhook/systeme (POST) - Main webhook",
-        "/api/webhook/contact (POST) - Alternative webhook",
-        "/webhook (POST) - Simple webhook"
-      ]
-    });
-  });
-
-  // POST /webhook/systeme - Alternative webhook endpoint #1 (PUBLIC)
-  app.post("/webhook/systeme", async (req, res) => {
-    console.log("🔔 [WEBHOOK] POST request received at /webhook/systeme");
-    console.log("📦 [WEBHOOK] Body:", JSON.stringify(req.body, null, 2));
-    console.log("📋 [WEBHOOK] Headers:", JSON.stringify(req.headers, null, 2));
-    
-    try {
-      const event = req.body;
-      
-      // Acknowledge immediately
-      res.status(200).json({ 
-        received: true, 
-        endpoint: "/webhook/systeme",
-        timestamp: new Date().toISOString() 
-      });
-
-      // Process contact.created events
-      if (event.type === "contact.created" || event.event === "contact.created") {
-        const contactEmail = event.data?.email || event.email;
-        const firstName = event.data?.first_name || event.data?.firstName || event.first_name || "";
-        const lastName = event.data?.last_name || event.data?.lastName || event.last_name || "";
-
-        console.log("👤 [WEBHOOK] Creating user:", { contactEmail, firstName, lastName });
-
-        if (!contactEmail) {
-          console.error("❌ [WEBHOOK] No email found in event");
-          return;
-        }
-
-        try {
-          let user = await storage.getUserByEmail(contactEmail);
-          
-          if (!user) {
-            user = await storage.upsertUser({
-              id: `systeme_${Date.now()}`,
-              email: contactEmail,
-              firstName: firstName || null,
-              lastName: lastName || null,
-              location: null,
-              age: null,
-              profileImageUrl: null,
-            });
-            
-            console.log("✅ [WEBHOOK] User created:", user.email);
-            
-            await storage.updateSubscriptionTier(user.id, "free", "5");
-            console.log("✅ [WEBHOOK] Free tier initialized");
-          } else {
-            console.log("ℹ️ [WEBHOOK] User already exists:", user.email);
-          }
-        } catch (error) {
-          console.error("❌ [WEBHOOK] Error creating user:", error);
-        }
-      } else {
-        console.log("ℹ️ [WEBHOOK] Event type not handled:", event.type || event.event || "unknown");
-      }
-    } catch (error) {
-      console.error("❌ [WEBHOOK] Error processing webhook:", error);
-    }
-  });
-
-  // POST /api/webhook/contact - Alternative webhook endpoint #2 (PUBLIC)
-  app.post("/api/webhook/contact", async (req, res) => {
-    console.log("🔔 [WEBHOOK] POST request received at /api/webhook/contact");
-    console.log("📦 [WEBHOOK] Body:", JSON.stringify(req.body, null, 2));
-    console.log("📋 [WEBHOOK] Headers:", JSON.stringify(req.headers, null, 2));
-    
-    try {
-      const event = req.body;
-      
-      // Acknowledge immediately
-      res.status(200).json({ 
-        received: true, 
-        endpoint: "/api/webhook/contact",
-        timestamp: new Date().toISOString() 
-      });
-
-      // Process contact.created events
-      if (event.type === "contact.created" || event.event === "contact.created") {
-        const contactEmail = event.data?.email || event.email;
-        const firstName = event.data?.first_name || event.data?.firstName || event.first_name || "";
-        const lastName = event.data?.last_name || event.data?.lastName || event.last_name || "";
-
-        console.log("👤 [WEBHOOK] Creating user:", { contactEmail, firstName, lastName });
-
-        if (!contactEmail) {
-          console.error("❌ [WEBHOOK] No email found in event");
-          return;
-        }
-
-        try {
-          let user = await storage.getUserByEmail(contactEmail);
-          
-          if (!user) {
-            user = await storage.upsertUser({
-              id: `systeme_${Date.now()}`,
-              email: contactEmail,
-              firstName: firstName || null,
-              lastName: lastName || null,
-              location: null,
-              age: null,
-              profileImageUrl: null,
-            });
-            
-            console.log("✅ [WEBHOOK] User created:", user.email);
-            
-            await storage.updateSubscriptionTier(user.id, "free", "5");
-            console.log("✅ [WEBHOOK] Free tier initialized");
-          } else {
-            console.log("ℹ️ [WEBHOOK] User already exists:", user.email);
-          }
-        } catch (error) {
-          console.error("❌ [WEBHOOK] Error creating user:", error);
-        }
-      } else {
-        console.log("ℹ️ [WEBHOOK] Event type not handled:", event.type || event.event || "unknown");
-      }
-    } catch (error) {
-      console.error("❌ [WEBHOOK] Error processing webhook:", error);
-    }
-  });
-
-  // POST /webhook - Simplest possible webhook endpoint (PUBLIC)
-  app.post("/webhook", async (req, res) => {
-    console.log("🔔 [WEBHOOK] POST request received at /webhook");
-    console.log("📦 [WEBHOOK] Body:", JSON.stringify(req.body, null, 2));
-    console.log("📋 [WEBHOOK] Headers:", JSON.stringify(req.headers, null, 2));
-    
-    try {
-      const event = req.body;
-      
-      // Acknowledge immediately
-      res.status(200).json({ 
-        received: true, 
-        endpoint: "/webhook",
-        timestamp: new Date().toISOString() 
-      });
-
-      // Process contact.created events
-      if (event.type === "contact.created" || event.event === "contact.created") {
-        const contactEmail = event.data?.email || event.email;
-        const firstName = event.data?.first_name || event.data?.firstName || event.first_name || "";
-        const lastName = event.data?.last_name || event.data?.lastName || event.last_name || "";
-
-        console.log("👤 [WEBHOOK] Creating user:", { contactEmail, firstName, lastName });
-
-        if (!contactEmail) {
-          console.error("❌ [WEBHOOK] No email found in event");
-          return;
-        }
-
-        try {
-          let user = await storage.getUserByEmail(contactEmail);
-          
-          if (!user) {
-            user = await storage.upsertUser({
-              id: `systeme_${Date.now()}`,
-              email: contactEmail,
-              firstName: firstName || null,
-              lastName: lastName || null,
-              location: null,
-              age: null,
-              profileImageUrl: null,
-            });
-            
-            console.log("✅ [WEBHOOK] User created:", user.email);
-            
-            await storage.updateSubscriptionTier(user.id, "free", "5");
-            console.log("✅ [WEBHOOK] Free tier initialized");
-          } else {
-            console.log("ℹ️ [WEBHOOK] User already exists:", user.email);
-          }
-        } catch (error) {
-          console.error("❌ [WEBHOOK] Error creating user:", error);
-        }
-      } else {
-        console.log("ℹ️ [WEBHOOK] Event type not handled:", event.type || event.event || "unknown");
-      }
-    } catch (error) {
-      console.error("❌ [WEBHOOK] Error processing webhook:", error);
     }
   });
 

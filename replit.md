@@ -1,7 +1,7 @@
 # Rapha Lumina - Spiritual Wisdom Chatbot
 
 ## Overview
-Rapha Lumina is a spiritual wellness platform offering an AI-powered chatbot for philosophical and spiritual guidance, leveraging Anthropic's Claude AI. It integrates conversational AI with a multi-page educational platform featuring courses, e-books, meditation resources, and community features. The platform employs a tiered subscription model (Free, Premium, Transformation) managed via systeme.io for payments and CRM, aiming to provide a holistic spiritual growth experience.
+Rapha Lumina is a spiritual wellness platform offering an AI-powered chatbot for philosophical and spiritual guidance, leveraging Anthropic's Claude AI. It integrates conversational AI with a multi-page educational platform featuring courses, e-books, meditation resources, and community features. The platform employs a tiered subscription model (Free, Premium, Transformation) with direct signup and email verification, integrating with FlowyTeam CRM via Zapier webhooks for customer relationship management.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -14,22 +14,24 @@ Preferred communication style: Simple, everyday language.
 **State Management**: TanStack Query for server state and caching; in-memory for session-based chat history.
 **Voice Features**: Browser Web Speech API for speech-to-text, ElevenLabs API for text-to-speech (with browser TTS fallback).
 **PWA**: Installable PWA with service worker for offline capabilities.
-**Multi-Page Structure**: Includes public pages (Landing, About, Shop, Contact, Blog, Confirm Signup), feature pages (Chat, Courses, Membership, Forum), user dashboard (Academy/LMS, profile, course progress), and admin dashboard.
+**Multi-Page Structure**: Includes public pages (Landing, About, Shop, Contact, Blog, Signup, Thank You), feature pages (Chat, Courses, Membership, Forum), user dashboard (Academy/LMS, profile, course progress), and admin dashboard.
 
 ### Backend
 **Server Framework**: Express.js on Node.js with TypeScript.
-**Authentication**: Email/password authentication using Passport Local Strategy with bcrypt. Users sign up via systeme.io webhook, then create a password. Includes forgot password flow and PostgreSQL-backed sessions (`connect-pg-simple`). Admin access controlled by a hardcoded email.
+**Authentication**: Email/password authentication using Passport Local Strategy with bcrypt. Users sign up directly on the website, receive email verification, and log in with credentials. Includes forgot password flow and PostgreSQL-backed sessions (`connect-pg-simple`). Admin access controlled by a hardcoded email.
 **AI Integration**: Anthropic Claude (claude-3-5-sonnet) configured as "Rapha Lumina" persona for concise, empowering, Socratic responses.
 **Data Persistence**: PostgreSQL via Neon serverless with Drizzle ORM.
-**Test User Detection**: Automatic identification of test users for filtering in the admin dashboard.
+**Email Service**: Resend API for transactional emails (verification, password reset).
+**CRM Integration**: Zapier webhooks send verified user data to FlowyTeam CRM.
 
 ### Database Schema
 **Core Tables**: `users`, `sessions`, `messages`, `newsletterSubscribers`, `subscriptions`, `blog_posts`, `forumPosts`, `forumReplies`, `forumLikes`.
 **LMS Tables**: `courses`, `modules`, `lessons`, `enrollments`, `studentProgress`, `flashcards`, `meditationTracks`, `musicTracks`.
+**User Fields**: `id`, `email`, `password`, `firstName`, `lastName`, `address`, `dateOfBirth`, `emailVerified`, `verificationToken`, `verificationTokenExpires`, `resetPasswordToken`, `resetPasswordExpires`, `isAdmin`, `isTestUser`, `createdAt`, `updatedAt`.
 **Subscription Model**: Free (5 chats), Premium (10 chats, voice, priority support), Transformation (unlimited chats, full program access, coaching). Chat limits reset monthly.
 
 ### API Design
-**Public Endpoints**: Newsletter subscription, anonymous/authenticated chat, systeme.io webhooks.
+**Public Endpoints**: Newsletter subscription, signup, email verification, anonymous/authenticated chat.
 **Protected Endpoints**: User profile, chat history, TTS generation, subscription details, course enrollment, lesson progress.
 **Admin Endpoints**: User management, subscriber lists, subscription management, premium access grants, test user toggles.
 **Chat Limit Enforcement**: Middleware checks subscription tier and usage.
@@ -49,8 +51,12 @@ Preferred communication style: Simple, everyday language.
 - Bcrypt: Password hashing.
 - connect-pg-simple: PostgreSQL-backed session management.
 
-**Payment/CRM Integration**:
-- systeme.io: Sales funnels, payment processing, email marketing, CRM, with webhook integration.
+**Email Service**:
+- Resend: Transactional email service for verification and password reset emails.
+
+**CRM Integration**:
+- FlowyTeam: CRM for customer management.
+- Zapier: Webhook automation to sync verified users to FlowyTeam.
 
 **Frontend Libraries**:
 - Radix UI: Accessible component primitives.
@@ -64,61 +70,75 @@ Preferred communication style: Simple, everyday language.
 - Zod: Runtime validation.
 - Tailwind CSS: Utility-first styling.
 
-**Environment Variables**: `ANTHROPIC_API_KEY`, `DATABASE_URL`, `SESSION_SECRET`, `ELEVENLABS_API_KEY`, `SYSTEME_IO_API_KEY`, `SYSTEME_IO_WEBHOOK_SECRET` (optional), `VITE_SYSTEME_IO_JOIN_URL`.
+**Environment Variables**: `ANTHROPIC_API_KEY`, `DATABASE_URL`, `SESSION_SECRET`, `ELEVENLABS_API_KEY`, `RESEND_API_KEY`, `ZAPIER_WEBHOOK_URL` (optional).
 
 ## Recent Updates
 
-### Email/Password Authentication System (November 3, 2025)
+### Direct Signup with Email Verification (November 6, 2025)
 
-Replaced social login (Replit Auth) with traditional email/password authentication for better user control and security:
+Implemented a complete direct signup system with email verification, replacing the previous external signup flow:
 
 **Database Schema Changes**:
-- Added `password` field to users table (text, nullable, stores bcrypt hash)
-- Added `resetToken` field (text, nullable, 32-byte hex string)
-- Added `resetTokenExpires` field (timestamp, nullable, 1-hour expiry)
+- Added `address` field to users table (varchar, nullable)
+- Added `dateOfBirth` field (varchar, nullable, format: DD/MM/YYYY)
+- Added `emailVerified` field (varchar, default "false", determines login access)
+- Added `verificationToken` field (varchar, nullable, 32-byte hex string)
+- Added `verificationTokenExpires` field (timestamp, nullable, 24-hour expiry)
 
-**Authentication Flow**:
-1. User signs up via systeme.io (external site: `https://www.raphalumina.com/sign-up`)
-2. systeme.io webhook (`POST /api/webhooks/systemeio` with type: "contact.created") creates user record in database without password
-3. systeme.io sends confirmation email with "create password" link to user
-4. User clicks link → `/create-password?email={email}` page
-5. User creates password (minimum 8 characters, mixed case, number required) → stored as bcrypt hash
-6. User logs in at `/login` with email/password credentials
+**Signup Flow**:
+1. User visits `/signup` page on the website
+2. User fills out form: First Name, Last Name, Address, Date of Birth (DD/MM/YYYY), Email, Password
+3. Password requirements: minimum 8 characters, one uppercase letter, one lowercase letter, one number
+4. User submits form → account created with `emailVerified: "false"`
+5. Verification email sent via Resend API with unique 24-hour token
+6. User redirected to `/thank-you` page with instructions to check email
+7. User clicks verification link in email → `/verify-email?token={token}` page
+8. Backend verifies token, marks `emailVerified: "true"`, grants free tier subscription (5 chats/month)
+9. Webhook sent to Zapier with user data (id, email, firstName, lastName, address, dateOfBirth, tier)
+10. Zapier forwards data to FlowyTeam CRM for customer management
+11. User can now log in at `/login` with email and password
 
 **Security Features**:
 - Bcrypt password hashing with 10 salt rounds
 - Passport Local Strategy for authentication
-- Session-based authentication with PostgreSQL storage (connect-pg-simple) or in-memory fallback for development
-- Environment-based cookie security (secure: true in production, false in development)
-- CSRF protection with sameSite: 'lax' cookie setting
-- Password complexity requirements: minimum 8 characters, at least one uppercase letter, one lowercase letter, and one number
+- Session-based authentication with PostgreSQL storage (connect-pg-simple)
+- Email verification required before login (checked in Passport strategy)
+- Verification tokens: cryptographically secure (32-byte random), expire in 24 hours, single-use
 - Password reset flow with time-limited tokens (1-hour expiry)
-- 32-byte cryptographically secure random reset tokens (crypto.randomBytes)
 - Admin access restricted to hardcoded email (leratom2012@gmail.com)
 
 **New Frontend Pages**:
-- `/login` - Email/password login form with "Forgot password?" link
-- `/create-password` - Initial password creation with email verification
-- `/forgot-password` - Email submission to request password reset
+- `/signup` - Complete signup form with all user information and password creation
+- `/thank-you` - Post-signup confirmation with email check instructions
+- `/verify-email` - Email verification handler (accepts token query parameter)
+- `/login` - Email/password login form (blocks unverified users)
+- `/forgot-password` - Password reset request form
 - `/reset-password` - Token-validated password reset form
 
 **Backend Routes**:
-- `POST /api/create-password` - Creates password for user account (validates user exists, no existing password)
-- `POST /api/login` - Authenticates user with email/password using Passport
-- `POST /api/logout` - Destroys session and logs out user
-- `POST /api/forgot-password` - Generates reset token and returns reset link directly in response (TEMPORARY: until email integration is complete). Returns `{ success: true, resetLink: string, expiresIn: "1 hour" }`
-- `POST /api/reset-password` - Validates token/expiry and updates password
+- `POST /api/signup` - Creates user account, generates verification token, sends verification email
+- `GET /api/verify-email?token={token}` - Verifies email, grants free tier, sends Zapier webhook
+- `POST /api/login` - Authenticates user (checks emailVerified === "true")
+- `POST /api/logout` - Destroys session
+- `POST /api/forgot-password` - Generates reset token, sends password reset email
+- `POST /api/reset-password` - Validates token and updates password
 
-**Password Reset Flow (Updated - November 3, 2025)**:
-- The forgot password feature currently displays the reset link directly on the page with a prominent yellow warning banner
-- This is a temporary solution until email integration via systeme.io is implemented
-- Frontend shows: "⚠️ Temporary Development Mode" notice + clickable "Reset My Password" button
-- Security: Reset tokens are still cryptographically secure (32-byte random), expire in 1 hour, and are single-use
-- In production: Reset links should be sent via email instead of displayed on screen
+**Email Templates**:
+- Verification email: Welcome message with clickable verification button (24-hour expiry notice)
+- Password reset email: Secure reset link with 1-hour expiry
 
-**Removed Features**: All social login options (Google, GitHub, X, Apple) removed
+**CRM Integration**:
+- On email verification, sends webhook to `ZAPIER_WEBHOOK_URL` with event type `user_verified`
+- Webhook payload includes: user id, email, firstName, lastName, address, dateOfBirth, verifiedAt timestamp, tier
+- Zapier catches webhook and creates/updates contact in FlowyTeam CRM
+- CRM sync happens automatically in background, doesn't block user experience
 
-**Webhook Configuration**: User must configure webhook in systeme.io dashboard:
-- Settings → Webhooks → Add webhook URL: `https://raphalumina.com/api/webhooks/systemeio`
-- Event type: "contact.created" (triggers user account creation)
-- Optional: Set webhook secret in `SYSTEME_IO_WEBHOOK_SECRET` environment variable for validation
+**Removed Features**:
+- All systeme.io integration code removed (webhooks, API client, sync functions)
+- External signup links removed
+- create-password page flow replaced with direct password creation in signup
+
+**Migration Notes**:
+- Existing users created before this update will have `emailVerified: "false"` by default
+- Admin can manually verify users or grant them verified status if needed
+- No breaking changes to existing authenticated sessions

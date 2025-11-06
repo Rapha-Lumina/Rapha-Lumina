@@ -29,6 +29,7 @@ import Login from "@/pages/login";
 import CreatePassword from "@/pages/create-password";
 import ForgotPassword from "@/pages/forgot-password";
 import ResetPassword from "@/pages/reset-password";
+import VerifyEmail from "@/pages/verify-email";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -46,6 +47,7 @@ function Router() {
       <Route path="/create-password" component={CreatePassword} />
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/reset-password" component={ResetPassword} />
+      <Route path="/verify-email" component={VerifyEmail} />
       <Route path="/courses" component={Courses} />
       <Route path="/course-detail" component={CourseDetail} />
       <Route path="/lms-dashboard" component={LMSDashboard} />

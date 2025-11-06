@@ -76,6 +76,11 @@ export async function setupAuth(app: Express) {
           return done(null, false, { message: 'Please create a password first' });
         }
 
+        // Check if email is verified
+        if (user.emailVerified !== "true") {
+          return done(null, false, { message: 'Please verify your email address before logging in. Check your inbox for the verification link.' });
+        }
+
         const isMatch = await bcrypt.compare(password, user.password);
         
         if (!isMatch) {
