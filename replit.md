@@ -150,3 +150,39 @@ Implemented a complete direct signup system with email verification, replacing t
 - Existing users created before this update will have `emailVerified: "false"` by default
 - Admin can manually verify users or grant them verified status if needed
 - No breaking changes to existing authenticated sessions
+
+### Verification Link Domain Fix (November 6, 2025 - Late Night)
+
+Fixed verification and password reset email links to use correct domains in both development and production:
+
+**Problem Solved**:
+- Verification links in emails were pointing to `localhost` or incorrect domains
+- Email links were not clickable when opened from real email clients
+- `BASE_URL` environment variable was not set, causing domain resolution issues
+
+**Solution Implemented**:
+- Updated `server/routes.ts` to automatically detect the correct domain:
+  - **Development**: Uses `REPLIT_DOMAINS` environment variable (Replit preview URL)
+  - **Production**: Uses `BASE_URL` environment variable (custom domain)
+  - **Fallback**: Uses `req.hostname` if neither is available
+- Applied to both verification emails (`/verify-email?token=...`) and password reset emails (`/reset-password?token=...`)
+
+**Testing Completed**:
+- ✅ Complete signup flow tested end-to-end
+- ✅ Verification email sends successfully via Resend API
+- ✅ Verification link generates with correct Replit development URL
+- ✅ Verification endpoint marks user as verified in database
+- ✅ Zapier webhook fires successfully after verification
+- ✅ Verified users can log in successfully
+- ✅ Admin account (leratom2012@gmail.com) manually verified and accessible
+
+**Production Deployment Requirements**:
+- Set `BASE_URL=https://raphalumina.com` in deployment environment variables
+- Deploy as **Autoscale** (not Static) - this is a full-stack Express application
+- Verify `raphalumina.com` domain is configured in Resend dashboard
+- All other environment variables: `RESEND_API_KEY`, `ANTHROPIC_API_KEY`, `SESSION_SECRET`, `ZAPIER_WEBHOOK_URL`, `ELEVENLABS_API_KEY`
+
+**Important Notes**:
+- Development verification links work within Replit webview
+- Production deployment with custom domain required for email links to work from external email clients (Gmail, Outlook, etc.)
+- See `DEPLOYMENT_GUIDE.md` for complete deployment instructions and troubleshooting
