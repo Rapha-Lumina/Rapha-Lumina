@@ -53,6 +53,8 @@ Preferred communication style: Simple, everyday language.
 
 **Email Service**:
 - Resend: Transactional email service for verification and password reset emails.
+- Email sender in development: `onboarding@resend.dev` (Resend's test domain)
+- Production requires verified domain setup in Resend dashboard.
 
 **CRM Integration**:
 - FlowyTeam: CRM for customer management.
@@ -126,6 +128,7 @@ Implemented a complete direct signup system with email verification, replacing t
 **Email Templates**:
 - Verification email: Welcome message with clickable verification button (24-hour expiry notice)
 - Password reset email: Secure reset link with 1-hour expiry
+- Both emails sent from: `Rapha Lumina <onboarding@resend.dev>` (development/testing)
 
 **CRM Integration**:
 - On email verification, sends webhook to `ZAPIER_WEBHOOK_URL` with event type `user_verified`
