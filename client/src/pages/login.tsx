@@ -144,17 +144,12 @@ export default function Login() {
             <p>
               Don't have an account?{" "}
               <Button 
+                variant="link"
                 className="p-0 h-auto font-normal" 
-                asChild
+                onClick={() => setLocation("/signup")}
                 data-testid="link-signup"
               >
-                <a 
-                  href="https://www.raphalumina.com/sign-up"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Sign up here
-                </a>
+                Sign up here
               </Button>
             </p>
           </CardFooter>

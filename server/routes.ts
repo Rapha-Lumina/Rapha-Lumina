@@ -387,7 +387,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const user = await storage.getUserByEmail(email);
       if (!user) {
-        // Don't reveal if user exists
+        // Don't reveal if user exists - return success anyway for security
         return res.json({ success: true, message: "If an account exists with this email, a password reset link has been sent." });
       }
 
@@ -397,17 +397,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       await storage.updateResetToken(user.id, resetToken, resetExpires);
 
-      // TEMPORARY: Return reset link directly (until email integration is complete)
+      // Send password reset email using Resend
       const resetLink = `https://${req.hostname}/reset-password?token=${resetToken}`;
       
-      console.log(`⚠️  [SECURITY WARNING] Password reset link generated for ${email}: ${resetLink}`);
-      console.log(`⚠️  [SECURITY WARNING] This link is being sent in API response. In production, send via email only!`);
+      try {
+        const response = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            from: 'Rapha Lumina <noreply@raphalumina.com>',
+            to: [email],
+            subject: 'Reset your Rapha Lumina password',
+            html: `
+              <!DOCTYPE html>
+              <html>
+                <head>
+                  <meta charset="utf-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                </head>
+                <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+                  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                    <h1 style="color: white; margin: 0; font-size: 28px;">Password Reset Request</h1>
+                  </div>
+                  <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+                    <h2 style="color: #333; margin-top: 0;">Hi ${user.firstName || 'there'},</h2>
+                    <p>We received a request to reset your password for your Rapha Lumina account.</p>
+                    <p>Click the button below to create a new password:</p>
+                    <div style="text-align: center; margin: 30px 0;">
+                      <a href="${resetLink}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Reset Password</a>
+                    </div>
+                    <p style="color: #666; font-size: 14px;">Or copy and paste this link into your browser:</p>
+                    <p style="color: #667eea; word-break: break-all; font-size: 14px;">${resetLink}</p>
+                    <p style="color: #666; font-size: 14px; margin-top: 30px;"><strong>This link will expire in 1 hour.</strong></p>
+                    <p style="color: #666; font-size: 14px;">If you didn't request a password reset, please ignore this email. Your password will remain unchanged.</p>
+                  </div>
+                  <div style="text-align: center; padding: 20px; color: #999; font-size: 12px;">
+                    <p>© 2025 Rapha Lumina. All rights reserved.</p>
+                  </div>
+                </body>
+              </html>
+            `
+          })
+        });
 
+        if (!response.ok) {
+          console.error('Failed to send password reset email:', await response.text());
+        } else {
+          console.log(`✅ Password reset email sent to ${email}`);
+        }
+      } catch (emailError) {
+        console.error('Error sending password reset email:', emailError);
+      }
+
+      // Return success response without the reset link (security best practice)
       res.json({ 
         success: true, 
-        message: "Password reset link generated.",
-        resetLink: resetLink, // TEMPORARY: Remove this when email is implemented
-        expiresIn: "1 hour"
+        message: "If an account exists with this email, a password reset link has been sent."
       });
     } catch (error: any) {
       console.error("Error in forgot password:", error);

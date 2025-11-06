@@ -23,7 +23,6 @@ export default function ForgotPassword() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [emailSent, setEmailSent] = useState(false);
-  const [resetLink, setResetLink] = useState<string | null>(null);
 
   const form = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
@@ -36,16 +35,11 @@ export default function ForgotPassword() {
     mutationFn: async (data: ForgotPasswordFormData) => {
       return await apiRequest("POST", "/api/forgot-password", data);
     },
-    onSuccess: (response: any) => {
+    onSuccess: () => {
       setEmailSent(true);
-      if (response.resetLink) {
-        setResetLink(response.resetLink);
-      }
       toast({
-        title: "Reset link generated",
-        description: response.resetLink 
-          ? "Your password reset link is ready. Click it below to continue."
-          : "If an account exists with this email, we've sent password reset instructions.",
+        title: "Check your email",
+        description: "If an account exists with this email, we've sent password reset instructions.",
       });
     },
     onError: (error: any) => {
@@ -85,49 +79,23 @@ export default function ForgotPassword() {
           <CardContent>
             {emailSent ? (
               <div className="text-center space-y-4">
-                {resetLink ? (
-                  <>
-                    <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-md text-left space-y-2">
-                      <p className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
-                        ⚠️ Temporary Development Mode
-                      </p>
-                      <p className="text-xs text-yellow-600 dark:text-yellow-400">
-                        Email integration is not yet configured. In production, this link will be sent to your email instead.
-                      </p>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <p className="text-sm text-muted-foreground">
-                        Click the button below to reset your password:
-                      </p>
-                      <Button
-                        className="w-full"
-                        onClick={() => window.location.href = resetLink}
-                        data-testid="button-use-reset-link"
-                      >
-                        Reset My Password
-                      </Button>
-                      <p className="text-xs text-muted-foreground">
-                        This link expires in 1 hour
-                      </p>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-muted-foreground">
-                      We've sent password reset instructions to your email address. Please check your inbox and follow the link to reset your password.
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Didn't receive the email? Check your spam folder or try again.
-                    </p>
-                  </>
-                )}
+                <div className="p-4 bg-primary/10 border border-primary/20 rounded-md text-left space-y-2">
+                  <p className="text-sm font-medium">
+                    ✅ Email Sent
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    We've sent password reset instructions to your email address. Please check your inbox and follow the link to reset your password.
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    The reset link will expire in 1 hour for security.
+                  </p>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Didn't receive the email? Check your spam folder or try again below.
+                </p>
                 <Button
                   variant="outline"
-                  onClick={() => {
-                    setEmailSent(false);
-                    setResetLink(null);
-                  }}
+                  onClick={() => setEmailSent(false)}
                   data-testid="button-try-again"
                 >
                   Try Again
