@@ -131,14 +131,9 @@ export function Navigation() {
                       variant="default" 
                       size="default"
                     >
-                      <a 
-                        href="https://www.raphalumina.com/sign-up"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        data-testid="button-signup"
-                      >
+                      <Link href="/signup" data-testid="button-signup">
                         Sign up
-                      </a>
+                      </Link>
                     </Button>
                   </>
                 )}
@@ -205,16 +200,10 @@ export function Navigation() {
                           Log in
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <a 
-                            href="https://www.raphalumina.com/sign-up"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center"
-                            data-testid="button-mobile-signup"
-                          >
+                          <Link href="/signup" className="flex items-center" data-testid="button-mobile-signup">
                             <User className="w-4 h-4 mr-2" />
                             Sign up
-                          </a>
+                          </Link>
                         </DropdownMenuItem>
                       </>
                     )}

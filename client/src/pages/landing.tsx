@@ -71,16 +71,10 @@ export default function Landing() {
               className="text-lg px-10 py-7 bg-primary hover:bg-primary/90 border-2 border-primary-border shadow-xl"
               asChild
             >
-              <a 
-                href="https://www.raphalumina.com/sign-up"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center"
-                data-testid="button-begin-journey"
-              >
+              <Link href="/signup" className="inline-flex items-center" data-testid="button-begin-journey">
                 <MessageCircle className="mr-2 h-5 w-5" />
                 Begin Your Journey
-              </a>
+              </Link>
             </Button>
             <Button
               size="lg"

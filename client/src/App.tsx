@@ -40,6 +40,7 @@ function Router() {
       <Route path="/chat" component={Chat} />
       <Route path="/shop" component={Shop} />
       <Route path="/signup" component={Signup} />
+      <Route path="/sign-up" component={Signup} />
       <Route path="/confirm-signup" component={ConfirmSignup} />
       <Route path="/thank-you" component={ThankYou} />
       <Route path="/join-awakening" component={JoinAwakening} />

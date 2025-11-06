@@ -1,3 +1,4 @@
+import { Link } from "wouter";
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -72,16 +73,10 @@ export default function Shop() {
               className="bg-primary/5 border-primary/20"
               asChild
             >
-              <a 
-                href="https://www.raphalumina.com/sign-up"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2"
-                data-testid="button-notify-launch"
-              >
+              <Link href="/signup" className="inline-flex items-center gap-2" data-testid="button-notify-launch">
                 <Sparkles className="w-5 h-5" />
                 <span>Get Notified When Shop Launches</span>
-              </a>
+              </Link>
             </Button>
           </div>
         </div>
