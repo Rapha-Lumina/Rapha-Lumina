@@ -167,6 +167,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const baseUrl = process.env.BASE_URL || `https://${req.hostname}`;
       const verificationLink = `${baseUrl}/verify-email?token=${verificationToken}`;
       
+      console.log(`[EMAIL] Verification link for ${email}: ${verificationLink}`);
+      
       try {
         const response = await fetch('https://api.resend.com/emails', {
           method: 'POST',
