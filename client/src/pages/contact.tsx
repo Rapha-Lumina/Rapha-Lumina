@@ -57,7 +57,7 @@ export default function Contact() {
     },
     {
       question: "How do I access the Academy after purchase?",
-      answer: "After completing your purchase through our secure payment partner (systeme.io), you'll automatically receive Academy access within a few minutes. Simply log back into Rapha Lumina and navigate to the Academy page. If you don't see access after 10 minutes, please contact support@raphalumina.com with your order confirmation."
+      answer: "After completing your purchase through our secure payment system, you'll automatically receive Academy access within a few minutes. Simply log back into Rapha Lumina and navigate to the Academy page. If you don't see access after 10 minutes, please contact support@raphalumina.com with your order confirmation."
     },
     {
       question: "Can I chat with Rapha Lumina in multiple languages?",

@@ -90,8 +90,8 @@ export default function Membership() {
       cta: "Upgrade to Premium",
       highlighted: true,
       chatLimit: 10,
-      funnelUrlUSD: "https://leratom2012.systeme.io/premium-offer",
-      funnelUrlZAR: "https://www.raphalumina.com/premium-offer-zar"
+      funnelUrlUSD: "/contact",
+      funnelUrlZAR: "/contact"
     },
     {
       name: "Transformation Package",
@@ -114,8 +114,8 @@ export default function Membership() {
       cta: "Begin Transformation",
       highlighted: false,
       chatLimit: null,
-      funnelUrlUSD: "https://leratom2012.systeme.io/transformation-int",
-      funnelUrlZAR: "https://www.raphalumina.com/transformation-zar"
+      funnelUrlUSD: "/contact",
+      funnelUrlZAR: "/contact"
     }
   ];
 

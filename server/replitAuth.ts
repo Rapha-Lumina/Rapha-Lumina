@@ -8,7 +8,6 @@ import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
-import { systemeIoClient } from "./systemeio";
 
 if (!process.env.REPLIT_DOMAINS) {
   throw new Error("Environment variable REPLIT_DOMAINS not provided");
@@ -67,12 +66,8 @@ async function upsertUser(
     profileImageUrl: claims["profile_image_url"],
   });
   
-  // Sync new user registration to systeme.io in background
-  if (user) {
-    systemeIoClient.syncUserRegistration(user).catch(err => {
-      console.error("Failed to sync user registration to systeme.io:", err);
-    });
-  }
+  // User created successfully - no external sync needed
+  return user;
 }
 
 export async function setupAuth(app: Express) {

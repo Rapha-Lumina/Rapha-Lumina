@@ -137,7 +137,12 @@ Implemented a complete direct signup system with email verification, replacing t
 - CRM sync happens automatically in background, doesn't block user experience
 
 **Removed Features**:
-- All systeme.io integration code removed (webhooks, API client, sync functions)
+- ALL systeme.io integration code completely removed:
+  - Removed systeme.io sync from server/replitAuth.ts (user registration sync)
+  - Removed systeme.io funnel URLs from membership page
+  - Deleted unused SystemeIoPopup and SystemeIoForm components
+  - Removed systeme.io references from FAQ/contact page
+  - No systeme.io webhooks, API clients, or sync functions remain
 - External signup links removed
 - create-password page flow replaced with direct password creation in signup
 
