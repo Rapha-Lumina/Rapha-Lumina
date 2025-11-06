@@ -9,7 +9,6 @@ packages = ["python312Packages.flask", "nano", "mailutils", "graphicsmagick-imag
 [deployment]
 deploymentTarget = "cloudrun"
 build = ["npm", "run", "build"]
-publicDir = "dist"
 run = ["sh", "-c", "Test Website"]
 
 [[ports]]
