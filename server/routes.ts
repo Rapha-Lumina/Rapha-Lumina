@@ -210,13 +210,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           })
         });
 
+        const responseText = await response.text();
         if (!response.ok) {
-          console.error('Failed to send verification email:', await response.text());
+          console.error(`[EMAIL] Failed to send verification email to ${email}:`, responseText);
         } else {
-          console.log(`✅ Verification email sent to ${email}`);
+          console.log(`[EMAIL] ✅ Verification email sent to ${email}`);
         }
       } catch (emailError) {
-        console.error('Error sending verification email:', emailError);
+        console.error(`[EMAIL] Error sending verification email to ${email}:`, emailError);
       }
 
       res.json({ 
@@ -289,16 +290,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
             })
           });
 
+          const webhookText = await webhookResponse.text();
           if (!webhookResponse.ok) {
-            console.error(`⚠️ Zapier webhook failed with status ${webhookResponse.status}:`, await webhookResponse.text());
+            console.error(`[ZAPIER] ⚠️ Webhook failed with status ${webhookResponse.status} for ${user.email}:`, webhookText);
           } else {
-            console.log(`✅ Sent verification webhook to Zapier for ${user.email}`);
+            console.log(`[ZAPIER] ✅ Sent verification webhook to Zapier for ${user.email}`);
           }
         } else {
-          console.log(`ℹ️ ZAPIER_WEBHOOK_URL not configured - skipping CRM sync for ${user.email}`);
+          console.log(`[ZAPIER] ℹ️ ZAPIER_WEBHOOK_URL not configured - skipping CRM sync for ${user.email}`);
         }
       } catch (webhookError) {
-        console.error('❌ Error sending Zapier webhook:', webhookError);
+        console.error('[ZAPIER] ❌ Error sending webhook:', webhookError);
       }
 
       res.json({ 
@@ -452,13 +454,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           })
         });
 
+        const responseText = await response.text();
         if (!response.ok) {
-          console.error('Failed to send password reset email:', await response.text());
+          console.error(`[EMAIL] Failed to send password reset email to ${email}:`, responseText);
         } else {
-          console.log(`✅ Password reset email sent to ${email}`);
+          console.log(`[EMAIL] ✅ Password reset email sent to ${email}`);
         }
       } catch (emailError) {
-        console.error('Error sending password reset email:', emailError);
+        console.error(`[EMAIL] Error sending password reset email to ${email}:`, emailError);
       }
 
       // Return success response without the reset link (security best practice)
