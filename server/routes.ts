@@ -270,7 +270,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const zapierWebhookUrl = process.env.ZAPIER_WEBHOOK_URL;
         if (zapierWebhookUrl) {
-          await fetch(zapierWebhookUrl, {
+          const webhookResponse = await fetch(zapierWebhookUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -287,10 +287,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
               }
             })
           });
-          console.log(`✅ Sent verification webhook to Zapier for ${user.email}`);
+
+          if (!webhookResponse.ok) {
+            console.error(`⚠️ Zapier webhook failed with status ${webhookResponse.status}:`, await webhookResponse.text());
+          } else {
+            console.log(`✅ Sent verification webhook to Zapier for ${user.email}`);
+          }
+        } else {
+          console.log(`ℹ️ ZAPIER_WEBHOOK_URL not configured - skipping CRM sync for ${user.email}`);
         }
       } catch (webhookError) {
-        console.error('Error sending Zapier webhook:', webhookError);
+        console.error('❌ Error sending Zapier webhook:', webhookError);
       }
 
       res.json({ 
