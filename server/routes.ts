@@ -164,7 +164,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.updateVerificationToken(user.id, verificationToken, verificationExpires);
 
       // Send verification email using Resend
-      const baseUrl = process.env.BASE_URL || `https://${req.hostname}`;
+      // Development: Use Replit dev URL, Production: Use BASE_URL env var
+      const baseUrl = process.env.BASE_URL || 
+                      (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : `https://${req.hostname}`);
       const verificationLink = `${baseUrl}/verify-email?token=${verificationToken}`;
       
       console.log(`[EMAIL] Verification link for ${email}: ${verificationLink}`);
@@ -410,7 +412,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.updateResetToken(user.id, resetToken, resetExpires);
 
       // Send password reset email using Resend
-      const baseUrl = process.env.BASE_URL || `https://${req.hostname}`;
+      // Development: Use Replit dev URL, Production: Use BASE_URL env var
+      const baseUrl = process.env.BASE_URL || 
+                      (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : `https://${req.hostname}`);
       const resetLink = `${baseUrl}/reset-password?token=${resetToken}`;
       
       try {
