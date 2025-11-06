@@ -1555,56 +1555,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // POST /api/webhooks/flowyteam - Receive webhooks from FlowyTeam
-  app.post("/api/webhooks/flowyteam", async (req, res) => {
-    try {
-      console.log("📩 Received webhook from FlowyTeam:");
-      console.log("Headers:", JSON.stringify(req.headers, null, 2));
-      console.log("Body:", JSON.stringify(req.body, null, 2));
-
-      // Verify the webhook is from FlowyTeam using API key if provided
-      const authHeader = req.headers.authorization;
-      const apiKey = process.env.FLOWYTEAM_API_KEY;
-      
-      if (apiKey && authHeader !== `Bearer ${apiKey}`) {
-        console.log("⚠️ FlowyTeam webhook authentication failed");
-        return res.status(401).json({ error: "Unauthorized" });
-      }
-
-      // Process the webhook data
-      // FlowyTeam will send different types of events
-      const { event, data } = req.body;
-
-      switch (event) {
-        case "lead.created":
-        case "lead.updated":
-          console.log(`✅ FlowyTeam ${event}:`, data);
-          // You can sync this data back to your users table if needed
-          // Example: Update user info based on lead data
-          break;
-        
-        case "employee.created":
-        case "employee.updated":
-          console.log(`✅ FlowyTeam ${event}:`, data);
-          break;
-        
-        default:
-          console.log(`ℹ️ FlowyTeam event received: ${event}`);
-      }
-
-      // Always respond with 200 OK to acknowledge receipt
-      res.json({ 
-        success: true, 
-        message: "Webhook received successfully",
-        received_at: new Date().toISOString()
-      });
-
-    } catch (error) {
-      console.error("❌ Error processing FlowyTeam webhook:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
   const httpServer = createServer(app);
   return httpServer;
 }
