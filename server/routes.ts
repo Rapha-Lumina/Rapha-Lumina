@@ -164,7 +164,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.updateVerificationToken(user.id, verificationToken, verificationExpires);
 
       // Send verification email using Resend
-      const verificationLink = `https://${req.hostname}/verify-email?token=${verificationToken}`;
+      const baseUrl = process.env.BASE_URL || `https://${req.hostname}`;
+      const verificationLink = `${baseUrl}/verify-email?token=${verificationToken}`;
       
       try {
         const response = await fetch('https://api.resend.com/emails', {
@@ -405,7 +406,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.updateResetToken(user.id, resetToken, resetExpires);
 
       // Send password reset email using Resend
-      const resetLink = `https://${req.hostname}/reset-password?token=${resetToken}`;
+      const baseUrl = process.env.BASE_URL || `https://${req.hostname}`;
+      const resetLink = `${baseUrl}/reset-password?token=${resetToken}`;
       
       try {
         const response = await fetch('https://api.resend.com/emails', {
