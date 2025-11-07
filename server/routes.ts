@@ -11,6 +11,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import bcrypt from "bcrypt";
+import { odooService } from "./odoo";
 
 if (!process.env.ANTHROPIC_API_KEY) {
   console.warn("Warning: ANTHROPIC_API_KEY not configured. Chat functionality will not work.");
@@ -309,6 +310,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       } catch (webhookError) {
         console.error('[ZAPIER] ❌ Error sending webhook:', webhookError);
+      }
+
+      // Sync customer to Odoo CRM
+      try {
+        if (odooService.isConfigured()) {
+          const odooResult = await odooService.syncCustomer({
+            email: user.email!,
+            firstName: user.firstName || undefined,
+            lastName: user.lastName || undefined,
+            address: user.address || undefined,
+            dateOfBirth: user.dateOfBirth || undefined,
+            subscriptionTier: 'Free',
+          });
+
+          if (odooResult.success) {
+            console.log(`[ODOO] ✅ Synced customer to Odoo (Partner ID: ${odooResult.partnerId}) for ${user.email}`);
+          } else {
+            console.error(`[ODOO] ⚠️ Failed to sync customer: ${odooResult.error}`);
+          }
+        } else {
+          console.log(`[ODOO] ℹ️ Odoo not configured - skipping customer sync for ${user.email}`);
+        }
+      } catch (odooError) {
+        console.error('[ODOO] ❌ Error syncing customer:', odooError);
       }
 
       res.json({ 
@@ -1342,6 +1367,126 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating subscriber test status:", error);
       res.status(500).json({ error: "Failed to update subscriber test status" });
+    }
+  });
+
+  // GET /api/admin/odoo/status - Check Odoo configuration status (ADMIN ONLY)
+  app.get("/api/admin/odoo/status", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const configured = odooService.isConfigured();
+      res.json({ 
+        configured,
+        message: configured 
+          ? "Odoo integration is configured and ready" 
+          : "Odoo integration not configured. Please set ODOO_URL, ODOO_DB, ODOO_USERNAME, and ODOO_API_KEY environment variables."
+      });
+    } catch (error) {
+      console.error("Error checking Odoo status:", error);
+      res.status(500).json({ error: "Failed to check Odoo status" });
+    }
+  });
+
+  // POST /api/admin/odoo/sync-user - Manually sync a specific user to Odoo (ADMIN ONLY)
+  app.post("/api/admin/odoo/sync-user", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { userId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ error: "User ID is required" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      if (!odooService.isConfigured()) {
+        return res.status(400).json({ error: "Odoo integration not configured" });
+      }
+
+      const subscription = await storage.getUserSubscription(userId);
+      const tierName = subscription?.tier === "premium" ? "Premium" : 
+                      subscription?.tier === "transformation" ? "Transformation" : "Free";
+
+      const result = await odooService.syncCustomer({
+        email: user.email!,
+        firstName: user.firstName || undefined,
+        lastName: user.lastName || undefined,
+        address: user.address || undefined,
+        dateOfBirth: user.dateOfBirth || undefined,
+        subscriptionTier: tierName,
+      });
+
+      if (result.success) {
+        res.json({ 
+          success: true, 
+          message: `Successfully synced ${user.email} to Odoo`,
+          partnerId: result.partnerId 
+        });
+      } else {
+        res.status(500).json({ 
+          success: false, 
+          error: result.error || "Failed to sync to Odoo" 
+        });
+      }
+    } catch (error) {
+      console.error("Error syncing user to Odoo:", error);
+      res.status(500).json({ error: "Failed to sync user to Odoo" });
+    }
+  });
+
+  // POST /api/admin/odoo/sync-all-users - Sync all verified users to Odoo (ADMIN ONLY)
+  app.post("/api/admin/odoo/sync-all-users", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      if (!odooService.isConfigured()) {
+        return res.status(400).json({ error: "Odoo integration not configured" });
+      }
+
+      const users = await storage.getAllUsers();
+      const verifiedUsers = users.filter(u => u.emailVerified === "true");
+
+      const results = {
+        total: verifiedUsers.length,
+        successful: 0,
+        failed: 0,
+        errors: [] as string[]
+      };
+
+      for (const user of verifiedUsers) {
+        try {
+          const subscription = await storage.getUserSubscription(user.id);
+          const tierName = subscription?.tier === "premium" ? "Premium" : 
+                          subscription?.tier === "transformation" ? "Transformation" : "Free";
+
+          const result = await odooService.syncCustomer({
+            email: user.email!,
+            firstName: user.firstName || undefined,
+            lastName: user.lastName || undefined,
+            address: user.address || undefined,
+            dateOfBirth: user.dateOfBirth || undefined,
+            subscriptionTier: tierName,
+          });
+
+          if (result.success) {
+            results.successful++;
+          } else {
+            results.failed++;
+            results.errors.push(`${user.email}: ${result.error}`);
+          }
+        } catch (error: any) {
+          results.failed++;
+          results.errors.push(`${user.email}: ${error.message}`);
+        }
+      }
+
+      res.json({
+        success: true,
+        message: `Synced ${results.successful} of ${results.total} users to Odoo`,
+        ...results
+      });
+    } catch (error) {
+      console.error("Error syncing all users to Odoo:", error);
+      res.status(500).json({ error: "Failed to sync users to Odoo" });
     }
   });
 
