@@ -118,10 +118,13 @@ Integrated Odoo business management system for comprehensive CRM, subscription t
 
 **Configuration**:
 Set environment variables to enable:
-- `ODOO_URL`: Odoo instance URL
+- `ODOO_URL`: Odoo instance URL (supports both HTTP and HTTPS protocols)
+  - Examples: `https://yourcompany.odoo.com` or `http://localhost:8069`
+  - Default ports: HTTPS uses 443, HTTP uses 8069 (Odoo default)
+  - Custom ports supported: `http://localhost:8080` or `https://custom.domain.com:8443`
 - `ODOO_DB`: Database name
 - `ODOO_USERNAME`: User email
-- `ODOO_API_KEY`: API key from Odoo user preferences
+- `ODOO_API_KEY`: API key from Odoo user preferences (User > Preferences > Account Security)
 
 **API Endpoints** (Admin only):
 - `GET /api/admin/odoo/status` - Check configuration status

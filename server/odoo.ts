@@ -45,20 +45,35 @@ class OdooService {
 
     try {
       const urlObj = new URL(this.config.url);
+      const isHttps = urlObj.protocol === 'https:';
       
-      this.commonClient = xmlrpc.createSecureClient({
+      // Determine port: use provided port, or default based on protocol
+      const port = urlObj.port 
+        ? parseInt(urlObj.port) 
+        : (isHttps ? 443 : 8069); // Odoo default HTTP port is 8069
+
+      const clientConfig = {
         host: urlObj.hostname,
-        port: parseInt(urlObj.port) || 443,
+        port: port,
         path: '/xmlrpc/2/common',
-      });
+      };
 
-      this.objectClient = xmlrpc.createSecureClient({
-        host: urlObj.hostname,
-        port: parseInt(urlObj.port) || 443,
-        path: '/xmlrpc/2/object',
-      });
+      // Create appropriate client based on protocol
+      if (isHttps) {
+        this.commonClient = xmlrpc.createSecureClient(clientConfig);
+        this.objectClient = xmlrpc.createSecureClient({
+          ...clientConfig,
+          path: '/xmlrpc/2/object',
+        });
+      } else {
+        this.commonClient = xmlrpc.createClient(clientConfig);
+        this.objectClient = xmlrpc.createClient({
+          ...clientConfig,
+          path: '/xmlrpc/2/object',
+        });
+      }
 
-      console.log('[Odoo] Clients initialized successfully');
+      console.log(`[Odoo] Clients initialized successfully (${isHttps ? 'HTTPS' : 'HTTP'} on port ${port})`);
     } catch (error) {
       console.error('[Odoo] Failed to initialize clients:', error);
       this.config = null;
