@@ -7,6 +7,10 @@ import { setupAuth, isAuthenticated, isAdmin, hashPassword, generateResetToken, 
 import { generateSpeech } from "./elevenlabs";
 import passport from "passport";
 import { z } from "zod";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import bcrypt from "bcrypt";
 
 if (!process.env.ANTHROPIC_API_KEY) {
   console.warn("Warning: ANTHROPIC_API_KEY not configured. Chat functionality will not work.");
@@ -1341,7 +1345,202 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // PUT /api/profile - Update user profile (PROTECTED)
+  // Configure multer for avatar uploads
+  const uploadDir = path.join(process.cwd(), "attached_assets", "uploads", "avatars");
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+
+  const storage_multer = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+      cb(null, "avatar-" + uniqueSuffix + path.extname(file.originalname));
+    },
+  });
+
+  const upload = multer({
+    storage: storage_multer,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = /jpeg|jpg|png|gif|webp/;
+      const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+      const mimetype = allowedTypes.test(file.mimetype);
+      if (extname && mimetype) {
+        cb(null, true);
+      } else {
+        cb(new Error("Only image files are allowed (jpeg, jpg, png, gif, webp)"));
+      }
+    },
+  });
+
+  // PATCH /api/user/profile - Update user profile (PROTECTED)
+  app.patch("/api/user/profile", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUserByEmail(req.user.email);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      const { firstName, lastName, address, dateOfBirth } = req.body;
+      
+      const updateData = {
+        id: user.id,
+        email: user.email,
+        firstName: firstName !== undefined ? firstName : user.firstName,
+        lastName: lastName !== undefined ? lastName : user.lastName,
+        address: address !== undefined ? address : user.address,
+        dateOfBirth: dateOfBirth !== undefined ? dateOfBirth : user.dateOfBirth,
+        profileImageUrl: user.profileImageUrl,
+        location: user.location,
+        age: user.age,
+      };
+      
+      const updatedUser = await storage.upsertUser(updateData);
+      
+      // Don't send sensitive data to client
+      const { password, resetPasswordToken, resetPasswordExpires, ...safeUser } = updatedUser;
+      
+      res.json(safeUser);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      res.status(500).json({ error: "Failed to update profile" });
+    }
+  });
+
+  // POST /api/user/upload-avatar - Upload profile picture (PROTECTED)
+  app.post("/api/user/upload-avatar", isAuthenticated, upload.single("avatar"), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const user = await storage.getUserByEmail(req.user.email);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Delete old avatar if exists
+      if (user.profileImageUrl) {
+        const oldFilePath = path.join(process.cwd(), user.profileImageUrl);
+        if (fs.existsSync(oldFilePath)) {
+          fs.unlinkSync(oldFilePath);
+        }
+      }
+
+      // Save new avatar URL
+      const avatarUrl = `/attached_assets/uploads/avatars/${req.file.filename}`;
+      
+      const updateData = {
+        ...user,
+        profileImageUrl: avatarUrl,
+      };
+      
+      const updatedUser = await storage.upsertUser(updateData);
+      
+      // Don't send sensitive data to client
+      const { password, resetPasswordToken, resetPasswordExpires, ...safeUser } = updatedUser;
+      
+      res.json({ success: true, profileImageUrl: avatarUrl, user: safeUser });
+    } catch (error) {
+      console.error("Error uploading avatar:", error);
+      res.status(500).json({ error: "Failed to upload avatar" });
+    }
+  });
+
+  // POST /api/user/change-password - Change user password (PROTECTED)
+  app.post("/api/user/change-password", isAuthenticated, async (req: any, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ error: "Current password and new password are required" });
+      }
+
+      const user = await storage.getUserByEmail(req.user.email);
+      if (!user || !user.password) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Verify current password
+      const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+      if (!isValidPassword) {
+        return res.status(401).json({ error: "Current password is incorrect" });
+      }
+
+      // Hash new password
+      const hashedPassword = await hashPassword(newPassword);
+      
+      const updateData = {
+        ...user,
+        password: hashedPassword,
+      };
+      
+      await storage.upsertUser(updateData);
+      
+      res.json({ success: true, message: "Password changed successfully" });
+    } catch (error) {
+      console.error("Error changing password:", error);
+      res.status(500).json({ error: "Failed to change password" });
+    }
+  });
+
+  // GET /api/user/subscription - Get current user's subscription (PROTECTED)
+  app.get("/api/user/subscription", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = req.user as User;
+      const subscription = await storage.getUserSubscription(user.id);
+      
+      if (!subscription) {
+        return res.json({ tier: "free", chatLimit: "5", chatsUsed: "0", status: "active" });
+      }
+      
+      res.json(subscription);
+    } catch (error) {
+      console.error("Error fetching user subscription:", error);
+      res.status(500).json({ error: "Failed to fetch subscription" });
+    }
+  });
+
+  // GET /api/user/enrollments - Get current user's course enrollments (PROTECTED)
+  app.get("/api/user/enrollments", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = req.user as User;
+      const enrollments = await storage.getUserEnrollments(user.id);
+      
+      // Get course details and progress for each enrollment
+      const enrichedEnrollments = await Promise.all(
+        enrollments.map(async (enrollment: any) => {
+          const course = await storage.getCourse(enrollment.courseId);
+          const progress = await storage.getStudentProgress(user.id, enrollment.courseId);
+          
+          // Calculate progress percentage
+          const lessons = await storage.getLessonsByCourse(enrollment.courseId);
+          const completedLessons = progress.filter((p: any) => p.completed === "true").length;
+          const progressPercentage = lessons.length > 0 
+            ? Math.round((completedLessons / lessons.length) * 100)
+            : 0;
+          
+          return {
+            id: enrollment.id,
+            courseId: enrollment.courseId,
+            courseName: course?.title || "Unknown Course",
+            enrolledAt: enrollment.enrolledAt,
+            progress: String(progressPercentage),
+          };
+        })
+      );
+      
+      res.json(enrichedEnrollments);
+    } catch (error) {
+      console.error("Error fetching user enrollments:", error);
+      res.status(500).json({ error: "Failed to fetch enrollments" });
+    }
+  });
+
+  // PUT /api/profile - Legacy route for backward compatibility
   app.put("/api/profile", isAuthenticated, async (req: any, res) => {
     try {
       const user = await storage.getUserByEmail(req.user.email);

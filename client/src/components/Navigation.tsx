@@ -107,13 +107,23 @@ export function Navigation() {
                       </div>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
-                        <Link href="/admin">
-                          <span className="flex items-center gap-2 w-full cursor-pointer" data-testid="link-admin">
-                            <Settings className="w-4 h-4" />
-                            Admin Dashboard
+                        <Link href="/profile">
+                          <span className="flex items-center gap-2 w-full cursor-pointer" data-testid="link-profile">
+                            <User className="w-4 h-4" />
+                            Profile Settings
                           </span>
                         </Link>
                       </DropdownMenuItem>
+                      {user?.isAdmin === "true" && (
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin">
+                            <span className="flex items-center gap-2 w-full cursor-pointer" data-testid="link-admin">
+                              <Settings className="w-4 h-4" />
+                              Admin Dashboard
+                            </span>
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={handleLogout} data-testid="button-logout">
                         <LogOut className="w-4 h-4 mr-2" />
@@ -181,13 +191,23 @@ export function Navigation() {
                           </div>
                         </div>
                         <DropdownMenuItem asChild>
-                          <Link href="/admin">
-                            <span className="flex items-center gap-2 w-full cursor-pointer" data-testid="link-mobile-admin">
-                              <Settings className="w-4 h-4" />
-                              Admin Dashboard
+                          <Link href="/profile">
+                            <span className="flex items-center gap-2 w-full cursor-pointer" data-testid="link-mobile-profile">
+                              <User className="w-4 h-4" />
+                              Profile Settings
                             </span>
                           </Link>
                         </DropdownMenuItem>
+                        {user?.isAdmin === "true" && (
+                          <DropdownMenuItem asChild>
+                            <Link href="/admin">
+                              <span className="flex items-center gap-2 w-full cursor-pointer" data-testid="link-mobile-admin">
+                                <Settings className="w-4 h-4" />
+                                Admin Dashboard
+                              </span>
+                            </Link>
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem onClick={handleLogout} data-testid="button-mobile-logout">
                           <LogOut className="w-4 h-4 mr-2" />
                           Logout

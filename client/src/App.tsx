@@ -26,6 +26,7 @@ import Contact from "@/pages/contact";
 import Admin from "@/pages/admin";
 import Privacy from "@/pages/privacy";
 import Login from "@/pages/login";
+import Profile from "@/pages/profile";
 import CreatePassword from "@/pages/create-password";
 import ForgotPassword from "@/pages/forgot-password";
 import ResetPassword from "@/pages/reset-password";
@@ -45,6 +46,7 @@ function Router() {
       <Route path="/thank-you" component={ThankYou} />
       <Route path="/join-awakening" component={JoinAwakening} />
       <Route path="/login" component={Login} />
+      <Route path="/profile" component={Profile} />
       <Route path="/create-password" component={CreatePassword} />
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/reset-password" component={ResetPassword} />
