@@ -10,13 +10,13 @@ export default function VerifyEmail() {
   const params = new URLSearchParams(location.split('?')[1]);
   const token = params.get('token');
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error } = useQuery<{ success: boolean; message: string }>({
     queryKey: ['/api/verify-email', token],
     queryFn: async () => {
       if (!token) {
         throw new Error('No verification token provided');
       }
-      return await apiRequest("GET", `/api/verify-email?token=${token}`);
+      return await apiRequest("GET", `/api/verify-email?token=${token}`) as unknown as { success: boolean; message: string };
     },
     retry: false,
     enabled: !!token,
