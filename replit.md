@@ -169,3 +169,32 @@ Complete two-way data synchronization between Rapha Lumina and Odoo:
 - Signature validation via `X-Odoo-Signature` header or `token` query parameter
 - All admin endpoints protected with authentication and admin role check
 - Webhook responds with 202 (Accepted) for async processing
+
+### Contact Form CRM Lead Integration (November 7, 2025)
+
+Integrated contact form with Odoo CRM to automatically create leads when visitors submit inquiries:
+
+**Functionality**:
+- Public contact form at `/contact` captures visitor inquiries
+- Form submissions automatically create CRM leads in Odoo via `crm.lead` model
+- Graceful degradation: form works even when Odoo is not configured
+- Success response returned to user regardless of Odoo status (prevents tech errors from affecting UX)
+
+**Implementation**:
+- **Frontend** (`client/src/pages/contact.tsx`): React form with validation, toast notifications
+- **Backend** (`server/routes.ts`): `POST /api/contact` endpoint validates input and creates leads
+- **Odoo Service** (`server/odoo.ts`): `createLead()` method handles CRM integration
+
+**Lead Data Mapping**:
+- `name`: Subject line or "Contact from {name}" if no subject provided
+- `contact_name`: Visitor's full name from form
+- `email_from`: Visitor's email address
+- `description`: Message body from form
+- `type`: Set to 'lead' (vs opportunity)
+- `stage_id`: 1 (New stage in CRM pipeline)
+
+**API Endpoint**:
+- `POST /api/contact` - Public endpoint, no authentication required
+- Validates: name (required), email (required, validated), message (required), subject (optional)
+- Returns: `{"success": true, "message": "...", "leadId": 123}` on Odoo success
+- Returns: `{"success": true, "message": "..."}` when Odoo not configured (graceful fallback)

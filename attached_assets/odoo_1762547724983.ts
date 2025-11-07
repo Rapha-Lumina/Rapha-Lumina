@@ -270,7 +270,7 @@ class OdooService {
           description: leadData.description,
           phone: leadData.phone || '',
           type: 'lead',
-          stage_id: 1,
+          stage_id: 1, // New stage
         }]
       );
 

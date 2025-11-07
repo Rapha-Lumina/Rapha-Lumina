@@ -646,6 +646,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Contact form submission (PUBLIC - creates lead in Odoo CRM)
+  app.post("/api/contact", async (req, res) => {
+    try {
+      const { name, email, subject, message } = req.body;
+
+      if (!name || !email || !message) {
+        return res.status(400).json({ 
+          error: "Name, email, and message are required" 
+        });
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ 
+          error: "Please provide a valid email address" 
+        });
+      }
+
+      const leadId = await odooService.createLead({
+        name: subject || `Contact from ${name}`,
+        contact_name: name,
+        email_from: email,
+        description: message,
+      });
+
+      if (leadId) {
+        console.log(`[Contact Form] Successfully created Odoo lead #${leadId} for ${email}`);
+        res.json({ 
+          success: true, 
+          message: "Thank you for contacting us. We'll be in touch soon!",
+          leadId: leadId 
+        });
+      } else {
+        console.error('[Contact Form] Failed to create Odoo lead, but returning success to user');
+        res.json({ 
+          success: true, 
+          message: "Thank you for contacting us. We'll be in touch soon!"
+        });
+      }
+
+    } catch (error) {
+      console.error("[Contact Form] Error:", error);
+      res.status(500).json({ 
+        error: "Something went wrong. Please try again." 
+      });
+    }
+  });
+
   // Get all newsletter subscribers (PROTECTED - Admin endpoint)
   app.get("/api/admin/newsletter/subscribers", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
