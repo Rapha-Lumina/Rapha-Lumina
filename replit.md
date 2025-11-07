@@ -126,7 +126,46 @@ Set environment variables to enable:
 - `ODOO_USERNAME`: User email
 - `ODOO_API_KEY`: API key from Odoo user preferences (User > Preferences > Account Security)
 
-**API Endpoints** (Admin only):
-- `GET /api/admin/odoo/status` - Check configuration status
-- `POST /api/admin/odoo/sync-user` - Sync specific user
-- `POST /api/admin/odoo/sync-all-users` - Bulk sync all verified users
+**API Endpoints**:
+- `POST /api/odoo/webhook` - Receive webhook events from Odoo (public, signature-validated)
+- `GET /api/admin/odoo/status` - Check configuration status (Admin only)
+- `POST /api/admin/odoo/sync-user` - Sync specific user to Odoo (Admin only)
+- `POST /api/admin/odoo/sync-all-users` - Bulk sync all verified users to Odoo (Admin only)
+
+**Bidirectional Sync** (November 7, 2025):
+Complete two-way data synchronization between Rapha Lumina and Odoo:
+
+**Outbound Sync (Rapha Lumina → Odoo)**:
+- Email verification creates/updates Odoo partner records
+- Subscription tier changes sync to Odoo customer notes
+- Manual admin sync via dashboard
+
+**Inbound Sync (Odoo → Rapha Lumina)**:
+- Webhook endpoint receives events when Odoo records change
+- Supported events:
+  - `res.partner.updated` - Customer profile changes sync to user records
+  - `sale.order.state_changed` - Order confirmations trigger access grants
+  - `sale.subscription.state_changed` - Subscription updates sync to user tiers
+
+**Loop Prevention**:
+- Database tracking fields: `odooExternalId`, `odooRevision`, `odooLastSyncAt`, `odooSource`
+- Timestamp-based conflict resolution: Compares Odoo `write_date` with local `odooLastSyncAt`
+- Automatic skip: Ignores inbound updates if local record is newer
+
+**Webhook Configuration**:
+1. Set `ODOO_WEBHOOK_SECRET` environment variable for signature validation
+2. Configure Odoo automation to send webhooks to: `https://raphalumina.com/api/odoo/webhook`
+3. Webhook payload format:
+```json
+{
+  "event_type": "updated",
+  "model": "res.partner",
+  "record_id": 123,
+  "write_date": "2025-11-07 12:00:00"
+}
+```
+
+**Security**:
+- Signature validation via `X-Odoo-Signature` header or `token` query parameter
+- All admin endpoints protected with authentication and admin role check
+- Webhook responds with 202 (Accepted) for async processing

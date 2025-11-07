@@ -59,19 +59,38 @@ async function handlePartnerUpdated(payload: OdooWebhookPayload): Promise<void> 
       return;
     }
 
-    // Find user by email
-    const existingUsers = await db
+    // Find user by odooExternalId first (handles email changes), then fall back to email
+    let existingUsers = await db
       .select()
       .from(users)
-      .where(eq(users.email, partner.email))
+      .where(eq(users.odooExternalId, String(payload.record_id)))
       .limit(1);
 
     if (existingUsers.length === 0) {
-      console.log('[Odoo Webhook] No user found with email:', partner.email);
+      // Fall back to email search
+      existingUsers = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, partner.email))
+        .limit(1);
+    }
+
+    if (existingUsers.length === 0) {
+      console.log('[Odoo Webhook] No user found with Odoo ID or email:', payload.record_id, partner.email);
       return;
     }
 
     const user = existingUsers[0];
+    
+    // Check if this update originated from Rapha to prevent loops
+    if (user.odooSource === 'rapha') {
+      const timeSinceLastSync = user.odooLastSyncAt ? Date.now() - new Date(user.odooLastSyncAt).getTime() : Infinity;
+      // If we synced less than 10 seconds ago and we were the source, skip to avoid immediate loop
+      if (timeSinceLastSync < 10000) {
+        console.log('[Odoo Webhook] Skipping update - we just synced this record');
+        return;
+      }
+    }
     const writeDate = partner.write_date ? new Date(partner.write_date) : new Date();
 
     // Check if Odoo record is newer than our record
@@ -129,22 +148,30 @@ async function handleSaleOrderUpdated(payload: OdooWebhookPayload): Promise<void
       return;
     }
 
-    // Fetch partner to get email
-    const partner = await odooService.getPartner(partnerId);
-    if (!partner || !partner.email) {
-      console.warn('[Odoo Webhook] Partner has no email:', partnerId);
-      return;
-    }
-
-    // Find user by email
-    const existingUsers = await db
+    // Find user by odooExternalId first, then fall back to partner lookup
+    let existingUsers = await db
       .select()
       .from(users)
-      .where(eq(users.email, partner.email))
+      .where(eq(users.odooExternalId, String(partnerId)))
       .limit(1);
 
     if (existingUsers.length === 0) {
-      console.log('[Odoo Webhook] No user found with email:', partner.email);
+      // Fall back to fetching partner and searching by email
+      const partner = await odooService.getPartner(partnerId);
+      if (!partner || !partner.email) {
+        console.warn('[Odoo Webhook] Partner has no email:', partnerId);
+        return;
+      }
+
+      existingUsers = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, partner.email))
+        .limit(1);
+    }
+
+    if (existingUsers.length === 0) {
+      console.log('[Odoo Webhook] No user found for sale order partner:', partnerId);
       return;
     }
 
@@ -187,22 +214,30 @@ async function handleSubscriptionUpdated(payload: OdooWebhookPayload): Promise<v
       return;
     }
 
-    // Fetch partner to get email
-    const partner = await odooService.getPartner(partnerId);
-    if (!partner || !partner.email) {
-      console.warn('[Odoo Webhook] Partner has no email:', partnerId);
-      return;
-    }
-
-    // Find user by email
-    const existingUsers = await db
+    // Find user by odooExternalId first, then fall back to partner lookup
+    let existingUsers = await db
       .select()
       .from(users)
-      .where(eq(users.email, partner.email))
+      .where(eq(users.odooExternalId, String(partnerId)))
       .limit(1);
 
     if (existingUsers.length === 0) {
-      console.log('[Odoo Webhook] No user found with email:', partner.email);
+      // Fall back to fetching partner and searching by email
+      const partner = await odooService.getPartner(partnerId);
+      if (!partner || !partner.email) {
+        console.warn('[Odoo Webhook] Partner has no email:', partnerId);
+        return;
+      }
+
+      existingUsers = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, partner.email))
+        .limit(1);
+    }
+
+    if (existingUsers.length === 0) {
+      console.log('[Odoo Webhook] No user found for subscription partner:', partnerId);
       return;
     }
 
