@@ -176,6 +176,69 @@ class OdooService {
     }
   }
 
+  async getPartner(partnerId: number): Promise<OdooPartner | null> {
+    try {
+      const partners = await this.executeKw(
+        'res.partner',
+        'read',
+        [[partnerId], ['name', 'email', 'phone', 'street', 'customer_rank', 'comment', 'write_date']]
+      );
+
+      if (partners && partners.length > 0) {
+        console.log('[Odoo] Fetched partner:', partnerId);
+        return partners[0];
+      }
+
+      console.warn('[Odoo] Partner not found:', partnerId);
+      return null;
+    } catch (error) {
+      console.error('[Odoo] Error fetching partner:', error);
+      return null;
+    }
+  }
+
+  async getSaleOrder(orderId: number): Promise<any | null> {
+    try {
+      const orders = await this.executeKw(
+        'sale.order',
+        'read',
+        [[orderId], ['name', 'partner_id', 'state', 'amount_total', 'date_order', 'write_date']]
+      );
+
+      if (orders && orders.length > 0) {
+        console.log('[Odoo] Fetched sale order:', orderId);
+        return orders[0];
+      }
+
+      console.warn('[Odoo] Sale order not found:', orderId);
+      return null;
+    } catch (error) {
+      console.error('[Odoo] Error fetching sale order:', error);
+      return null;
+    }
+  }
+
+  async getSubscription(subscriptionId: number): Promise<any | null> {
+    try {
+      const subscriptions = await this.executeKw(
+        'sale.subscription',
+        'read',
+        [[subscriptionId], ['name', 'partner_id', 'state', 'recurring_total', 'date_start', 'write_date']]
+      );
+
+      if (subscriptions && subscriptions.length > 0) {
+        console.log('[Odoo] Fetched subscription:', subscriptionId);
+        return subscriptions[0];
+      }
+
+      console.warn('[Odoo] Subscription not found:', subscriptionId);
+      return null;
+    } catch (error) {
+      console.error('[Odoo] Error fetching subscription:', error);
+      return null;
+    }
+  }
+
   async syncCustomer(userData: {
     email: string;
     firstName?: string;
