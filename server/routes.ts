@@ -1395,6 +1395,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // POST /api/odoo/webhook - Receive webhook events from Odoo (PUBLIC - validated via signature)
+  const { handleOdooWebhook } = await import("./odooWebhook");
+  app.post("/api/odoo/webhook", async (req: any, res) => {
+    await handleOdooWebhook(req, res);
+  });
+
   // GET /api/admin/odoo/status - Check Odoo configuration status (ADMIN ONLY)
   app.get("/api/admin/odoo/status", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
