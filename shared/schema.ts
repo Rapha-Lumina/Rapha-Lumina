@@ -33,6 +33,10 @@ export const users = pgTable("users", {
   verificationTokenExpires: timestamp("verification_token_expires"),
   resetPasswordToken: varchar("reset_password_token"),
   resetPasswordExpires: timestamp("reset_password_expires"),
+  odooExternalId: varchar("odoo_external_id"),
+  odooRevision: timestamp("odoo_revision"),
+  odooLastSyncAt: timestamp("odoo_last_sync_at"),
+  odooSource: varchar("odoo_source"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -95,6 +99,10 @@ export const subscriptions = pgTable("subscriptions", {
   stripeSubscriptionId: varchar("stripe_subscription_id"),
   currentPeriodStart: timestamp("current_period_start"),
   currentPeriodEnd: timestamp("current_period_end"),
+  odooExternalId: varchar("odoo_external_id"),
+  odooRevision: timestamp("odoo_revision"),
+  odooLastSyncAt: timestamp("odoo_last_sync_at"),
+  odooSource: varchar("odoo_source"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
