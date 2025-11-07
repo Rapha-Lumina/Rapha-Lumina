@@ -8,13 +8,52 @@ import { odooService } from './odoo';
 const WEBHOOK_SECRET = process.env.ODOO_WEBHOOK_SECRET || '';
 
 interface OdooWebhookPayload {
-  event_type: string;
-  model: string;
-  record_id: number;
+  event_type?: string;
+  model?: string;
+  record_id?: number;
   data?: any;
   write_date?: string;
   create_date?: string;
   origin?: string;
+  
+  // Odoo native webhook format
+  _model?: string;
+  _id?: number;
+  _action?: string;
+  _name?: string;
+}
+
+/**
+ * Normalize webhook payload to handle both custom and Odoo native formats
+ */
+function normalizePayload(payload: any): OdooWebhookPayload {
+  // If it's already in our custom format, return as-is
+  if (payload.event_type && payload.model && payload.record_id) {
+    return payload;
+  }
+  
+  // If it's Odoo's native format (has _model and _id), convert it
+  if (payload._model && payload._id !== undefined) {
+    const normalized: OdooWebhookPayload = {
+      event_type: payload._action?.includes('created') ? 'created' : 'updated',
+      model: payload._model,
+      record_id: payload._id,
+      data: payload,
+      write_date: payload.write_date,
+      create_date: payload.create_date,
+    };
+    
+    // Preserve original fields
+    normalized._model = payload._model;
+    normalized._id = payload._id;
+    normalized._action = payload._action;
+    normalized._name = payload._name;
+    
+    return normalized;
+  }
+  
+  // Return as-is if we can't determine format
+  return payload;
 }
 
 /**
@@ -50,6 +89,11 @@ function isOriginRapha(payload: OdooWebhookPayload): boolean {
  */
 async function handlePartnerUpdated(payload: OdooWebhookPayload): Promise<void> {
   try {
+    if (!payload.record_id) {
+      console.warn('[Odoo Webhook] No record_id in payload, skipping');
+      return;
+    }
+    
     console.log('[Odoo Webhook] Processing partner update:', payload.record_id);
 
     // Fetch complete partner data from Odoo
@@ -131,6 +175,11 @@ async function handlePartnerUpdated(payload: OdooWebhookPayload): Promise<void> 
  */
 async function handleSaleOrderUpdated(payload: OdooWebhookPayload): Promise<void> {
   try {
+    if (!payload.record_id) {
+      console.warn('[Odoo Webhook] No record_id in payload, skipping');
+      return;
+    }
+    
     console.log('[Odoo Webhook] Processing sale order update:', payload.record_id);
 
     // Fetch sale order data from Odoo
@@ -195,6 +244,11 @@ async function handleSaleOrderUpdated(payload: OdooWebhookPayload): Promise<void
  */
 async function handleSubscriptionUpdated(payload: OdooWebhookPayload): Promise<void> {
   try {
+    if (!payload.record_id) {
+      console.warn('[Odoo Webhook] No record_id in payload, skipping');
+      return;
+    }
+    
     console.log('[Odoo Webhook] Processing subscription update:', payload.record_id);
 
     // Fetch subscription data from Odoo
@@ -303,7 +357,8 @@ export async function handleOdooWebhook(req: Request, res: Response): Promise<vo
       return;
     }
 
-    const payload: OdooWebhookPayload = req.body;
+    // Normalize payload to handle both custom and Odoo native formats
+    const payload: OdooWebhookPayload = normalizePayload(req.body);
 
     // Ignore events that originated from Rapha Lumina to prevent loops
     if (isOriginRapha(payload)) {
