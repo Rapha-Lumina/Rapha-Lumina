@@ -79,4 +79,51 @@ Avatar images are stored in `attached_assets/uploads/avatars/`.
 - Zod: Runtime validation.
 - Tailwind CSS: Utility-first styling.
 
-**Environment Variables**: `ANTHROPIC_API_KEY`, `DATABASE_URL`, `SESSION_SECRET`, `ELEVENLABS_API_KEY`, `RESEND_API_KEY`, `ZAPIER_WEBHOOK_URL`, `REPLIT_DOMAINS`, `BASE_URL`.
+**Environment Variables**: `ANTHROPIC_API_KEY`, `DATABASE_URL`, `SESSION_SECRET`, `ELEVENLABS_API_KEY`, `RESEND_API_KEY`, `ZAPIER_WEBHOOK_URL`, `ODOO_URL`, `ODOO_DB`, `ODOO_USERNAME`, `ODOO_API_KEY`, `REPLIT_DOMAINS`, `BASE_URL`.
+
+**Business Management**:
+- Odoo ERP: Customer relationship management, subscription tracking, business analytics.
+- XML-RPC: API communication protocol for Odoo integration.
+
+## Recent Features & Updates
+
+### Odoo ERP Integration (November 7, 2025)
+
+Integrated Odoo business management system for comprehensive CRM, subscription tracking, and customer management:
+
+**Core Capabilities**:
+- **Automatic Customer Sync**: Verified users automatically synced to Odoo CRM as `res.partner` contacts upon email verification
+- **Subscription Tracking**: User subscription tiers (Free, Premium, Transformation) automatically synced to Odoo customer records
+- **Manual Sync Control**: Admin dashboard provides one-click bulk sync and individual user sync options
+- **Real-time Updates**: Subscription changes (tier upgrades/downgrades) immediately sync to Odoo
+
+**Technical Implementation**:
+- **Service Module** (`server/odoo.ts`): XML-RPC client for Odoo API with authentication via API key
+- **Customer Operations**: Create, update, and search partner records in Odoo
+- **Graceful Degradation**: Works without configuration, logs informative warnings when disabled
+- **Error Resilience**: Failed syncs don't interrupt user workflows (verification, subscription changes proceed)
+
+**Admin Dashboard Features**:
+- Visual connection status indicator (Connected/Not Configured)
+- One-click "Sync All Users to Odoo" with real-time progress
+- Detailed sync results showing successful/failed counts
+- Configuration instructions with required environment variables
+
+**Data Mapping to Odoo**:
+- `name`: Full name (firstName + lastName) or email fallback
+- `email`: User email (unique identifier)
+- `street`: User address
+- `customer_rank`: Set to 1 (marks as active customer)
+- `comment`: Subscription tier + date of birth for reference
+
+**Configuration**:
+Set environment variables to enable:
+- `ODOO_URL`: Odoo instance URL
+- `ODOO_DB`: Database name
+- `ODOO_USERNAME`: User email
+- `ODOO_API_KEY`: API key from Odoo user preferences
+
+**API Endpoints** (Admin only):
+- `GET /api/admin/odoo/status` - Check configuration status
+- `POST /api/admin/odoo/sync-user` - Sync specific user
+- `POST /api/admin/odoo/sync-all-users` - Bulk sync all verified users

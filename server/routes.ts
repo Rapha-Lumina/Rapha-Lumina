@@ -1327,6 +1327,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         chatLimitMap[tier as keyof typeof chatLimitMap]
       );
 
+      // Sync updated subscription to Odoo
+      try {
+        if (odooService.isConfigured()) {
+          const tierName = tier === "premium" ? "Premium" : 
+                          tier === "transformation" ? "Transformation" : "Free";
+          
+          const odooResult = await odooService.syncCustomer({
+            email: targetUser.email!,
+            firstName: targetUser.firstName || undefined,
+            lastName: targetUser.lastName || undefined,
+            address: targetUser.address || undefined,
+            dateOfBirth: targetUser.dateOfBirth || undefined,
+            subscriptionTier: tierName,
+          });
+
+          if (odooResult.success) {
+            console.log(`[ODOO] ✅ Synced subscription update to Odoo for ${targetUser.email}`);
+          } else {
+            console.error(`[ODOO] ⚠️ Failed to sync subscription: ${odooResult.error}`);
+          }
+        }
+      } catch (odooError) {
+        console.error('[ODOO] ❌ Error syncing subscription update:', odooError);
+      }
+
       res.json({ success: true, subscription, email: targetUser.email });
     } catch (error) {
       console.error("Error granting access by email:", error);

@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Download, Mail, User as UserIcon, Calendar, Database, CheckCircle2, CrownIcon, Shield } from "lucide-react";
+import { Download, Mail, User as UserIcon, Calendar, Database, CheckCircle2, CrownIcon, Shield, RefreshCw, Link2 } from "lucide-react";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { User, NewsletterSubscriber, Subscription } from "@shared/schema";
@@ -273,6 +273,33 @@ export default function Admin() {
       toast({
         title: "Failed to Update Status",
         description: error.message || "Failed to update subscriber test status",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Odoo Integration queries and mutations
+  const { data: odooStatus } = useQuery<{ configured: boolean; message: string }>({
+    queryKey: ["/api/admin/odoo/status"],
+    retry: false,
+  });
+
+  const syncAllUsersToOdooMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/admin/odoo/sync-all-users");
+      return await res.json();
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Odoo Sync Complete",
+        description: `Successfully synced ${data.successful} of ${data.total} users to Odoo. ${data.failed > 0 ? `${data.failed} failed.` : ''}`,
+        variant: data.failed > 0 ? "default" : "default",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Sync Failed",
+        description: error.message || "Failed to sync users to Odoo",
         variant: "destructive",
       });
     },
@@ -639,6 +666,80 @@ export default function Admin() {
                 </TableBody>
               </Table>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Link2 className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle>Odoo ERP Integration</CardTitle>
+                <CardDescription>
+                  Sync customer data to Odoo CRM for business management
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="p-4 rounded-lg border bg-card">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">Integration Status</span>
+                {odooStatus?.configured ? (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-green-500/10 text-green-700 dark:text-green-400">
+                    <CheckCircle2 className="w-3 h-3" />
+                    Connected
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400">
+                    Not Configured
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {odooStatus?.message || "Loading..."}
+              </p>
+            </div>
+
+            {odooStatus?.configured && (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Manually sync all verified users to your Odoo CRM. This will create or update customer records for each user with their subscription tier.
+                </p>
+                <Button
+                  onClick={() => syncAllUsersToOdooMutation.mutate()}
+                  disabled={syncAllUsersToOdooMutation.isPending}
+                  className="w-full"
+                  data-testid="button-sync-odoo"
+                >
+                  {syncAllUsersToOdooMutation.isPending ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Syncing...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Sync All Users to Odoo
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+
+            {!odooStatus?.configured && (
+              <div className="p-3 rounded-md bg-muted/50 space-y-2">
+                <p className="text-xs font-medium text-foreground">To enable Odoo integration, configure these environment variables:</p>
+                <ul className="text-xs text-muted-foreground space-y-1 pl-4 list-disc">
+                  <li><code className="px-1 py-0.5 rounded bg-background">ODOO_URL</code> - Your Odoo instance URL</li>
+                  <li><code className="px-1 py-0.5 rounded bg-background">ODOO_DB</code> - Your Odoo database name</li>
+                  <li><code className="px-1 py-0.5 rounded bg-background">ODOO_USERNAME</code> - Odoo user email</li>
+                  <li><code className="px-1 py-0.5 rounded bg-background">ODOO_API_KEY</code> - Odoo API key</li>
+                </ul>
+              </div>
+            )}
           </CardContent>
         </Card>
 
