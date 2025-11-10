@@ -235,7 +235,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             },
             body: JSON.stringify({
               from: 'Rapha Lumina <support@raphalumina.com>',
-              to: ['support@raphalumina.com'],
+              to: ['leratom2012@gmail.com'],
               subject: `New User Signup - ${firstName} ${lastName}`,
               html: `<!DOCTYPE html>
 <html>
@@ -1971,7 +1971,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             },
             body: JSON.stringify({
               from: 'Rapha Lumina <support@raphalumina.com>',
-              to: ['support@raphalumina.com'],
+              to: ['leratom2012@gmail.com'],
               subject: `New Contact Form Submission - ${subject || 'No Subject'}`,
               html: `
                 <!DOCTYPE html>
@@ -2021,7 +2021,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             })
           });
           
-          console.log(`[Contact Form] Notification email sent to support@raphalumina.com`);
+          console.log(`[Contact Form] Notification email sent to leratom2012@gmail.com`);
         } catch (emailError) {
           console.error('[Contact Form] Failed to send notification email:', emailError);
           // Don't fail the whole request if email fails - lead was still created
@@ -2046,7 +2046,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             },
             body: JSON.stringify({
               from: 'Rapha Lumina <support@raphalumina.com>',
-              to: ['support@raphalumina.com'],
+              to: ['leratom2012@gmail.com'],
               subject: `Contact Form Submission (Odoo Sync Failed)`,
               html: `
                 <!DOCTYPE html>
