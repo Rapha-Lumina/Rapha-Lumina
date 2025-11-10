@@ -1465,6 +1465,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // POST /api/admin/odoo/test-connection - Test Odoo authentication (ADMIN ONLY)
+  app.post("/api/admin/odoo/test-connection", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      if (!odooService.isConfigured()) {
+        return res.status(400).json({ 
+          success: false,
+          error: "Odoo integration not configured. Please set ODOO_URL, ODOO_DB, ODOO_USERNAME, and ODOO_API_KEY environment variables."
+        });
+      }
+
+      console.log('[Odoo Test] Testing authentication...');
+      const authenticated = await odooService.authenticate();
+
+      if (authenticated) {
+        console.log('[Odoo Test] ✅ Authentication successful');
+        res.json({ 
+          success: true,
+          message: "Successfully authenticated with Odoo",
+          url: process.env.ODOO_URL,
+          database: process.env.ODOO_DB,
+          username: process.env.ODOO_USERNAME
+        });
+      } else {
+        console.log('[Odoo Test] ❌ Authentication failed');
+        res.json({ 
+          success: false,
+          message: "Authentication failed. Please check your Odoo credentials.",
+          url: process.env.ODOO_URL,
+          database: process.env.ODOO_DB,
+          username: process.env.ODOO_USERNAME,
+          hint: "Verify that ODOO_API_KEY is correct and has not expired"
+        });
+      }
+    } catch (error: any) {
+      console.error("[Odoo Test] Error testing connection:", error);
+      res.status(500).json({ 
+        success: false,
+        error: "Failed to test Odoo connection",
+        details: error.message
+      });
+    }
+  });
+
   // POST /api/admin/odoo/sync-user - Manually sync a specific user to Odoo (ADMIN ONLY)
   app.post("/api/admin/odoo/sync-user", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
