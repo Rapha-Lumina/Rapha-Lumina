@@ -4,9 +4,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Mail, MessageCircle, Send, HelpCircle } from "lucide-react";
+import { Mail, MessageCircle, Send, HelpCircle, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+
+const ODOO_CONTACT_URL = "https://rapha-lumina1.odoo.com/contact";
+
+// Toggle this to true if you want to display the Odoo form embedded on-page
+// (you can also move this to an environment flag if you prefer)
+const USE_ODOO_EMBED = false;
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -72,7 +78,7 @@ export default function Contact() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     try {
       const response = await fetch('/api/contact', {
         method: 'POST',
@@ -89,7 +95,7 @@ export default function Contact() {
           title: "Message sent!",
           description: "Thank you for reaching out. We'll respond within 24-48 hours.",
         });
-        
+
         setFormData({ name: "", email: "", subject: "", message: "" });
       } else {
         toast({
@@ -120,7 +126,7 @@ export default function Contact() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navigation />
-      
+
       <main className="flex-1">
         {/* Hero Section */}
         <div className="bg-gradient-to-b from-primary/10 to-background py-16 px-4">
@@ -129,98 +135,159 @@ export default function Contact() {
               Get in Touch
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Have questions about your spiritual journey? Want to learn more about our offerings? 
+              Have questions about your spiritual journey? Want to learn more about our offerings?
               We're here to support you.
             </p>
+
+            {/* NEW: Primary CTA to Odoo form */}
+            <div className="mt-8 flex items-center justify-center gap-4 flex-wrap">
+              <Button size="lg" asChild>
+                <a
+                  href={ODOO_CONTACT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-testid="button-contact-odoo"
+                >
+                  Contact via Odoo <ExternalLink className="ml-2 h-4 w-4" />
+                </a>
+              </Button>
+              <Button variant="outline" size="lg" asChild>
+                <a href="#contact-form" data-testid="button-contact-internal">
+                  Use site form
+                </a>
+              </Button>
+            </div>
           </div>
         </div>
 
         <div className="max-w-5xl mx-auto px-4 py-16" id="contact-form">
           <div className="grid md:grid-cols-2 gap-8">
-            {/* Contact Form */}
+            {/* Contact Form OR Odoo Embed */}
             <div>
-              <h2 className="font-display text-3xl mb-6">Send Us a Message</h2>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label htmlFor="name" className="text-sm font-medium mb-2 block">
-                    Name
-                  </label>
-                  <Input
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="Your name"
-                    required
-                    data-testid="input-contact-name"
+              <h2 className="font-display text-3xl mb-6">
+                {USE_ODOO_EMBED ? "Contact Form (Powered by Odoo)" : "Send Us a Message"}
+              </h2>
+
+              {USE_ODOO_EMBED ? (
+                // --- NEW: Odoo form embedded on-page (toggle with USE_ODOO_EMBED)
+                <div className="rounded-lg overflow-hidden border">
+                  <iframe
+                    src={ODOO_CONTACT_URL}
+                    width="100%"
+                    height="900"
+                    style={{ border: "0" }}
+                    loading="lazy"
+                    title="Odoo Contact Form"
+                    data-testid="iframe-odoo-contact"
                   />
+                  <div className="text-xs text-muted-foreground px-2 py-3">
+                    If the form doesn’t load,{" "}
+                    <a
+                      href={ODOO_CONTACT_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline"
+                    >
+                      open it in a new tab
+                    </a>.
+                  </div>
                 </div>
-                <div>
-                  <label htmlFor="email" className="text-sm font-medium mb-2 block">
-                    Email
-                  </label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="your.email@example.com"
-                    required
-                    data-testid="input-contact-email"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="subject" className="text-sm font-medium mb-2 block">
-                    Subject
-                  </label>
-                  <Input
-                    id="subject"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    placeholder="What's this about?"
-                    required
-                    data-testid="input-contact-subject"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="message" className="text-sm font-medium mb-2 block">
-                    Message
-                  </label>
-                  <Textarea
-                    id="message"
-                    name="message"
-                    value={formData.message}
-                    onChange={handleChange}
-                    placeholder="Share your thoughts or questions..."
-                    rows={6}
-                    required
-                    data-testid="input-contact-message"
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  size="lg" 
-                  className="w-full gap-2"
-                  disabled={isSubmitting}
-                  data-testid="button-submit-contact"
-                >
-                  {isSubmitting ? "Sending..." : (
-                    <>
-                      <Send className="w-4 h-4" />
-                      Send Message
-                    </>
-                  )}
-                </Button>
-              </form>
+              ) : (
+                // --- Existing local form (kept as fallback)
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label htmlFor="name" className="text-sm font-medium mb-2 block">
+                      Name
+                    </label>
+                    <Input
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="Your name"
+                      required
+                      data-testid="input-contact-name"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="text-sm font-medium mb-2 block">
+                      Email
+                    </label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="your.email@example.com"
+                      required
+                      data-testid="input-contact-email"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="subject" className="text-sm font-medium mb-2 block">
+                      Subject
+                    </label>
+                    <Input
+                      id="subject"
+                      name="subject"
+                      value={formData.subject}
+                      onChange={handleChange}
+                      placeholder="What's this about?"
+                      required
+                      data-testid="input-contact-subject"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="message" className="text-sm font-medium mb-2 block">
+                      Message
+                    </label>
+                    <Textarea
+                      id="message"
+                      name="message"
+                      value={formData.message}
+                      onChange={handleChange}
+                      placeholder="Share your thoughts or questions..."
+                      rows={6}
+                      required
+                      data-testid="input-contact-message"
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="w-full gap-2"
+                    disabled={isSubmitting}
+                    data-testid="button-submit-contact"
+                  >
+                    {isSubmitting ? "Sending..." : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        Send Message
+                      </>
+                    )}
+                  </Button>
+
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Prefer the Odoo form?{" "}
+                    <a
+                      href={ODOO_CONTACT_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline"
+                    >
+                      Open it here
+                    </a>.
+                  </p>
+                </form>
+              )}
             </div>
 
             {/* Contact Info & Quick Actions */}
             <div className="space-y-6">
               <div>
                 <h2 className="font-display text-3xl mb-6">Other Ways to Connect</h2>
-                
+
                 <div className="space-y-4">
                   <Card className="hover-elevate">
                     <CardHeader>
@@ -240,6 +307,35 @@ export default function Contact() {
                       <Button variant="outline" className="w-full" asChild>
                         <a href="/chat" data-testid="link-start-chat">
                           Start a Conversation
+                        </a>
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  {/* NEW: Direct Odoo link card */}
+                  <Card className="hover-elevate">
+                    <CardHeader>
+                      <div className="flex items-start gap-3">
+                        <div className="bg-primary/10 p-3 rounded-lg">
+                          <ExternalLink className="w-6 h-6 text-primary" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg mb-2">Contact via Odoo</CardTitle>
+                          <CardDescription>
+                            Prefer our hosted Odoo form? Open it in a new tab and submit your message securely.
+                          </CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <Button className="w-full" asChild>
+                        <a
+                          href={ODOO_CONTACT_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          data-testid="link-contact-odoo-card"
+                        >
+                          Open Odoo Contact Form
                         </a>
                       </Button>
                     </CardContent>
@@ -297,19 +393,19 @@ export default function Contact() {
 
             <Accordion type="single" collapsible className="space-y-4">
               {faqData.map((faq, index) => (
-                <AccordionItem 
-                  key={index} 
+                <AccordionItem
+                  key={index}
                   value={`item-${index}`}
                   className="bg-card border rounded-lg px-6 hover-elevate"
                   data-testid={`faq-item-${index}`}
                 >
-                  <AccordionTrigger 
+                  <AccordionTrigger
                     className="text-left hover:no-underline py-5"
                     data-testid={`faq-question-${index}`}
                   >
                     <span className="font-medium text-base pr-4">{faq.question}</span>
                   </AccordionTrigger>
-                  <AccordionContent 
+                  <AccordionContent
                     className="text-muted-foreground pb-5 leading-relaxed"
                     data-testid={`faq-answer-${index}`}
                   >
