@@ -177,6 +177,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`[EMAIL] Verification link for ${email}: ${verificationLink}`);
       
       try {
+        // Send verification email to the new user
         const response = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
@@ -187,35 +188,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
             from: 'Rapha Lumina <support@raphalumina.com>',
             to: [email],
             subject: 'Verify your Rapha Lumina account',
-            html: `
-              <!DOCTYPE html>
-              <html>
-                <head>
-                  <meta charset="utf-8">
-                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                </head>
-                <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-                  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-                    <h1 style="color: white; margin: 0; font-size: 28px;">Welcome to Rapha Lumina</h1>
-                  </div>
-                  <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
-                    <h2 style="color: #333; margin-top: 0;">Hi ${firstName},</h2>
-                    <p>Thank you for joining Rapha Lumina! We're excited to guide you on your spiritual journey.</p>
-                    <p>Please verify your email address by clicking the button below:</p>
-                    <div style="text-align: center; margin: 30px 0;">
-                      <a href="${verificationLink}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Verify Email Address</a>
-                    </div>
-                    <p style="color: #666; font-size: 14px;">Or copy and paste this link into your browser:</p>
-                    <p style="color: #667eea; word-break: break-all; font-size: 14px;">${verificationLink}</p>
-                    <p style="color: #666; font-size: 14px; margin-top: 30px;">This link will expire in 24 hours.</p>
-                    <p style="color: #666; font-size: 14px;">If you didn't create an account with Rapha Lumina, please ignore this email.</p>
-                  </div>
-                  <div style="text-align: center; padding: 20px; color: #999; font-size: 12px;">
-                    <p>© 2025 Rapha Lumina. All rights reserved.</p>
-                  </div>
-                </body>
-              </html>
-            `
+            html: `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+<h1 style="color: white; margin: 0; font-size: 28px;">Welcome to Rapha Lumina</h1>
+</div>
+<div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+<h2 style="color: #333; margin-top: 0;">Hi ${firstName},</h2>
+<p>Thank you for joining Rapha Lumina! We're excited to guide you on your spiritual journey.</p>
+<p>Please verify your email address by clicking the button below:</p>
+<div style="text-align: center; margin: 30px 0;">
+<a href="${verificationLink}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Verify Email Address</a>
+</div>
+<p style="color: #666; font-size: 14px;">Or copy and paste this link into your browser:</p>
+<p style="color: #667eea; word-break: break-all; font-size: 14px;">${verificationLink}</p>
+<p style="color: #666; font-size: 14px; margin-top: 30px;">This link will expire in 24 hours.</p>
+<p style="color: #666; font-size: 14px;">If you didn't create an account with Rapha Lumina, please ignore this email.</p>
+</div>
+<div style="text-align: center; padding: 20px; color: #999; font-size: 12px;">
+<p>© 2025 Rapha Lumina. All rights reserved.</p>
+</div>
+</body>
+</html>`
           })
         });
 
@@ -225,6 +224,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } else {
           console.log(`[EMAIL] ✅ Verification email sent to ${email}`);
         }
+
+        // Send admin notification to support@raphalumina.com
+        try {
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              from: 'Rapha Lumina <support@raphalumina.com>',
+              to: ['support@raphalumina.com'],
+              subject: `New User Signup - ${firstName} ${lastName}`,
+              html: `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+<h1 style="color: white; margin: 0; font-size: 24px;">New User Registered</h1>
+</div>
+<div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+<div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+<h2 style="color: #667eea; margin-top: 0;">User Details</h2>
+<p><strong>Name:</strong> ${firstName} ${lastName}</p>
+<p><strong>Email:</strong> <a href="mailto:${email}" style="color: #667eea;">${email}</a></p>
+<p><strong>Address:</strong> ${address}</p>
+<p><strong>Date of Birth:</strong> ${dateOfBirth}</p>
+</div>
+<div style="background: white; padding: 20px; border-radius: 8px;">
+<h2 style="color: #667eea; margin-top: 0;">Account Status</h2>
+<p><strong>Created:</strong> ${new Date().toLocaleString('en-ZA', { timeZone: 'Africa/Johannesburg' })}</p>
+<p><strong>Email Verified:</strong> <span style="color: #f59e0b;">⏳ Pending verification</span></p>
+<p><strong>Verification Email:</strong> <span style="color: #10b981;">✓ Sent successfully</span></p>
+</div>
+</div>
+<div style="text-align: center; margin-top: 20px; color: #666; font-size: 12px;">
+<p>This notification was sent from your Rapha Lumina website</p>
+</div>
+</body>
+</html>`
+            })
+          });
+          console.log(`[EMAIL] ✅ Admin notification sent for new signup: ${email}`);
+        } catch (adminEmailError) {
+          console.error(`[EMAIL] Failed to send admin notification:`, adminEmailError);
+        }
+
       } catch (emailError) {
         console.error(`[EMAIL] Error sending verification email to ${email}:`, emailError);
       }
@@ -1911,6 +1960,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (leadId) {
         console.log(`[Contact Form] Successfully created Odoo lead #${leadId} for ${email}`);
+        
+        // Send notification email to support@raphalumina.com
+        try {
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              from: 'Rapha Lumina <support@raphalumina.com>',
+              to: ['support@raphalumina.com'],
+              subject: `New Contact Form Submission - ${subject || 'No Subject'}`,
+              html: `
+                <!DOCTYPE html>
+                <html>
+                  <head>
+                    <meta charset="utf-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  </head>
+                  <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                      <h1 style="color: white; margin: 0; font-size: 24px;">New Contact Form Submission</h1>
+                    </div>
+                    
+                    <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+                      <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                        <h2 style="color: #667eea; margin-top: 0;">Contact Details</h2>
+                        <p><strong>Name:</strong> ${name}</p>
+                        <p><strong>Email:</strong> <a href="mailto:${email}" style="color: #667eea;">${email}</a></p>
+                        <p><strong>Subject:</strong> ${subject || 'No subject provided'}</p>
+                      </div>
+                      
+                      <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                        <h2 style="color: #667eea; margin-top: 0;">Message</h2>
+                        <p style="white-space: pre-wrap;">${message}</p>
+                      </div>
+                      
+                      <div style="background: white; padding: 20px; border-radius: 8px;">
+                        <h2 style="color: #667eea; margin-top: 0;">Odoo Integration</h2>
+                        <p><strong>Lead ID:</strong> #${leadId}</p>
+                        <p><strong>Status:</strong> <span style="color: #10b981; font-weight: bold;">✓ Successfully created in Odoo CRM</span></p>
+                        <p style="margin-top: 15px;">
+                          <a href="https://rapha-lumina1.odoo.com/web#id=${leadId}&model=crm.lead&view_type=form" 
+                             style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                            View Lead in Odoo
+                          </a>
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 20px; color: #666; font-size: 12px;">
+                      <p>This notification was sent from your Rapha Lumina website</p>
+                      <p>Timestamp: ${new Date().toLocaleString('en-ZA', { timeZone: 'Africa/Johannesburg' })}</p>
+                    </div>
+                  </body>
+                </html>
+              `
+            })
+          });
+          
+          console.log(`[Contact Form] Notification email sent to support@raphalumina.com`);
+        } catch (emailError) {
+          console.error('[Contact Form] Failed to send notification email:', emailError);
+          // Don't fail the whole request if email fails - lead was still created
+        }
+        
         res.json({ 
           success: true, 
           message: "Thank you for contacting us. We'll be in touch soon!",
@@ -1919,6 +2035,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         // Odoo failed but don't expose technical details to user
         console.error('[Contact Form] Failed to create Odoo lead, but returning success to user');
+        
+        // Still try to send an email notification about the failed Odoo sync
+        try {
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              from: 'Rapha Lumina <support@raphalumina.com>',
+              to: ['support@raphalumina.com'],
+              subject: `Contact Form Submission (Odoo Sync Failed)`,
+              html: `
+                <!DOCTYPE html>
+                <html>
+                  <body style="font-family: Arial, sans-serif; padding: 20px;">
+                    <h2 style="color: #ef4444;">Odoo Sync Failed</h2>
+                    <p>A contact form was submitted but failed to sync to Odoo CRM:</p>
+                    <p><strong>Name:</strong> ${name}</p>
+                    <p><strong>Email:</strong> ${email}</p>
+                    <p><strong>Subject:</strong> ${subject || 'No subject'}</p>
+                    <p><strong>Message:</strong></p>
+                    <p style="white-space: pre-wrap; background: #f5f5f5; padding: 15px; border-radius: 5px;">${message}</p>
+                    <p style="color: #ef4444; margin-top: 20px;"><strong>Action Required:</strong> Please manually create this lead in Odoo.</p>
+                  </body>
+                </html>
+              `
+            })
+          });
+        } catch (emailError) {
+          console.error('[Contact Form] Failed to send failure notification email:', emailError);
+        }
+        
         res.json({ 
           success: true, 
           message: "Thank you for contacting us. We'll be in touch soon!"
