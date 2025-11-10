@@ -26,7 +26,7 @@ export function Navigation() {
     { path: "/membership", label: "Membership", icon: Book },
     { path: "/forum", label: "Forum", icon: Users },
     { path: "/blog", label: "Blog", icon: Newspaper },
-    { path: "/contact", label: "Contact", icon: Mail },
+    { path: "https://rapha-lumina1.odoo.com/contact", label: "Contact Us", icon: Mail, external: true },
   ];
 
   const handleLogin = () => {
@@ -59,21 +59,38 @@ export function Navigation() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-2">
             <div className="flex items-center gap-1">
-              {navItems.map((item) => (
-                <Link key={item.path} href={item.path}>
-                  <span
-                    className={`inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 min-h-8 px-3 py-2 hover-elevate active-elevate-2 cursor-pointer ${
-                      location === item.path
-                        ? 'bg-primary text-primary-foreground shadow'
-                        : 'bg-transparent hover:bg-accent hover:text-accent-foreground'
-                    }`}
-                    data-testid={`link-nav-${item.label.toLowerCase()}`}
+              {navItems.map((item) => {
+                const isExternal = 'external' in item && item.external;
+                const commonClasses = `inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 min-h-8 px-3 py-2 hover-elevate active-elevate-2 cursor-pointer ${
+                  location === item.path
+                    ? 'bg-primary text-primary-foreground shadow'
+                    : 'bg-transparent hover:bg-accent hover:text-accent-foreground'
+                }`;
+                
+                return isExternal ? (
+                  <a 
+                    key={item.path} 
+                    href={item.path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={commonClasses}
+                    data-testid={`link-nav-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
                   >
                     <item.icon className="w-4 h-4" />
-                    {item.path === "/" ? "" : item.label}
-                  </span>
-                </Link>
-              ))}
+                    {item.label}
+                  </a>
+                ) : (
+                  <Link key={item.path} href={item.path}>
+                    <span
+                      className={commonClasses}
+                      data-testid={`link-nav-${item.label.toLowerCase()}`}
+                    >
+                      <item.icon className="w-4 h-4" />
+                      {item.path === "/" ? "" : item.label}
+                    </span>
+                  </Link>
+                );
+              })}
             </div>
 
             {/* Auth Section - Desktop */}
@@ -161,16 +178,33 @@ export function Navigation() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 {/* Navigation Items */}
-                {navItems.map((item) => (
-                  <DropdownMenuItem key={item.path} asChild>
-                    <Link href={item.path}>
-                      <span className="flex items-center gap-2 w-full" data-testid={`link-mobile-${item.label.toLowerCase()}`}>
-                        <item.icon className="w-4 h-4" />
-                        {item.label}
-                      </span>
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
+                {navItems.map((item) => {
+                  const isExternal = 'external' in item && item.external;
+                  
+                  return (
+                    <DropdownMenuItem key={item.path} asChild>
+                      {isExternal ? (
+                        <a 
+                          href={item.path}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 w-full"
+                          data-testid={`link-mobile-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
+                        >
+                          <item.icon className="w-4 h-4" />
+                          {item.label}
+                        </a>
+                      ) : (
+                        <Link href={item.path}>
+                          <span className="flex items-center gap-2 w-full" data-testid={`link-mobile-${item.label.toLowerCase()}`}>
+                            <item.icon className="w-4 h-4" />
+                            {item.label}
+                          </span>
+                        </Link>
+                      )}
+                    </DropdownMenuItem>
+                  );
+                })}
                 
                 {/* Auth Section - Mobile */}
                 {!isLoading && (
