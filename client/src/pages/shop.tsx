@@ -1,34 +1,29 @@
+// src/pages/shop.tsx
 import { Link } from "wouter";
 import { useEffect, useMemo, useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Download, FileText, Package, Sparkles } from "lucide-react";
 
+type FormatKey = ".pdf" | ".epub" | ".mobi";
+
 type Ebook = {
-  id: string;
+  id: string;               // filesystem base name (no extension)
   title: string;
   description: string;
   pages: string;
   format: string;
   topics: string[];
-  available: boolean;
 };
+
+type AccessResp = { id: string; allowed: boolean; formats: string[] };
 
 export default function Shop() {
   const [isZA, setIsZA] = useState(false);
-  const [isSuper, setIsSuper] = useState(false);
-  const [ebookExists, setEbookExists] = useState<Record<string, boolean>>({});
 
-  // Detect SA pricing
+  // --- pricing (unchanged visual) ---
   useEffect(() => {
     const detectZA = () => {
       try {
@@ -40,37 +35,19 @@ export default function Shop() {
     };
     setIsZA(detectZA());
   }, []);
-
-  // Superuser check (uses /api/superuser from server)
-  useEffect(() => {
-    const run = async () => {
-      try {
-        const r = await fetch("/api/superuser", { credentials: "include" });
-        if (r.ok) {
-          const j = await r.json();
-          setIsSuper(!!j.superuser);
-        }
-      } catch {
-        setIsSuper(false);
-      }
-    };
-    run();
-  }, []);
-
   const priceLabel = useMemo(() => (isZA ? "R100" : "$10"), [isZA]);
   const bundlePrice = useMemo(() => (isZA ? "R300" : "$25"), [isZA]);
 
-  // Catalog (only first is currently available)
-  const EBOOKS: Ebook[] = [
+  // --- catalog (same titles/design) + IDs for access/download ---
+  const ebooks: Ebook[] = [
     {
       id: "the-awakened-path",
       title: "The Awakened Path: A Modern Guide to Consciousness",
       description:
         "Navigate the journey from unconscious living to awakened awareness. This guide blends ancient wisdom with psychology and quantum insights.",
-      pages: "241 pages",
-      format: "PDF",
+      pages: "280 pages",
+      format: "PDF, EPUB, MOBI",
       topics: ["Consciousness", "Awakening", "Integration", "Practice"],
-      available: true,
     },
     {
       id: "shadow-to-light",
@@ -80,7 +57,6 @@ export default function Shop() {
       pages: "196 pages",
       format: "PDF, EPUB, MOBI",
       topics: ["Shadow Work", "Jung", "Integration", "Transformation"],
-      available: false,
     },
     {
       id: "quantum-mind",
@@ -90,17 +66,15 @@ export default function Shop() {
       pages: "312 pages",
       format: "PDF, EPUB, MOBI",
       topics: ["Quantum Physics", "Consciousness", "Mysticism", "Science"],
-      available: false,
     },
     {
-      id: "stoic-soul",
+      id: "the-stoic-soul",
       title: "The Stoic Soul: Ancient Wisdom for Modern Life",
       description:
         "Practical applications of Stoic philosophy for inner peace and emotional mastery in the modern world.",
       pages: "224 pages",
       format: "PDF, EPUB, MOBI",
       topics: ["Stoicism", "Philosophy", "Practice", "Wisdom"],
-      available: false,
     },
     {
       id: "conversations-with-the-infinite",
@@ -110,74 +84,65 @@ export default function Shop() {
       pages: "168 pages",
       format: "PDF, EPUB, MOBI",
       topics: ["Self-Inquiry", "Journaling", "Meditation", "Practice"],
-      available: false,
     },
   ];
 
-  // Probe file existence for available items (so the Download button only shows when the file is actually there)
+  // --- access state per ebook (admin/member see download; guests see purchase) ---
+  const [access, setAccess] = useState<Record<string, { allowed: boolean; formats: FormatKey[] }>>({});
+  const [choice, setChoice] = useState<Record<string, FormatKey | "">>({}); // selected format per ebook
+  const [probing, setProbing] = useState<boolean>(true);
+
   useEffect(() => {
-    const probe = async (id: string) => {
+    let cancelled = false;
+
+    async function probeAll() {
+      setProbing(true);
       try {
-        const r = await fetch(`/api/ebooks/${id}/exists`, {
-          method: "HEAD",
-          credentials: "include",
-        });
-        setEbookExists((s) => ({ ...s, [id]: r.status === 204 }));
-      } catch {
-        setEbookExists((s) => ({ ...s, [id]: false }));
-      }
-    };
-    EBOOKS.filter((b) => b.available).forEach((b) => probe(b.id));
-  }, []);
-
-  const renderButton = (b: Ebook) => {
-    // Not yet published
-    if (!b.available) {
-      return (
-        <button
-          className="px-4 py-2 rounded-lg bg-gray-700/60 text-gray-300 cursor-not-allowed"
-          disabled
-          title="Coming soon"
-        >
-          Not available — coming soon
-        </button>
-      );
-    }
-
-    // Owner sees direct download (only if file exists)
-    if (isSuper) {
-      if (!ebookExists[b.id]) {
-        return (
-          <button
-            className="px-4 py-2 rounded-lg bg-gray-700/60 text-gray-300 cursor-not-allowed"
-            disabled
-            title="File not found on server"
-          >
-            File not found
-          </button>
+        const results = await Promise.all(
+          ebooks.map(async (b) => {
+            try {
+              const r = await fetch(`/api/access/ebook/${b.id}`, { credentials: "include" });
+              const j = (await r.json()) as AccessResp;
+              // Normalize to our FormatKey list and keep order preference
+              const order: FormatKey[] = [".epub", ".pdf", ".mobi"];
+              const fmts = order.filter(ext => j.formats.includes(ext));
+              return [b.id, { allowed: !!j.allowed, formats: fmts }] as const;
+            } catch {
+              return [b.id, { allowed: false, formats: [] as FormatKey[] }] as const;
+            }
+          })
         );
+
+        if (cancelled) return;
+
+        const map: Record<string, { allowed: boolean; formats: FormatKey[] }> = {};
+        const picks: Record<string, FormatKey | ""> = {};
+        for (const [id, v] of results) {
+          map[id] = v;
+          picks[id] = v.allowed && v.formats.length ? v.formats[0] : "";
+        }
+        setAccess(map);
+        setChoice(picks);
+      } finally {
+        if (!cancelled) setProbing(false);
       }
-      return (
-        <a
-          href={`/api/ebooks/${b.id}/download?format=pdf`}
-          className="px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white inline-flex items-center gap-2"
-        >
-          <Download className="w-4 h-4" />
-          Download
-        </a>
-      );
     }
 
-    // Regular visitors purchase
-    return (
-      <Button
-        onClick={() => {
-          window.location.href = "/membership";
-        }}
-      >
-        Purchase eBook
-      </Button>
-    );
+    probeAll();
+    return () => {
+      cancelled = true;
+    };
+  }, []); // run once
+
+  const handleDownload = async (id: string) => {
+    const ext = choice[id];
+    if (!ext) return;
+    const a = document.createElement("a");
+    a.href = `/api/ebooks/${id}${ext}`;
+    a.download = `${id}${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   };
 
   return (
@@ -185,25 +150,17 @@ export default function Shop() {
       <Navigation />
 
       <main className="flex-1">
-        {/* Coming Soon Section */}
+        {/* Coming Soon Section (unchanged) */}
         <div className="bg-gradient-to-b from-primary/10 to-background py-20 px-4">
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-6">
               <Package className="w-10 h-10 text-primary" />
             </div>
-            <h1 className="font-display text-5xl sm:text-6xl mb-4">
-              Physical Products Coming Soon
-            </h1>
+            <h1 className="font-display text-5xl sm:text-6xl mb-4">Physical Products Coming Soon</h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-              We're preparing sacred wellness tools and conscious living products — stay tuned for
-              launch.
+              We're preparing sacred wellness tools and conscious living products — stay tuned for launch.
             </p>
-            <Button
-              variant="outline"
-              size="lg"
-              className="bg-primary/5 border-primary/20"
-              asChild
-            >
+            <Button variant="outline" size="lg" className="bg-primary/5 border-primary/20" asChild>
               <Link href="/signup" className="inline-flex items-center gap-2">
                 <Sparkles className="w-5 h-5" />
                 <span>Get Notified When Shop Launches</span>
@@ -212,7 +169,7 @@ export default function Shop() {
           </div>
         </div>
 
-        {/* eBooks Section */}
+        {/* eBooks Section (same visuals) */}
         <div className="relative py-16 px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
@@ -226,55 +183,92 @@ export default function Shop() {
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
-              {EBOOKS.map((ebook) => (
-                <Card key={ebook.id} className="hover-elevate flex flex-col">
-                  <CardHeader>
-                    <div className="flex items-start gap-3">
-                      <div className="bg-primary/10 p-3 rounded-lg shrink-0">
-                        <FileText className="w-6 h-6 text-primary" />
+              {ebooks.map((ebook) => {
+                const a = access[ebook.id];
+                const isAllowed = a?.allowed ?? false;
+                const formats = a?.formats ?? [];
+                const selected = choice[ebook.id] ?? "";
+
+                return (
+                  <Card key={ebook.id} className="hover-elevate flex flex-col">
+                    <CardHeader>
+                      <div className="flex items-start gap-3">
+                        <div className="bg-primary/10 p-3 rounded-lg shrink-0">
+                          <FileText className="w-6 h-6 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <CardTitle className="text-xl font-serif mb-2">{ebook.title}</CardTitle>
+                          <CardDescription>{ebook.description}</CardDescription>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <CardTitle className="text-xl font-serif mb-2">
-                          {ebook.title}
-                        </CardTitle>
-                        <CardDescription>{ebook.description}</CardDescription>
+                    </CardHeader>
+
+                    <CardContent className="flex-1">
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {ebook.topics.map((topic, idx) => (
+                          <Badge key={idx} variant="secondary" className="text-xs">
+                            {topic}
+                          </Badge>
+                        ))}
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="flex-1">
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {ebook.topics.map((topic) => (
-                        <Badge key={topic} variant="secondary" className="text-xs">
-                          {topic}
-                        </Badge>
-                      ))}
-                    </div>
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <p>{ebook.pages}</p>
-                      <p className="flex items-center gap-1">
-                        <Download className="w-3 h-3" />
-                        {ebook.format}
-                      </p>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex items-center justify-between gap-4">
-                    <span className="text-2xl font-bold">{priceLabel}</span>
-                    {renderButton(ebook)}
-                  </CardFooter>
-                </Card>
-              ))}
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <p>{ebook.pages}</p>
+                        <p className="flex items-center gap-1">
+                          <Download className="w-3 h-3" />
+                          {ebook.format}
+                        </p>
+                      </div>
+                    </CardContent>
+
+                    <CardFooter className="flex items-center justify-between gap-4">
+                      <span className="text-2xl font-bold">{priceLabel}</span>
+
+                      {/* BUTTON AREA — same spot, behavior changes by access */}
+                      {isAllowed ? (
+                        <div className="flex items-center gap-2">
+                          <select
+                            className="rounded-xl bg-neutral-800 border border-neutral-700 px-3 py-2 text-sm text-neutral-100"
+                            disabled={probing || formats.length === 0}
+                            value={selected}
+                            onChange={(e) =>
+                              setChoice((s) => ({ ...s, [ebook.id]: e.target.value as FormatKey }))
+                            }
+                          >
+                            {!selected && <option value="">Select format</option>}
+                            {formats.includes(".epub") && <option value=".epub">EPUB</option>}
+                            {formats.includes(".pdf") && <option value=".pdf">PDF</option>}
+                            {formats.includes(".mobi") && <option value=".mobi">MOBI</option>}
+                          </select>
+                          <Button
+                            onClick={() => handleDownload(ebook.id)}
+                            disabled={!selected}
+                          >
+                            Download
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          onClick={() => {
+                            window.location.href = "/membership";
+                          }}
+                        >
+                          Purchase eBook
+                        </Button>
+                      )}
+                    </CardFooter>
+                  </Card>
+                );
+              })}
             </div>
           </div>
         </div>
 
-        {/* Bundle Offer Section */}
+        {/* Bundle Offer Section (unchanged) */}
         <div className="bg-gradient-to-b from-primary/10 to-background py-16 px-4">
           <div className="max-w-4xl mx-auto">
             <Card className="border-primary">
               <CardHeader className="text-center">
-                <CardTitle className="text-3xl font-display mb-2">
-                  Complete eBook Collection
-                </CardTitle>
+                <CardTitle className="text-3xl font-display mb-2">Complete eBook Collection</CardTitle>
                 <CardDescription className="text-base">
                   Get all 5 eBooks at one exclusive bundle price
                 </CardDescription>
@@ -284,15 +278,13 @@ export default function Shop() {
                   <span className="text-4xl font-bold text-primary">{bundlePrice}</span>
                 </div>
                 <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-                  Upgrade your journey with every Rapha Lumina eBook. You’ll also receive future
-                  titles at no extra cost.
+                  Upgrade your journey with every Rapha Lumina eBook. You’ll also receive future titles at no extra cost.
                 </p>
 
                 <p className="text-sm text-muted-foreground mb-4">
                   <strong>Want more?</strong> If you upgrade to the{" "}
-                  <strong>Premium Wisdom Membership</strong>, all eBooks are included — along with
-                  courses, coaching, and other exciting products that expand your consciousness
-                  journey.
+                  <strong>Premium Wisdom Membership</strong>, all eBooks are included —
+                  along with courses, coaching, and other exciting products that expand your consciousness journey.
                 </p>
 
                 <Link href="/membership" className="text-primary underline text-sm font-medium">
@@ -313,15 +305,12 @@ export default function Shop() {
           </div>
         </div>
 
-        {/* Package Section */}
+        {/* Package Section (unchanged) */}
         <div className="bg-muted/30 py-12 px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="font-display text-3xl mb-4">
-              Included in Transformation Package
-            </h2>
+            <h2 className="font-display text-3xl mb-4">Included in Transformation Package</h2>
             <p className="text-muted-foreground mb-6">
-              All eBooks are included in the Transformation Package, together with your membership
-              benefits.
+              All eBooks are included in the Transformation Package, together with your membership benefits.
             </p>
             <Button variant="outline" size="lg" asChild>
               <a href="/membership">View Membership Options</a>
@@ -332,9 +321,7 @@ export default function Shop() {
 
       <footer className="py-8 px-4 border-t bg-muted/30">
         <div className="max-w-6xl mx-auto text-center">
-          <p className="text-sm text-muted-foreground">
-            © 2025 Rapha Lumina. All rights reserved.
-          </p>
+          <p className="text-sm text-muted-foreground">© 2025 Rapha Lumina. All rights reserved.</p>
         </div>
       </footer>
     </div>
