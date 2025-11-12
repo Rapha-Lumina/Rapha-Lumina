@@ -1,53 +1,50 @@
 import express from "express";
-import cookieParser from "cookie-parser";
-import cors from "cors";
-import path from "path";
-import { fileURLToPath } from "url";
-import routes from "./routes.js";
-import { PrismaClient } from "@prisma/client";
+import type { Request, Response, NextFunction } from "express";
+import { registerRoutes } from "./routes";
+import { setupVite, serveStatic, log } from "./vite";
+import { setupAuth } from "./auth";
+import { createServer } from "http";
+import { odooService } from "./odoo";
 
-const prisma = new PrismaClient();
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const clientDist = path.resolve(__dirname, "../client/dist");
+// Setup authentication (sessions + passport)
+await setupAuth(app);
 
-async function boot() {
-  // 1. Clean up messages older than 7 days
-  try {
-    const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    const result = await prisma.message.deleteMany({
-      where: { createdAt: { lt: cutoff } },
-    });
-    console.log(`[cleanup] Deleted ${result.count} messages older than 7 days`);
-  } catch (err) {
-    console.error("[cleanup] Failed to delete old messages:", err);
-  }
+// Register all API routes
+registerRoutes(app);
 
-  // 2. Start Express server
-  const app = express();
+// Create HTTP server for both Express and Vite HMR
+const server = createServer(app);
 
-  app.use(cors({ origin: true, credentials: true }));
-  app.use(express.json({ limit: "4mb" }));
-  app.use(cookieParser());
-
-  // API routes
-  app.use("/api", routes);
-
-  // Serve built client
-  app.use(express.static(clientDist));
-
-  // SPA fallback (for React Router)
-  app.get("*", (_req, res) => {
-    res.sendFile(path.join(clientDist, "index.html"));
-  });
-
-  const PORT = Number(process.env.PORT || 5000);
-  app.listen(PORT, () => console.log(`[express] Server started on ${PORT}`));
+// Setup Vite or static serving based on environment
+if (app.get("env") === "development") {
+  await setupVite(app, server);
+} else {
+  serveStatic(app);
 }
 
-// Boot up the server
-boot().catch((e) => {
-  console.error("Fatal error starting server:", e);
-  process.exit(1);
+// Initialize Odoo connection
+if (odooService) {
+  await odooService.authenticate().catch(err => {
+    console.warn('[Odoo] Failed to authenticate on startup:', err.message);
+  });
+}
+
+// Global error handler
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  const status = err.status || err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
+  log(`Error: ${message}`, "express");
+  res.status(status).json({ message });
+});
+
+// Start server
+const PORT = 5000;
+server.listen(PORT, "0.0.0.0", () => {
+  log(`Server successfully started on port ${PORT}`, "express");
+  log(`Environment: ${app.get("env")}`, "express");
+  log(`ANTHROPIC_API_KEY configured: ${process.env.ANTHROPIC_API_KEY ? 'Yes' : 'No'}`, "express");
 });
