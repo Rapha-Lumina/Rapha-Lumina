@@ -1,113 +1,53 @@
-import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import express from "express";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
+import routes from "./routes.js";
+import { PrismaClient } from "@prisma/client";
 
-const app = express();
+const prisma = new PrismaClient();
 
-declare module 'http' {
-  interface IncomingMessage {
-    rawBody: unknown
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const clientDist = path.resolve(__dirname, "../client/dist");
+
+async function boot() {
+  // 1. Clean up messages older than 7 days
+  try {
+    const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const result = await prisma.message.deleteMany({
+      where: { createdAt: { lt: cutoff } },
+    });
+    console.log(`[cleanup] Deleted ${result.count} messages older than 7 days`);
+  } catch (err) {
+    console.error("[cleanup] Failed to delete old messages:", err);
   }
-}
-app.use(express.json({
-  verify: (req, _res, buf) => {
-    req.rawBody = buf;
-  }
-}));
-app.use(express.urlencoded({ extended: false }));
 
-app.use((req, res, next) => {
-  const path = req.path;
-  
-  if (path.endsWith('.html') || path === '/' || !path.includes('.')) {
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-  } else if (path.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|eot|webmanifest|json)$/)) {
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-  }
-  
-  next();
-});
+  // 2. Start Express server
+  const app = express();
 
-app.use((req, res, next) => {
-  const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
+  app.use(cors({ origin: true, credentials: true }));
+  app.use(express.json({ limit: "4mb" }));
+  app.use(cookieParser());
 
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
+  // API routes
+  app.use("/api", routes);
 
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
+  // Serve built client
+  app.use(express.static(clientDist));
 
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
-    }
+  // SPA fallback (for React Router)
+  app.get("*", (_req, res) => {
+    res.sendFile(path.join(clientDist, "index.html"));
   });
 
-  next();
+  const PORT = Number(process.env.PORT || 5000);
+  app.listen(PORT, () => console.log(`[express] Server started on ${PORT}`));
+}
+
+// Boot up the server
+boot().catch((e) => {
+  console.error("Fatal error starting server:", e);
+  process.exit(1);
 });
-
-(async () => {
-  try {
-    const server = await registerRoutes(app);
-
-    // Serve uploaded files (avatars, etc.)
-    app.use('/attached_assets', express.static('attached_assets'));
-
-    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-      const status = err.status || err.statusCode || 500;
-      const message = err.message || "Internal Server Error";
-
-      res.status(status).json({ message });
-      throw err;
-    });
-
-    // importantly only setup vite in development and after
-    // setting up all the other routes so the catch-all route
-    // doesn't interfere with the other routes
-    if (app.get("env") === "development") {
-      await setupVite(app, server);
-    } else {
-      serveStatic(app);
-    }
-
-    // ALWAYS serve the app on the port specified in the environment variable PORT
-    // Other ports are firewalled. Default to 5000 if not specified.
-    // this serves both the API and the client.
-    // It is the only port that is not firewalled.
-    const port = parseInt(process.env.PORT || '5000', 10);
-    
-    server.listen(port, "0.0.0.0", () => {
-      log(`Server successfully started on port ${port}`);
-      log(`Environment: ${app.get("env")}`);
-      log(`ANTHROPIC_API_KEY configured: ${process.env.ANTHROPIC_API_KEY ? 'Yes' : 'No'}`);
-    });
-
-    server.on('error', (error: any) => {
-      if (error.code === 'EADDRINUSE') {
-        log(`Error: Port ${port} is already in use`);
-      } else {
-        log(`Server error: ${error.message}`);
-      }
-      console.error('Server startup error:', error);
-      process.exit(1);
-    });
-  } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-  }
-})();
-
