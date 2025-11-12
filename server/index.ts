@@ -1,50 +1,113 @@
-import express from "express";
-import type { Request, Response, NextFunction } from "express";
+import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { setupAuth } from "./auth";
-import { createServer } from "http";
-import { odooService } from "./odoo";
 
 const app = express();
-app.use(express.json());
+
+declare module 'http' {
+  interface IncomingMessage {
+    rawBody: unknown
+  }
+}
+app.use(express.json({
+  verify: (req, _res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 app.use(express.urlencoded({ extended: false }));
 
-// Setup authentication (sessions + passport)
-await setupAuth(app);
+app.use((req, res, next) => {
+  const path = req.path;
+  
+  if (path.endsWith('.html') || path === '/' || !path.includes('.')) {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  } else if (path.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|eot|webmanifest|json)$/)) {
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  }
+  
+  next();
+});
 
-// Register all API routes
-registerRoutes(app);
+app.use((req, res, next) => {
+  const start = Date.now();
+  const path = req.path;
+  let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
-// Create HTTP server for both Express and Vite HMR
-const server = createServer(app);
+  const originalResJson = res.json;
+  res.json = function (bodyJson, ...args) {
+    capturedJsonResponse = bodyJson;
+    return originalResJson.apply(res, [bodyJson, ...args]);
+  };
 
-// Setup Vite or static serving based on environment
-if (app.get("env") === "development") {
-  await setupVite(app, server);
-} else {
-  serveStatic(app);
-}
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    if (path.startsWith("/api")) {
+      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+      if (capturedJsonResponse) {
+        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      }
 
-// Initialize Odoo connection
-if (odooService) {
-  await odooService.authenticate().catch(err => {
-    console.warn('[Odoo] Failed to authenticate on startup:', err.message);
+      if (logLine.length > 80) {
+        logLine = logLine.slice(0, 79) + "…";
+      }
+
+      log(logLine);
+    }
   });
-}
 
-// Global error handler
-app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-  const status = err.status || err.statusCode || 500;
-  const message = err.message || "Internal Server Error";
-  log(`Error: ${message}`, "express");
-  res.status(status).json({ message });
+  next();
 });
 
-// Start server
-const PORT = 5000;
-server.listen(PORT, "0.0.0.0", () => {
-  log(`Server successfully started on port ${PORT}`, "express");
-  log(`Environment: ${app.get("env")}`, "express");
-  log(`ANTHROPIC_API_KEY configured: ${process.env.ANTHROPIC_API_KEY ? 'Yes' : 'No'}`, "express");
-});
+(async () => {
+  try {
+    const server = await registerRoutes(app);
+
+    // Serve uploaded files (avatars, etc.)
+    app.use('/attached_assets', express.static('attached_assets'));
+
+    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+
+      res.status(status).json({ message });
+      throw err;
+    });
+
+    // importantly only setup vite in development and after
+    // setting up all the other routes so the catch-all route
+    // doesn't interfere with the other routes
+    if (app.get("env") === "development") {
+      await setupVite(app, server);
+    } else {
+      serveStatic(app);
+    }
+
+    // ALWAYS serve the app on the port specified in the environment variable PORT
+    // Other ports are firewalled. Default to 5000 if not specified.
+    // this serves both the API and the client.
+    // It is the only port that is not firewalled.
+    const port = parseInt(process.env.PORT || '5000', 10);
+    
+    server.listen(port, "0.0.0.0", () => {
+      log(`Server successfully started on port ${port}`);
+      log(`Environment: ${app.get("env")}`);
+      log(`ANTHROPIC_API_KEY configured: ${process.env.ANTHROPIC_API_KEY ? 'Yes' : 'No'}`);
+    });
+
+    server.on('error', (error: any) => {
+      if (error.code === 'EADDRINUSE') {
+        log(`Error: Port ${port} is already in use`);
+      } else {
+        log(`Server error: ${error.message}`);
+      }
+      console.error('Server startup error:', error);
+      process.exit(1);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+})();
+
