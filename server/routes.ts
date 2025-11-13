@@ -2,6 +2,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage.ts";
+import { chatLimitService } from "./services/ChatLimitService.ts";
 import {
   insertMessageSchema,
   insertNewsletterSubscriberSchema,
@@ -790,7 +791,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ---------- Chat (Anthropic) ----------
+  // ---------- Chat (Anthropic) with Limit Enforcement ----------
   app.post("/api/chat", async (req: any, res) => {
     try {
       if (!process.env.ANTHROPIC_API_KEY) {
@@ -799,21 +800,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .json({ error: "Anthropic API key not configured. Please add ANTHROPIC_API_KEY." });
       }
 
-      const { content, history = [] } = req.body;
+      const { content, history = [], guestChatCount = 0 } = req.body;
       if (!content || typeof content !== "string") {
         return res.status(400).json({ error: "Message content is required" });
       }
 
       const isAuth = req.isAuthenticated && req.isAuthenticated() && req.user;
       let conversationHistory: any[] = [];
+      let limitCheckResult: any = null;
 
+      // ===== AUTHENTICATED USER: Check chat limits =====
       if (isAuth) {
         const user = req.user as User;
         conversationHistory = await storage.getMessagesByUser(user.id);
+
+        // Get user's subscription to check tier
+        const subscription = await storage.getUserSubscription(user.id);
+        const tier = subscription?.tier || "free";
+
+        // Check if user has exceeded their chat limit
+        try {
+          limitCheckResult = await chatLimitService.checkLimit(user.id, tier);
+
+          // If limit exceeded, return 429 with upgrade prompt
+          if (!limitCheckResult.allowed) {
+            return res.status(429).json({
+              error: "Chat limit reached",
+              message: limitCheckResult.upgradeMessage,
+              limit: limitCheckResult.dailyLimit,
+              used: limitCheckResult.used,
+              remaining: limitCheckResult.remaining,
+              tier: limitCheckResult.tier,
+              resetTime: limitCheckResult.resetTime,
+              upgradeUrl: limitCheckResult.upgradeUrl,
+            });
+          }
+        } catch (limitError) {
+          // FAIL-OPEN: If limit check fails, log error but allow chat
+          console.error("Limit check failed (fail-open mode):", limitError);
+          limitCheckResult = null; // Continue without limit info
+        }
       } else {
+        // ===== GUEST USER: Check localStorage-based limit =====
+        const guestLimit = chatLimitService.checkGuestLimit(guestChatCount);
+
+        // If guest exceeded their 2-chat limit, return 429 with signup prompt
+        if (!guestLimit.allowed) {
+          return res.status(429).json({
+            error: "Guest chat limit reached",
+            message: guestLimit.signupPrompt,
+            limit: guestLimit.limit,
+            used: guestLimit.used,
+            remaining: guestLimit.remaining,
+            tier: "guest",
+            signupUrl: guestLimit.signupUrl,
+          });
+        }
+
         conversationHistory = history;
       }
 
+      // ===== PROCESS CHAT with Anthropic =====
       const anthropicMessages = [...conversationHistory, { role: "user", content }]
         .filter((msg: any) => msg.role === "user" || msg.role === "assistant")
         .map((msg: any) => ({ role: msg.role, content: msg.content }));
@@ -827,8 +874,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const assistantContent = response.content[0].type === "text" ? response.content[0].text : "";
 
+      // ===== SAVE MESSAGES and INCREMENT USAGE =====
       if (isAuth) {
         const user = req.user as User;
+
+        // Save messages to database
         const savedUserMessage = await storage.createMessage({
           userId: user.id,
           role: "user",
@@ -840,8 +890,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
           content: assistantContent,
         });
 
-        res.json({ userMessage: savedUserMessage, assistantMessage: savedAssistantMessage });
+        // Increment usage counter after successful chat
+        try {
+          await chatLimitService.incrementUsage(user.id);
+        } catch (incrementError) {
+          // Non-critical error: log but don't fail the request
+          console.error("Failed to increment usage (non-critical):", incrementError);
+        }
+
+        // Return response with limit status
+        res.json({
+          userMessage: savedUserMessage,
+          assistantMessage: savedAssistantMessage,
+          limitStatus: limitCheckResult ? {
+            tier: limitCheckResult.tier,
+            dailyLimit: limitCheckResult.dailyLimit,
+            used: limitCheckResult.used + 1, // Include this chat
+            remaining: limitCheckResult.remaining === "unlimited" ? "unlimited" : Math.max(0, limitCheckResult.remaining - 1),
+            resetTime: limitCheckResult.resetTime,
+          } : undefined,
+        });
       } else {
+        // Guest response (no DB persistence)
         const userMessage = {
           id: Date.now().toString(),
           sessionId: "local",
@@ -856,7 +926,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           content: assistantContent,
           timestamp: new Date().toISOString(),
         };
-        res.json({ userMessage, assistantMessage });
+
+        res.json({
+          userMessage,
+          assistantMessage,
+          guestLimitInfo: {
+            used: guestChatCount + 1,
+            limit: 2,
+            remaining: Math.max(0, 1 - guestChatCount),
+          },
+        });
       }
     } catch (error) {
       console.error("Error processing chat:", error);

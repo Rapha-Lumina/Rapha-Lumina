@@ -93,7 +93,12 @@ export const subscriptions = pgTable("subscriptions", {
   userId: varchar("user_id").notNull().references(() => users.id),
   tier: varchar("tier", { enum: ["free", "premium", "transformation"] }).notNull().default("free"),
   chatLimit: varchar("chat_limit").notNull().default("5"), // "5", "10", or "unlimited"
-  chatsUsed: varchar("chats_used").notNull().default("0"),
+  chatsUsed: varchar("chats_used").notNull().default("0"), // DEPRECATED: use dailyChatsUsed instead
+
+  // NEW FIELDS for daily chat limit tracking
+  dailyChatsUsed: varchar("daily_chats_used").notNull().default("0"), // Current day's usage
+  lastResetDate: timestamp("last_reset_date").defaultNow().notNull(), // Last time daily usage was reset
+
   status: varchar("status", { enum: ["active", "cancelled", "expired"] }).notNull().default("active"),
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeSubscriptionId: varchar("stripe_subscription_id"),

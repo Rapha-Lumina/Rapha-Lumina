@@ -51,7 +51,9 @@ export interface IStorage {
   
   // Subscription operations
   getUserSubscription(userId: string): Promise<Subscription | undefined>;
+  getSubscription(subscriptionId: string): Promise<Subscription | undefined>;
   createSubscription(subscription: InsertSubscription): Promise<Subscription>;
+  updateSubscription(subscriptionId: string, updates: Partial<Subscription>): Promise<Subscription>;
   updateSubscriptionTier(userId: string, tier: "free" | "premium" | "transformation", chatLimit: string): Promise<Subscription>;
   getAllSubscriptions(): Promise<Subscription[]>;
   
@@ -355,6 +357,24 @@ export class DatabaseStorage implements IStorage {
       .values(subscriptionData)
       .returning();
     return subscription;
+  }
+
+  async getSubscription(subscriptionId: string): Promise<Subscription | undefined> {
+    const subscription = await db
+      .select()
+      .from(subscriptions)
+      .where(eq(subscriptions.id, subscriptionId))
+      .limit(1);
+    return subscription[0];
+  }
+
+  async updateSubscription(subscriptionId: string, updates: Partial<Subscription>): Promise<Subscription> {
+    const [updated] = await db
+      .update(subscriptions)
+      .set(updates)
+      .where(eq(subscriptions.id, subscriptionId))
+      .returning();
+    return updated;
   }
 
   async updateSubscriptionTier(
