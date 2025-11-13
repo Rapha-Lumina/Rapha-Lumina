@@ -806,7 +806,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const isAuth = req.isAuthenticated && req.isAuthenticated() && req.user;
-      console.log("[DEBUG] isAuth:", isAuth, "| req.isAuthenticated:", typeof req.isAuthenticated, "| req.user:", !!req.user, "| guestChatCount:", guestChatCount);
       let conversationHistory: any[] = [];
       let limitCheckResult: any = null;
 
