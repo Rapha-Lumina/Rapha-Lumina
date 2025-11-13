@@ -40,7 +40,7 @@ export function FloatingChatWidget() {
                 Rapha Lumina
               </p>
               <div className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 mt-2">
-                <p className="text-white text-xs font-semibold">AI Spiritual Guide</p>
+                <p className="text-white text-xs font-semibold">Your 24/7 Spiritual Guide</p>
               </div>
             </div>
 
@@ -60,7 +60,7 @@ export function FloatingChatWidget() {
                   <h3 className="font-display text-lg font-semibold text-foreground">
                     Rapha Lumina
                   </h3>
-                  <p className="text-xs text-muted-foreground">AI Spiritual Guide</p>
+                  <p className="text-xs text-muted-foreground">Your 24/7 Spiritual Guide</p>
                 </div>
               </div>
               <button
@@ -77,7 +77,7 @@ export function FloatingChatWidget() {
               <div className="flex items-start gap-2">
                 <Sparkles className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
                 <p className="text-sm text-foreground">
-                  Experience AI-powered spiritual guidance that listens, understands, and helps you discover your inner wisdom.
+                  Have burning questions about life, purpose, or your spiritual path? Rapha Lumina offers 24/7 guidance to help you find clarity and step into your power.
                 </p>
               </div>
               
@@ -103,7 +103,7 @@ export function FloatingChatWidget() {
                 data-testid="button-start-chat"
               >
                 <MessageCircle className="mr-2 h-4 w-4" />
-                Start Chatting Now
+                Get Your Answers Now
               </Button>
             </Link>
 

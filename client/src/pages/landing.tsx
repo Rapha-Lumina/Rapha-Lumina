@@ -50,7 +50,7 @@ export default function Landing() {
           
           <div className="max-w-3xl space-y-6 mb-8 animate-in fade-in duration-1000 delay-500">
             <p className="font-wisdom text-2xl md:text-3xl text-white/95 italic font-light leading-relaxed drop-shadow">
-              Where Ancient Wisdom Meets Quantum Consciousness
+              Where Ancient Wisdom Meets Quantum Consciousness - A Spiritual Path, Not a Religion
             </p>
             
             <div className="grid md:grid-cols-2 gap-6 text-white/90 text-lg max-w-2xl mx-auto pt-4">
