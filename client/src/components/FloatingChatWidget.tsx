@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "wouter";
 
 export function FloatingChatWidget() {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
 
   return (
     <div className="fixed left-6 top-1/2 -translate-y-1/2 z-40 hidden lg:block">
@@ -54,7 +54,7 @@ export function FloatingChatWidget() {
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
                 <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-full p-2">
-                  <MessageCircle className="w-5 h-5 text-white" />
+                  <MessageCircle className="w-5 h-5 text-white animate-pulse" />
                 </div>
                 <div>
                   <h3 className="font-display text-lg font-semibold text-foreground">
