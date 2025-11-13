@@ -1,14 +1,12 @@
 var __defProp = Object.defineProperty;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
 };
-
-// server/index.ts
-import express2 from "express";
-
-// server/routes.ts
-import { createServer } from "http";
 
 // shared/schema.ts
 var schema_exports = {};
@@ -52,312 +50,862 @@ import { sql } from "drizzle-orm";
 import { pgTable, text, varchar, timestamp, index, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-var sessions = pgTable(
-  "sessions",
-  {
-    sid: varchar("sid").primaryKey(),
-    sess: jsonb("sess").notNull(),
-    expire: timestamp("expire").notNull()
-  },
-  (table) => [index("IDX_session_expire").on(table.expire)]
-);
-var users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: varchar("email").unique(),
-  password: varchar("password"),
-  // bcrypt hashed password
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
-  address: varchar("address"),
-  dateOfBirth: varchar("date_of_birth"),
-  location: varchar("location"),
-  age: varchar("age"),
-  profileImageUrl: varchar("profile_image_url"),
-  isAdmin: varchar("is_admin").default("false").notNull(),
-  isTestUser: varchar("is_test_user").default("false").notNull(),
-  emailVerified: varchar("email_verified").default("false").notNull(),
-  verificationToken: varchar("verification_token"),
-  verificationTokenExpires: timestamp("verification_token_expires"),
-  resetPasswordToken: varchar("reset_password_token"),
-  resetPasswordExpires: timestamp("reset_password_expires"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow()
-});
-var messages = pgTable("messages", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  role: varchar("role", { enum: ["user", "assistant"] }).notNull(),
-  content: text("content").notNull(),
-  timestamp: timestamp("timestamp").defaultNow().notNull()
-});
-var insertMessageSchema = createInsertSchema(messages).omit({
-  id: true,
-  timestamp: true
-});
-var newsletterSubscribers = pgTable("newsletter_subscribers", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: varchar("email").unique().notNull(),
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
-  location: varchar("location"),
-  dateOfBirth: varchar("date_of_birth"),
-  isTestUser: varchar("is_test_user").default("false").notNull(),
-  subscribedAt: timestamp("subscribed_at").defaultNow().notNull()
-});
-var insertNewsletterSubscriberSchema = createInsertSchema(newsletterSubscribers).omit({
-  id: true,
-  subscribedAt: true
-}).extend({
-  email: z.string().trim().email("Please enter a valid email address"),
-  firstName: z.string().trim().min(1, "First name is required"),
-  lastName: z.string().trim().min(1, "Last name is required"),
-  location: z.string().trim().min(1, "Location is required"),
-  dateOfBirth: z.string().optional()
-});
-var subscriptions = pgTable("subscriptions", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  tier: varchar("tier", { enum: ["free", "premium", "transformation"] }).notNull().default("free"),
-  chatLimit: varchar("chat_limit").notNull().default("5"),
-  // "5", "10", or "unlimited"
-  chatsUsed: varchar("chats_used").notNull().default("0"),
-  status: varchar("status", { enum: ["active", "cancelled", "expired"] }).notNull().default("active"),
-  stripeCustomerId: varchar("stripe_customer_id"),
-  stripeSubscriptionId: varchar("stripe_subscription_id"),
-  currentPeriodStart: timestamp("current_period_start"),
-  currentPeriodEnd: timestamp("current_period_end"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull()
-});
-var insertSubscriptionSchema = createInsertSchema(subscriptions).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
-var chatUsage = pgTable("chat_usage", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  subscriptionId: varchar("subscription_id").notNull().references(() => subscriptions.id),
-  messageCount: varchar("message_count").notNull().default("0"),
-  startedAt: timestamp("started_at").defaultNow().notNull(),
-  endedAt: timestamp("ended_at")
-});
-var insertChatUsageSchema = createInsertSchema(chatUsage).omit({
-  id: true,
-  startedAt: true
-});
-var courses = pgTable("courses", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  title: varchar("title").notNull(),
-  description: text("description").notNull(),
-  price: varchar("price").notNull(),
-  // Store as string to preserve formatting like "$97"
-  instructor: varchar("instructor").notNull(),
-  thumbnail: varchar("thumbnail"),
-  duration: varchar("duration"),
-  // e.g., "4 weeks"
-  totalLessons: varchar("total_lessons"),
-  // e.g., "15 lessons"
-  level: varchar("level"),
-  // e.g., "Beginner", "Intermediate", "Advanced"
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull()
-});
-var insertCourseSchema = createInsertSchema(courses).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
-var modules = pgTable("modules", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  courseId: varchar("course_id").notNull().references(() => courses.id),
-  moduleNumber: varchar("module_number").notNull(),
-  title: varchar("title").notNull(),
-  description: text("description"),
-  order: varchar("order").notNull(),
-  // Display order
-  createdAt: timestamp("created_at").defaultNow().notNull()
-});
-var insertModuleSchema = createInsertSchema(modules).omit({
-  id: true,
-  createdAt: true
-});
-var lessons = pgTable("lessons", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  courseId: varchar("course_id").notNull().references(() => courses.id),
-  moduleId: varchar("module_id").notNull().references(() => modules.id),
-  moduleNumber: varchar("module_number").notNull(),
-  lessonNumber: varchar("lesson_number").notNull(),
-  title: varchar("title").notNull(),
-  description: text("description"),
-  videoUrl: varchar("video_url"),
-  duration: varchar("duration"),
-  // e.g., "45 minutes"
-  order: varchar("order").notNull(),
-  // Display order within module
-  createdAt: timestamp("created_at").defaultNow().notNull()
-});
-var insertLessonSchema = createInsertSchema(lessons).omit({
-  id: true,
-  createdAt: true
-});
-var studentProgress = pgTable("student_progress", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  courseId: varchar("course_id").notNull().references(() => courses.id),
-  lessonId: varchar("lesson_id").notNull().references(() => lessons.id),
-  completed: varchar("completed").notNull().default("false"),
-  // "true" or "false"
-  completedAt: timestamp("completed_at"),
-  lastWatchedPosition: varchar("last_watched_position").default("0"),
-  // Video position in seconds
-  updatedAt: timestamp("updated_at").defaultNow().notNull()
-});
-var insertStudentProgressSchema = createInsertSchema(studentProgress).omit({
-  id: true,
-  updatedAt: true
-});
-var enrollments = pgTable("enrollments", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  courseId: varchar("course_id").notNull().references(() => courses.id),
-  enrolledAt: timestamp("enrolled_at").defaultNow().notNull(),
-  completedAt: timestamp("completed_at"),
-  status: varchar("status", { enum: ["active", "completed", "cancelled"] }).notNull().default("active"),
-  paymentId: varchar("payment_id")
-  // For Stripe payment tracking
-});
-var insertEnrollmentSchema = createInsertSchema(enrollments).omit({
-  id: true,
-  enrolledAt: true
-});
-var flashcards = pgTable("flashcards", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  courseId: varchar("course_id").notNull().references(() => courses.id),
-  lessonId: varchar("lesson_id").references(() => lessons.id),
-  question: text("question").notNull(),
-  answer: text("answer").notNull(),
-  category: varchar("category"),
-  // e.g., "Vocabulary", "Concepts", "Key Insights"
-  order: varchar("order").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull()
-});
-var insertFlashcardSchema = createInsertSchema(flashcards).omit({
-  id: true,
-  createdAt: true
-});
-var meditationTracks = pgTable("meditation_tracks", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  title: varchar("title").notNull(),
-  description: text("description"),
-  audioUrl: varchar("audio_url").notNull(),
-  duration: varchar("duration"),
-  // e.g., "10 minutes"
-  category: varchar("category"),
-  // e.g., "Guided", "Breathwork", "Sleep"
-  thumbnail: varchar("thumbnail"),
-  isPremium: varchar("is_premium").notNull().default("false"),
-  order: varchar("order").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull()
-});
-var insertMeditationTrackSchema = createInsertSchema(meditationTracks).omit({
-  id: true,
-  createdAt: true
-});
-var musicTracks = pgTable("music_tracks", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  title: varchar("title").notNull(),
-  artist: varchar("artist"),
-  audioUrl: varchar("audio_url").notNull(),
-  duration: varchar("duration"),
-  // e.g., "3:45"
-  category: varchar("category"),
-  // e.g., "Ambient", "Focus", "Relaxation"
-  thumbnail: varchar("thumbnail"),
-  isPremium: varchar("is_premium").notNull().default("false"),
-  order: varchar("order").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull()
-});
-var insertMusicTrackSchema = createInsertSchema(musicTracks).omit({
-  id: true,
-  createdAt: true
-});
-var blogPosts = pgTable("blog_posts", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  slug: varchar("slug").unique().notNull(),
-  title: varchar("title").notNull(),
-  excerpt: text("excerpt").notNull(),
-  content: text("content").notNull(),
-  category: varchar("category").notNull(),
-  readTime: varchar("read_time").notNull(),
-  // e.g., "8 min read"
-  thumbnail: varchar("thumbnail"),
-  publishedAt: timestamp("published_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull()
-});
-var insertBlogPostSchema = createInsertSchema(blogPosts).omit({
-  id: true,
-  publishedAt: true,
-  updatedAt: true
-});
-var forumPosts = pgTable("forum_posts", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  title: varchar("title").notNull(),
-  content: text("content").notNull(),
-  category: varchar("category", {
-    enum: ["general", "meditation", "philosophy", "guidance", "community"]
-  }).notNull().default("general"),
-  likeCount: varchar("like_count").notNull().default("0"),
-  replyCount: varchar("reply_count").notNull().default("0"),
-  isPinned: varchar("is_pinned").notNull().default("false"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull()
-});
-var insertForumPostSchema = createInsertSchema(forumPosts).omit({
-  id: true,
-  likeCount: true,
-  replyCount: true,
-  isPinned: true,
-  createdAt: true,
-  updatedAt: true
-});
-var forumReplies = pgTable("forum_replies", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  postId: varchar("post_id").notNull().references(() => forumPosts.id),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  content: text("content").notNull(),
-  likeCount: varchar("like_count").notNull().default("0"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull()
-});
-var insertForumReplySchema = createInsertSchema(forumReplies).omit({
-  id: true,
-  likeCount: true,
-  createdAt: true,
-  updatedAt: true
-});
-var forumLikes = pgTable("forum_likes", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  postId: varchar("post_id").references(() => forumPosts.id),
-  replyId: varchar("reply_id").references(() => forumReplies.id),
-  createdAt: timestamp("created_at").defaultNow().notNull()
-});
-var insertForumLikeSchema = createInsertSchema(forumLikes).omit({
-  id: true,
-  createdAt: true
+var sessions, users, messages, insertMessageSchema, newsletterSubscribers, insertNewsletterSubscriberSchema, subscriptions, insertSubscriptionSchema, chatUsage, insertChatUsageSchema, courses, insertCourseSchema, modules, insertModuleSchema, lessons, insertLessonSchema, studentProgress, insertStudentProgressSchema, enrollments, insertEnrollmentSchema, flashcards, insertFlashcardSchema, meditationTracks, insertMeditationTrackSchema, musicTracks, insertMusicTrackSchema, blogPosts, insertBlogPostSchema, forumPosts, insertForumPostSchema, forumReplies, insertForumReplySchema, forumLikes, insertForumLikeSchema;
+var init_schema = __esm({
+  "shared/schema.ts"() {
+    "use strict";
+    sessions = pgTable(
+      "sessions",
+      {
+        sid: varchar("sid").primaryKey(),
+        sess: jsonb("sess").notNull(),
+        expire: timestamp("expire").notNull()
+      },
+      (table) => [index("IDX_session_expire").on(table.expire)]
+    );
+    users = pgTable("users", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      email: varchar("email").unique(),
+      password: varchar("password"),
+      // bcrypt hashed password
+      firstName: varchar("first_name"),
+      lastName: varchar("last_name"),
+      address: varchar("address"),
+      dateOfBirth: varchar("date_of_birth"),
+      location: varchar("location"),
+      age: varchar("age"),
+      profileImageUrl: varchar("profile_image_url"),
+      isAdmin: varchar("is_admin").default("false").notNull(),
+      isTestUser: varchar("is_test_user").default("false").notNull(),
+      emailVerified: varchar("email_verified").default("false").notNull(),
+      verificationToken: varchar("verification_token"),
+      verificationTokenExpires: timestamp("verification_token_expires"),
+      resetPasswordToken: varchar("reset_password_token"),
+      resetPasswordExpires: timestamp("reset_password_expires"),
+      odooExternalId: varchar("odoo_external_id"),
+      odooRevision: timestamp("odoo_revision"),
+      odooLastSyncAt: timestamp("odoo_last_sync_at"),
+      odooSource: varchar("odoo_source"),
+      createdAt: timestamp("created_at").defaultNow(),
+      updatedAt: timestamp("updated_at").defaultNow()
+    });
+    messages = pgTable("messages", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      userId: varchar("user_id").notNull().references(() => users.id),
+      role: varchar("role", { enum: ["user", "assistant"] }).notNull(),
+      content: text("content").notNull(),
+      timestamp: timestamp("timestamp").defaultNow().notNull()
+    });
+    insertMessageSchema = createInsertSchema(messages).omit({
+      id: true,
+      timestamp: true
+    });
+    newsletterSubscribers = pgTable("newsletter_subscribers", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      email: varchar("email").unique().notNull(),
+      firstName: varchar("first_name"),
+      lastName: varchar("last_name"),
+      location: varchar("location"),
+      dateOfBirth: varchar("date_of_birth"),
+      isTestUser: varchar("is_test_user").default("false").notNull(),
+      subscribedAt: timestamp("subscribed_at").defaultNow().notNull()
+    });
+    insertNewsletterSubscriberSchema = createInsertSchema(newsletterSubscribers).omit({
+      id: true,
+      subscribedAt: true
+    }).extend({
+      email: z.string().trim().email("Please enter a valid email address"),
+      firstName: z.string().trim().min(1, "First name is required"),
+      lastName: z.string().trim().min(1, "Last name is required"),
+      location: z.string().trim().min(1, "Location is required"),
+      dateOfBirth: z.string().optional()
+    });
+    subscriptions = pgTable("subscriptions", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      userId: varchar("user_id").notNull().references(() => users.id),
+      tier: varchar("tier", { enum: ["free", "premium", "transformation"] }).notNull().default("free"),
+      chatLimit: varchar("chat_limit").notNull().default("5"),
+      // "5", "10", or "unlimited"
+      chatsUsed: varchar("chats_used").notNull().default("0"),
+      status: varchar("status", { enum: ["active", "cancelled", "expired"] }).notNull().default("active"),
+      stripeCustomerId: varchar("stripe_customer_id"),
+      stripeSubscriptionId: varchar("stripe_subscription_id"),
+      currentPeriodStart: timestamp("current_period_start"),
+      currentPeriodEnd: timestamp("current_period_end"),
+      odooExternalId: varchar("odoo_external_id"),
+      odooRevision: timestamp("odoo_revision"),
+      odooLastSyncAt: timestamp("odoo_last_sync_at"),
+      odooSource: varchar("odoo_source"),
+      createdAt: timestamp("created_at").defaultNow().notNull(),
+      updatedAt: timestamp("updated_at").defaultNow().notNull()
+    });
+    insertSubscriptionSchema = createInsertSchema(subscriptions).omit({
+      id: true,
+      createdAt: true,
+      updatedAt: true
+    });
+    chatUsage = pgTable("chat_usage", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      userId: varchar("user_id").notNull().references(() => users.id),
+      subscriptionId: varchar("subscription_id").notNull().references(() => subscriptions.id),
+      messageCount: varchar("message_count").notNull().default("0"),
+      startedAt: timestamp("started_at").defaultNow().notNull(),
+      endedAt: timestamp("ended_at")
+    });
+    insertChatUsageSchema = createInsertSchema(chatUsage).omit({
+      id: true,
+      startedAt: true
+    });
+    courses = pgTable("courses", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      title: varchar("title").notNull(),
+      description: text("description").notNull(),
+      price: varchar("price").notNull(),
+      // Store as string to preserve formatting like "$97"
+      instructor: varchar("instructor").notNull(),
+      thumbnail: varchar("thumbnail"),
+      duration: varchar("duration"),
+      // e.g., "4 weeks"
+      totalLessons: varchar("total_lessons"),
+      // e.g., "15 lessons"
+      level: varchar("level"),
+      // e.g., "Beginner", "Intermediate", "Advanced"
+      createdAt: timestamp("created_at").defaultNow().notNull(),
+      updatedAt: timestamp("updated_at").defaultNow().notNull()
+    });
+    insertCourseSchema = createInsertSchema(courses).omit({
+      id: true,
+      createdAt: true,
+      updatedAt: true
+    });
+    modules = pgTable("modules", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      courseId: varchar("course_id").notNull().references(() => courses.id),
+      moduleNumber: varchar("module_number").notNull(),
+      title: varchar("title").notNull(),
+      description: text("description"),
+      order: varchar("order").notNull(),
+      // Display order
+      createdAt: timestamp("created_at").defaultNow().notNull()
+    });
+    insertModuleSchema = createInsertSchema(modules).omit({
+      id: true,
+      createdAt: true
+    });
+    lessons = pgTable("lessons", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      courseId: varchar("course_id").notNull().references(() => courses.id),
+      moduleId: varchar("module_id").notNull().references(() => modules.id),
+      moduleNumber: varchar("module_number").notNull(),
+      lessonNumber: varchar("lesson_number").notNull(),
+      title: varchar("title").notNull(),
+      description: text("description"),
+      videoUrl: varchar("video_url"),
+      duration: varchar("duration"),
+      // e.g., "45 minutes"
+      order: varchar("order").notNull(),
+      // Display order within module
+      createdAt: timestamp("created_at").defaultNow().notNull()
+    });
+    insertLessonSchema = createInsertSchema(lessons).omit({
+      id: true,
+      createdAt: true
+    });
+    studentProgress = pgTable("student_progress", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      userId: varchar("user_id").notNull().references(() => users.id),
+      courseId: varchar("course_id").notNull().references(() => courses.id),
+      lessonId: varchar("lesson_id").notNull().references(() => lessons.id),
+      completed: varchar("completed").notNull().default("false"),
+      // "true" or "false"
+      completedAt: timestamp("completed_at"),
+      lastWatchedPosition: varchar("last_watched_position").default("0"),
+      // Video position in seconds
+      updatedAt: timestamp("updated_at").defaultNow().notNull()
+    });
+    insertStudentProgressSchema = createInsertSchema(studentProgress).omit({
+      id: true,
+      updatedAt: true
+    });
+    enrollments = pgTable("enrollments", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      userId: varchar("user_id").notNull().references(() => users.id),
+      courseId: varchar("course_id").notNull().references(() => courses.id),
+      enrolledAt: timestamp("enrolled_at").defaultNow().notNull(),
+      completedAt: timestamp("completed_at"),
+      status: varchar("status", { enum: ["active", "completed", "cancelled"] }).notNull().default("active"),
+      paymentId: varchar("payment_id")
+      // For Stripe payment tracking
+    });
+    insertEnrollmentSchema = createInsertSchema(enrollments).omit({
+      id: true,
+      enrolledAt: true
+    });
+    flashcards = pgTable("flashcards", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      courseId: varchar("course_id").notNull().references(() => courses.id),
+      lessonId: varchar("lesson_id").references(() => lessons.id),
+      question: text("question").notNull(),
+      answer: text("answer").notNull(),
+      category: varchar("category"),
+      // e.g., "Vocabulary", "Concepts", "Key Insights"
+      order: varchar("order").notNull(),
+      createdAt: timestamp("created_at").defaultNow().notNull()
+    });
+    insertFlashcardSchema = createInsertSchema(flashcards).omit({
+      id: true,
+      createdAt: true
+    });
+    meditationTracks = pgTable("meditation_tracks", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      title: varchar("title").notNull(),
+      description: text("description"),
+      audioUrl: varchar("audio_url").notNull(),
+      duration: varchar("duration"),
+      // e.g., "10 minutes"
+      category: varchar("category"),
+      // e.g., "Guided", "Breathwork", "Sleep"
+      thumbnail: varchar("thumbnail"),
+      isPremium: varchar("is_premium").notNull().default("false"),
+      order: varchar("order").notNull(),
+      createdAt: timestamp("created_at").defaultNow().notNull()
+    });
+    insertMeditationTrackSchema = createInsertSchema(meditationTracks).omit({
+      id: true,
+      createdAt: true
+    });
+    musicTracks = pgTable("music_tracks", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      title: varchar("title").notNull(),
+      artist: varchar("artist"),
+      audioUrl: varchar("audio_url").notNull(),
+      duration: varchar("duration"),
+      // e.g., "3:45"
+      category: varchar("category"),
+      // e.g., "Ambient", "Focus", "Relaxation"
+      thumbnail: varchar("thumbnail"),
+      isPremium: varchar("is_premium").notNull().default("false"),
+      order: varchar("order").notNull(),
+      createdAt: timestamp("created_at").defaultNow().notNull()
+    });
+    insertMusicTrackSchema = createInsertSchema(musicTracks).omit({
+      id: true,
+      createdAt: true
+    });
+    blogPosts = pgTable("blog_posts", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      slug: varchar("slug").unique().notNull(),
+      title: varchar("title").notNull(),
+      excerpt: text("excerpt").notNull(),
+      content: text("content").notNull(),
+      category: varchar("category").notNull(),
+      readTime: varchar("read_time").notNull(),
+      // e.g., "8 min read"
+      thumbnail: varchar("thumbnail"),
+      publishedAt: timestamp("published_at").defaultNow().notNull(),
+      updatedAt: timestamp("updated_at").defaultNow().notNull()
+    });
+    insertBlogPostSchema = createInsertSchema(blogPosts).omit({
+      id: true,
+      publishedAt: true,
+      updatedAt: true
+    });
+    forumPosts = pgTable("forum_posts", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      userId: varchar("user_id").notNull().references(() => users.id),
+      title: varchar("title").notNull(),
+      content: text("content").notNull(),
+      category: varchar("category", {
+        enum: ["general", "meditation", "philosophy", "guidance", "community"]
+      }).notNull().default("general"),
+      likeCount: varchar("like_count").notNull().default("0"),
+      replyCount: varchar("reply_count").notNull().default("0"),
+      isPinned: varchar("is_pinned").notNull().default("false"),
+      createdAt: timestamp("created_at").defaultNow().notNull(),
+      updatedAt: timestamp("updated_at").defaultNow().notNull()
+    });
+    insertForumPostSchema = createInsertSchema(forumPosts).omit({
+      id: true,
+      likeCount: true,
+      replyCount: true,
+      isPinned: true,
+      createdAt: true,
+      updatedAt: true
+    });
+    forumReplies = pgTable("forum_replies", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      postId: varchar("post_id").notNull().references(() => forumPosts.id),
+      userId: varchar("user_id").notNull().references(() => users.id),
+      content: text("content").notNull(),
+      likeCount: varchar("like_count").notNull().default("0"),
+      createdAt: timestamp("created_at").defaultNow().notNull(),
+      updatedAt: timestamp("updated_at").defaultNow().notNull()
+    });
+    insertForumReplySchema = createInsertSchema(forumReplies).omit({
+      id: true,
+      likeCount: true,
+      createdAt: true,
+      updatedAt: true
+    });
+    forumLikes = pgTable("forum_likes", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      userId: varchar("user_id").notNull().references(() => users.id),
+      postId: varchar("post_id").references(() => forumPosts.id),
+      replyId: varchar("reply_id").references(() => forumReplies.id),
+      createdAt: timestamp("created_at").defaultNow().notNull()
+    });
+    insertForumLikeSchema = createInsertSchema(forumLikes).omit({
+      id: true,
+      createdAt: true
+    });
+  }
 });
 
 // server/db.ts
 import { drizzle } from "drizzle-orm/neon-serverless";
 import { Pool, neonConfig } from "@neondatabase/serverless";
 import ws from "ws";
-neonConfig.webSocketConstructor = ws;
-var pool = new Pool({ connectionString: process.env.DATABASE_URL });
-var db = drizzle(pool, { schema: schema_exports });
+var pool, db;
+var init_db = __esm({
+  "server/db.ts"() {
+    "use strict";
+    init_schema();
+    neonConfig.webSocketConstructor = ws;
+    pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    db = drizzle(pool, { schema: schema_exports });
+  }
+});
+
+// server/odoo.ts
+import xmlrpc from "xmlrpc";
+var OdooService, odooService;
+var init_odoo = __esm({
+  "server/odoo.ts"() {
+    "use strict";
+    OdooService = class {
+      config = null;
+      uid = null;
+      commonClient = null;
+      objectClient = null;
+      constructor() {
+        const url = process.env.ODOO_URL;
+        const db2 = process.env.ODOO_DB;
+        const username = process.env.ODOO_USERNAME;
+        const apiKey = process.env.ODOO_API_KEY;
+        if (!url || !db2 || !username || !apiKey) {
+          console.warn("[Odoo] Configuration incomplete - Odoo integration disabled");
+          console.warn("[Odoo] Required: ODOO_URL, ODOO_DB, ODOO_USERNAME, ODOO_API_KEY");
+          return;
+        }
+        this.config = { url, db: db2, username, apiKey };
+        this.initializeClients();
+      }
+      initializeClients() {
+        if (!this.config) return;
+        try {
+          const urlObj = new URL(this.config.url);
+          const isHttps = urlObj.protocol === "https:";
+          const port = urlObj.port ? parseInt(urlObj.port) : isHttps ? 443 : 8069;
+          const clientConfig = {
+            host: urlObj.hostname,
+            port,
+            path: "/xmlrpc/2/common"
+          };
+          if (isHttps) {
+            this.commonClient = xmlrpc.createSecureClient(clientConfig);
+            this.objectClient = xmlrpc.createSecureClient({
+              ...clientConfig,
+              path: "/xmlrpc/2/object"
+            });
+          } else {
+            this.commonClient = xmlrpc.createClient(clientConfig);
+            this.objectClient = xmlrpc.createClient({
+              ...clientConfig,
+              path: "/xmlrpc/2/object"
+            });
+          }
+          console.log(`[Odoo] Clients initialized successfully (${isHttps ? "HTTPS" : "HTTP"} on port ${port})`);
+        } catch (error) {
+          console.error("[Odoo] Failed to initialize clients:", error);
+          this.config = null;
+        }
+      }
+      async authenticate() {
+        if (!this.config || !this.commonClient) {
+          return false;
+        }
+        try {
+          const uid = await new Promise((resolve, reject) => {
+            this.commonClient.methodCall(
+              "authenticate",
+              [this.config.db, this.config.username, this.config.apiKey, {}],
+              (err, value) => {
+                if (err) reject(err);
+                else resolve(value);
+              }
+            );
+          });
+          if (uid) {
+            this.uid = uid;
+            console.log("[Odoo] Authentication successful, UID:", uid);
+            return true;
+          }
+          console.error("[Odoo] Authentication failed - invalid credentials");
+          return false;
+        } catch (error) {
+          console.error("[Odoo] Authentication error:", error);
+          return false;
+        }
+      }
+      async executeKw(model, method, args, kwargs = {}) {
+        if (!this.config || !this.objectClient || !this.uid) {
+          throw new Error("Odoo not configured or not authenticated");
+        }
+        return new Promise((resolve, reject) => {
+          this.objectClient.methodCall(
+            "execute_kw",
+            [this.config.db, this.uid, this.config.apiKey, model, method, args, kwargs],
+            (err, value) => {
+              if (err) reject(err);
+              else resolve(value);
+            }
+          );
+        });
+      }
+      async searchPartner(email) {
+        try {
+          const partners = await this.executeKw(
+            "res.partner",
+            "search",
+            [[["email", "=", email]]],
+            { limit: 1 }
+          );
+          return partners.length > 0 ? partners[0] : null;
+        } catch (error) {
+          console.error("[Odoo] Error searching partner:", error);
+          return null;
+        }
+      }
+      async createPartner(partnerData) {
+        try {
+          const partnerId = await this.executeKw(
+            "res.partner",
+            "create",
+            [partnerData]
+          );
+          console.log("[Odoo] Created partner:", partnerId);
+          return partnerId;
+        } catch (error) {
+          console.error("[Odoo] Error creating partner:", error);
+          return null;
+        }
+      }
+      async updatePartner(partnerId, partnerData) {
+        try {
+          await this.executeKw(
+            "res.partner",
+            "write",
+            [[partnerId], partnerData]
+          );
+          console.log("[Odoo] Updated partner:", partnerId);
+          return true;
+        } catch (error) {
+          console.error("[Odoo] Error updating partner:", error);
+          return false;
+        }
+      }
+      async getPartner(partnerId) {
+        try {
+          const partners = await this.executeKw(
+            "res.partner",
+            "read",
+            [[partnerId], ["name", "email", "phone", "street", "customer_rank", "comment", "write_date"]]
+          );
+          if (partners && partners.length > 0) {
+            console.log("[Odoo] Fetched partner:", partnerId);
+            return partners[0];
+          }
+          console.warn("[Odoo] Partner not found:", partnerId);
+          return null;
+        } catch (error) {
+          console.error("[Odoo] Error fetching partner:", error);
+          return null;
+        }
+      }
+      async getSaleOrder(orderId) {
+        try {
+          const orders = await this.executeKw(
+            "sale.order",
+            "read",
+            [[orderId], ["name", "partner_id", "state", "amount_total", "date_order", "write_date"]]
+          );
+          if (orders && orders.length > 0) {
+            console.log("[Odoo] Fetched sale order:", orderId);
+            return orders[0];
+          }
+          console.warn("[Odoo] Sale order not found:", orderId);
+          return null;
+        } catch (error) {
+          console.error("[Odoo] Error fetching sale order:", error);
+          return null;
+        }
+      }
+      async getSubscription(subscriptionId) {
+        try {
+          const subscriptions2 = await this.executeKw(
+            "sale.subscription",
+            "read",
+            [[subscriptionId], ["name", "partner_id", "state", "recurring_total", "date_start", "write_date"]]
+          );
+          if (subscriptions2 && subscriptions2.length > 0) {
+            console.log("[Odoo] Fetched subscription:", subscriptionId);
+            return subscriptions2[0];
+          }
+          console.warn("[Odoo] Subscription not found:", subscriptionId);
+          return null;
+        } catch (error) {
+          console.error("[Odoo] Error fetching subscription:", error);
+          return null;
+        }
+      }
+      async createLead(leadData) {
+        try {
+          if (!this.config) {
+            console.error("[Odoo] Not configured - cannot create lead");
+            return null;
+          }
+          if (!this.uid) {
+            const authenticated = await this.authenticate();
+            if (!authenticated) {
+              console.error("[Odoo] Authentication failed - cannot create lead");
+              return null;
+            }
+          }
+          const leadId = await this.executeKw(
+            "crm.lead",
+            "create",
+            [{
+              name: leadData.name,
+              contact_name: leadData.contact_name,
+              email_from: leadData.email_from,
+              description: leadData.description,
+              phone: leadData.phone || "",
+              type: "lead",
+              stage_id: 1
+            }]
+          );
+          console.log("[Odoo] Created lead:", leadId);
+          return leadId;
+        } catch (error) {
+          console.error("[Odoo] Error creating lead:", error);
+          return null;
+        }
+      }
+      async syncCustomer(userData) {
+        try {
+          if (!this.config) {
+            return { success: false, error: "Odoo not configured" };
+          }
+          if (!this.uid) {
+            const authenticated = await this.authenticate();
+            if (!authenticated) {
+              return { success: false, error: "Authentication failed" };
+            }
+          }
+          const existingPartnerId = await this.searchPartner(userData.email);
+          const partnerData = {
+            name: `${userData.firstName || ""} ${userData.lastName || ""}`.trim() || userData.email,
+            email: userData.email,
+            customer_rank: 1
+          };
+          if (userData.address) {
+            partnerData.street = userData.address;
+          }
+          if (userData.subscriptionTier) {
+            partnerData.comment = `Rapha Lumina - ${userData.subscriptionTier} Subscription`;
+          }
+          if (userData.dateOfBirth) {
+            partnerData.comment = (partnerData.comment || "") + ` | DOB: ${userData.dateOfBirth}`;
+          }
+          if (existingPartnerId) {
+            const updated = await this.updatePartner(existingPartnerId, partnerData);
+            return {
+              success: updated,
+              partnerId: existingPartnerId,
+              error: updated ? void 0 : "Update failed"
+            };
+          } else {
+            const partnerId = await this.createPartner(partnerData);
+            return {
+              success: !!partnerId,
+              partnerId: partnerId || void 0,
+              error: partnerId ? void 0 : "Create failed"
+            };
+          }
+        } catch (error) {
+          console.error("[Odoo] Sync customer error:", error);
+          return { success: false, error: error.message || "Unknown error" };
+        }
+      }
+      isConfigured() {
+        return this.config !== null;
+      }
+    };
+    odooService = new OdooService();
+  }
+});
+
+// server/odooWebhook.ts
+var odooWebhook_exports = {};
+__export(odooWebhook_exports, {
+  handleOdooWebhook: () => handleOdooWebhook
+});
+import { eq as eq2 } from "drizzle-orm";
+function normalizePayload(payload) {
+  if (payload.event_type && payload.model && payload.record_id) {
+    return payload;
+  }
+  if (payload._model && payload._id !== void 0) {
+    const normalized = {
+      event_type: payload._action?.includes("created") ? "created" : "updated",
+      model: payload._model,
+      record_id: payload._id,
+      data: payload,
+      write_date: payload.write_date,
+      create_date: payload.create_date
+    };
+    normalized._model = payload._model;
+    normalized._id = payload._id;
+    normalized._action = payload._action;
+    normalized._name = payload._name;
+    return normalized;
+  }
+  return payload;
+}
+function validateWebhookSignature(req) {
+  if (!WEBHOOK_SECRET) {
+    console.warn("[Odoo Webhook] No ODOO_WEBHOOK_SECRET configured - accepting all requests");
+    return true;
+  }
+  const signature = req.headers["x-odoo-signature"];
+  const token = req.query.token;
+  if (signature === WEBHOOK_SECRET || token === WEBHOOK_SECRET) {
+    return true;
+  }
+  console.error("[Odoo Webhook] Invalid signature/token");
+  return false;
+}
+function isOriginRapha(payload) {
+  return payload.origin === "rapha" || payload.data?.origin === "rapha";
+}
+async function handlePartnerUpdated(payload) {
+  try {
+    if (!payload.record_id) {
+      console.warn("[Odoo Webhook] No record_id in payload, skipping");
+      return;
+    }
+    console.log("[Odoo Webhook] Processing partner update:", payload.record_id);
+    const partner = await odooService.getPartner(payload.record_id);
+    if (!partner || !partner.email) {
+      console.warn("[Odoo Webhook] Partner has no email, skipping:", payload.record_id);
+      return;
+    }
+    let existingUsers = await db.select().from(users).where(eq2(users.odooExternalId, String(payload.record_id))).limit(1);
+    if (existingUsers.length === 0) {
+      existingUsers = await db.select().from(users).where(eq2(users.email, partner.email)).limit(1);
+    }
+    if (existingUsers.length === 0) {
+      console.log("[Odoo Webhook] No user found with Odoo ID or email:", payload.record_id, partner.email);
+      return;
+    }
+    const user = existingUsers[0];
+    if (user.odooSource === "rapha") {
+      const timeSinceLastSync = user.odooLastSyncAt ? Date.now() - new Date(user.odooLastSyncAt).getTime() : Infinity;
+      if (timeSinceLastSync < 1e4) {
+        console.log("[Odoo Webhook] Skipping update - we just synced this record");
+        return;
+      }
+    }
+    const writeDate = partner.write_date ? new Date(partner.write_date) : /* @__PURE__ */ new Date();
+    if (user.odooLastSyncAt && new Date(user.odooLastSyncAt) >= writeDate) {
+      console.log("[Odoo Webhook] Our record is newer, skipping update for user:", user.id);
+      return;
+    }
+    const nameParts = partner.name?.split(" ") || [];
+    const firstName = nameParts[0] || user.firstName;
+    const lastName = nameParts.slice(1).join(" ") || user.lastName;
+    await db.update(users).set({
+      firstName,
+      lastName,
+      address: partner.street || user.address,
+      odooExternalId: String(payload.record_id),
+      odooRevision: writeDate,
+      odooLastSyncAt: /* @__PURE__ */ new Date(),
+      odooSource: "odoo",
+      updatedAt: /* @__PURE__ */ new Date()
+    }).where(eq2(users.id, user.id));
+    console.log("[Odoo Webhook] Updated user from Odoo:", user.id);
+  } catch (error) {
+    console.error("[Odoo Webhook] Error handling partner update:", error);
+    throw error;
+  }
+}
+async function handleSaleOrderUpdated(payload) {
+  try {
+    if (!payload.record_id) {
+      console.warn("[Odoo Webhook] No record_id in payload, skipping");
+      return;
+    }
+    console.log("[Odoo Webhook] Processing sale order update:", payload.record_id);
+    const order = await odooService.getSaleOrder(payload.record_id);
+    if (!order) {
+      console.warn("[Odoo Webhook] Sale order not found:", payload.record_id);
+      return;
+    }
+    const partnerId = Array.isArray(order.partner_id) ? order.partner_id[0] : order.partner_id;
+    if (!partnerId) {
+      console.warn("[Odoo Webhook] No partner ID in sale order:", payload.record_id);
+      return;
+    }
+    let existingUsers = await db.select().from(users).where(eq2(users.odooExternalId, String(partnerId))).limit(1);
+    if (existingUsers.length === 0) {
+      const partner = await odooService.getPartner(partnerId);
+      if (!partner || !partner.email) {
+        console.warn("[Odoo Webhook] Partner has no email:", partnerId);
+        return;
+      }
+      existingUsers = await db.select().from(users).where(eq2(users.email, partner.email)).limit(1);
+    }
+    if (existingUsers.length === 0) {
+      console.log("[Odoo Webhook] No user found for sale order partner:", partnerId);
+      return;
+    }
+    const user = existingUsers[0];
+    if (order.state === "sale" || order.state === "done") {
+      console.log("[Odoo Webhook] Sale order confirmed/completed for user:", user.id);
+    }
+    console.log("[Odoo Webhook] Processed sale order:", payload.record_id);
+  } catch (error) {
+    console.error("[Odoo Webhook] Error handling sale order update:", error);
+    throw error;
+  }
+}
+async function handleSubscriptionUpdated(payload) {
+  try {
+    if (!payload.record_id) {
+      console.warn("[Odoo Webhook] No record_id in payload, skipping");
+      return;
+    }
+    console.log("[Odoo Webhook] Processing subscription update:", payload.record_id);
+    const subscription = await odooService.getSubscription(payload.record_id);
+    if (!subscription) {
+      console.warn("[Odoo Webhook] Subscription not found:", payload.record_id);
+      return;
+    }
+    const partnerId = Array.isArray(subscription.partner_id) ? subscription.partner_id[0] : subscription.partner_id;
+    if (!partnerId) {
+      console.warn("[Odoo Webhook] No partner ID in subscription:", payload.record_id);
+      return;
+    }
+    let existingUsers = await db.select().from(users).where(eq2(users.odooExternalId, String(partnerId))).limit(1);
+    if (existingUsers.length === 0) {
+      const partner = await odooService.getPartner(partnerId);
+      if (!partner || !partner.email) {
+        console.warn("[Odoo Webhook] Partner has no email:", partnerId);
+        return;
+      }
+      existingUsers = await db.select().from(users).where(eq2(users.email, partner.email)).limit(1);
+    }
+    if (existingUsers.length === 0) {
+      console.log("[Odoo Webhook] No user found for subscription partner:", partnerId);
+      return;
+    }
+    const user = existingUsers[0];
+    const userSubs = await db.select().from(subscriptions).where(eq2(subscriptions.userId, user.id)).limit(1);
+    if (userSubs.length === 0) {
+      console.log("[Odoo Webhook] No subscription found for user:", user.id);
+      return;
+    }
+    const userSub = userSubs[0];
+    const writeDate = subscription.write_date ? new Date(subscription.write_date) : /* @__PURE__ */ new Date();
+    if (userSub.odooLastSyncAt && new Date(userSub.odooLastSyncAt) >= writeDate) {
+      console.log("[Odoo Webhook] Our subscription record is newer, skipping update");
+      return;
+    }
+    let status = "active";
+    if (subscription.state === "closed" || subscription.state === "cancelled") {
+      status = "cancelled";
+    } else if (subscription.state === "expired") {
+      status = "expired";
+    }
+    await db.update(subscriptions).set({
+      status,
+      odooExternalId: String(payload.record_id),
+      odooRevision: writeDate,
+      odooLastSyncAt: /* @__PURE__ */ new Date(),
+      odooSource: "odoo",
+      updatedAt: /* @__PURE__ */ new Date()
+    }).where(eq2(subscriptions.id, userSub.id));
+    console.log("[Odoo Webhook] Updated subscription from Odoo:", userSub.id);
+  } catch (error) {
+    console.error("[Odoo Webhook] Error handling subscription update:", error);
+    throw error;
+  }
+}
+async function handleOdooWebhook(req, res) {
+  try {
+    if (!validateWebhookSignature(req)) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    const payload = normalizePayload(req.body);
+    if (isOriginRapha(payload)) {
+      console.log("[Odoo Webhook] Ignoring event from Rapha origin, preventing loop");
+      res.status(200).json({ status: "ignored", reason: "origin_rapha" });
+      return;
+    }
+    console.log("[Odoo Webhook] Received event:", payload.event_type, "Model:", payload.model);
+    if (payload.model === "res.partner") {
+      if (payload.event_type === "updated" || payload.event_type === "created") {
+        await handlePartnerUpdated(payload);
+      }
+    } else if (payload.model === "sale.order") {
+      if (payload.event_type === "updated" || payload.event_type === "state_changed") {
+        await handleSaleOrderUpdated(payload);
+      }
+    } else if (payload.model === "sale.subscription") {
+      if (payload.event_type === "updated" || payload.event_type === "state_changed") {
+        await handleSubscriptionUpdated(payload);
+      }
+    } else {
+      console.log("[Odoo Webhook] Unhandled model:", payload.model);
+    }
+    res.status(202).json({ status: "accepted" });
+  } catch (error) {
+    console.error("[Odoo Webhook] Error processing webhook:", error);
+    res.status(500).json({ error: "Internal server error", message: error.message });
+  }
+}
+var WEBHOOK_SECRET;
+var init_odooWebhook = __esm({
+  "server/odooWebhook.ts"() {
+    "use strict";
+    init_db();
+    init_schema();
+    init_odoo();
+    WEBHOOK_SECRET = process.env.ODOO_WEBHOOK_SECRET || "";
+  }
+});
+
+// server/index.ts
+import express2 from "express";
+
+// server/routes.ts
+import { createServer } from "http";
 
 // server/storage.ts
+init_schema();
+init_db();
 import { eq, and, desc } from "drizzle-orm";
 var DatabaseStorage = class {
   // User operations
@@ -713,6 +1261,7 @@ var DatabaseStorage = class {
 var storage = new DatabaseStorage();
 
 // server/routes.ts
+init_schema();
 import Anthropic from "@anthropic-ai/sdk";
 
 // server/auth.ts
@@ -771,22 +1320,30 @@ async function setupAuth(app2) {
     },
     async (email, password, done) => {
       try {
+        console.log("[LOGIN] Attempting login for:", email);
         const user = await storage.getUserByEmail(email);
         if (!user) {
+          console.log("[LOGIN] User not found:", email);
           return done(null, false, { message: "Invalid email or password" });
         }
+        console.log("[LOGIN] User found:", email, "emailVerified:", user.emailVerified, "hasPassword:", !!user.password);
         if (!user.password) {
+          console.log("[LOGIN] No password set for:", email);
           return done(null, false, { message: "Please create a password first" });
         }
         if (user.emailVerified !== "true") {
+          console.log("[LOGIN] Email not verified for:", email, "emailVerified value:", user.emailVerified);
           return done(null, false, { message: "Please verify your email address before logging in. Check your inbox for the verification link." });
         }
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
+          console.log("[LOGIN] Password mismatch for:", email);
           return done(null, false, { message: "Invalid email or password" });
         }
+        console.log("[LOGIN] \u2705 Login successful for:", email);
         return done(null, user);
       } catch (error) {
+        console.error("[LOGIN] Error during authentication:", error);
         return done(error);
       }
     }
@@ -866,8 +1423,21 @@ async function generateSpeech(text2, voiceId) {
 }
 
 // server/routes.ts
+init_odoo();
 import passport2 from "passport";
 import { z as z2 } from "zod";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import bcrypt2 from "bcrypt";
+import { fileURLToPath } from "url";
+var __filename = fileURLToPath(import.meta.url);
+var __dirname = path.dirname(__filename);
+var SUPERUSER_EMAIL = (process.env.SUPERUSER_EMAIL || "leratom2012@gmail.com").toLowerCase();
+function isSuperUserReq(req) {
+  const email = req?.user?.email;
+  return !!email && String(email).toLowerCase() === SUPERUSER_EMAIL;
+}
 if (!process.env.ANTHROPIC_API_KEY) {
   console.warn("Warning: ANTHROPIC_API_KEY not configured. Chat functionality will not work.");
 }
@@ -927,8 +1497,87 @@ WHAT MATTERS MOST:
 - Trust silence and space between words
 
 Never diagnose, predict specifics, or claim supernatural powers. Speak from attunement to Source consciousness. For mental health crises, gently suggest professional support.`;
+function resolveEbooksRoot() {
+  const candidateA = path.resolve(__dirname, "ebooks");
+  const candidateB = path.resolve(process.cwd(), "server", "ebooks");
+  const candidateC = path.resolve(process.cwd(), "ebooks");
+  if (fs.existsSync(candidateA)) return candidateA;
+  if (fs.existsSync(candidateB)) return candidateB;
+  return candidateC;
+}
+var EBOOKS_ROOT = resolveEbooksRoot();
+function sanitizeId(raw) {
+  return String(raw || "").toLowerCase().replace(/[^a-z0-9-]/g, "");
+}
+var ALLOWED_EBOOK_FORMATS = /* @__PURE__ */ new Set(["pdf", "epub", "mobi"]);
+function fileExistsFor(id, fmt) {
+  const dir = path.join(EBOOKS_ROOT, id);
+  const filepath = path.join(dir, `${id}.${fmt}`);
+  return fs.existsSync(filepath);
+}
+function registerEbookExistProbe(app2) {
+  app2.head("/api/ebooks/:ebookId/exists", (req, res) => {
+    const ebookId = sanitizeId(req.params.ebookId);
+    const fmtQ = String(req.query.format || "pdf").toLowerCase();
+    const fmt = ALLOWED_EBOOK_FORMATS.has(fmtQ) ? fmtQ : "pdf";
+    if (fileExistsFor(ebookId, fmt)) return res.status(204).end();
+    return res.status(404).end();
+  });
+}
+function registerEbookDownload(app2) {
+  app2.get("/api/ebooks/:ebookId/download", isAuthenticated, async (req, res) => {
+    try {
+      const ebookId = sanitizeId(req.params.ebookId);
+      const fmtQ = String(req.query.format || "pdf").toLowerCase();
+      const fmt = ALLOWED_EBOOK_FORMATS.has(fmtQ) ? fmtQ : "pdf";
+      if (!isSuperUserReq(req)) {
+        const sub = await storage.getUserSubscription(req.user.id);
+        const isPaidTier = sub?.tier === "premium" || sub?.tier === "transformation" || sub?.tier === "lifetime";
+        if (!isPaidTier) {
+          return res.status(403).json({
+            error: "Access denied. This download is restricted to the site owner or premium members."
+          });
+        }
+      }
+      const dir = path.join(EBOOKS_ROOT, ebookId);
+      const filename = `${ebookId}.${fmt}`;
+      const filepath = path.join(dir, filename);
+      if (!fs.existsSync(filepath)) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      res.download(filepath, filename);
+    } catch (err) {
+      console.error("ebook download error:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+}
+var uploadDir = path.join(process.cwd(), "attached_assets", "uploads", "avatars");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+var storage_multer = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, "avatar-" + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+var upload = multer({
+  storage: storage_multer,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|webp/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    if (extname && mimetype) cb(null, true);
+    else cb(new Error("Only image files are allowed (jpeg, jpg, png, gif, webp)"));
+  }
+});
 async function registerRoutes(app2) {
   await setupAuth(app2);
+  registerEbookExistProbe(app2);
+  registerEbookDownload(app2);
   const createPasswordSchema = z2.object({
     email: z2.string().email(),
     password: z2.string().min(8, "Password must be at least 8 characters"),
@@ -960,6 +1609,7 @@ async function registerRoutes(app2) {
       }
       const user = req.user;
       const { password, resetPasswordToken, resetPasswordExpires, ...safeUser } = user;
+      safeUser.isSuper = isSuperUserReq(req) ? "true" : "false";
       res.json(safeUser);
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -989,56 +1639,69 @@ async function registerRoutes(app2) {
         verificationTokenExpires: verificationExpires
       });
       await storage.updateVerificationToken(user.id, verificationToken, verificationExpires);
-      const verificationLink = `https://${req.hostname}/verify-email?token=${verificationToken}`;
+      const baseUrl = process.env.BASE_URL || (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : `https://${req.hostname}`);
+      const verificationLink = `${baseUrl}/verify-email?token=${verificationToken}`;
+      console.log(`[EMAIL] Verification link for ${email}: ${verificationLink}`);
       try {
         const response = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
+            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
             from: "Rapha Lumina <support@raphalumina.com>",
             to: [email],
             subject: "Verify your Rapha Lumina account",
-            html: `
-              <!DOCTYPE html>
-              <html>
-                <head>
-                  <meta charset="utf-8">
-                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                </head>
-                <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-                  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-                    <h1 style="color: white; margin: 0; font-size: 28px;">Welcome to Rapha Lumina</h1>
-                  </div>
-                  <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
-                    <h2 style="color: #333; margin-top: 0;">Hi ${firstName},</h2>
-                    <p>Thank you for joining Rapha Lumina! We're excited to guide you on your spiritual journey.</p>
-                    <p>Please verify your email address by clicking the button below:</p>
-                    <div style="text-align: center; margin: 30px 0;">
-                      <a href="${verificationLink}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Verify Email Address</a>
-                    </div>
-                    <p style="color: #666; font-size: 14px;">Or copy and paste this link into your browser:</p>
-                    <p style="color: #667eea; word-break: break-all; font-size: 14px;">${verificationLink}</p>
-                    <p style="color: #666; font-size: 14px; margin-top: 30px;">This link will expire in 24 hours.</p>
-                    <p style="color: #666; font-size: 14px;">If you didn't create an account with Rapha Lumina, please ignore this email.</p>
-                  </div>
-                  <div style="text-align: center; padding: 20px; color: #999; font-size: 12px;">
-                    <p>\xA9 2025 Rapha Lumina. All rights reserved.</p>
-                  </div>
-                </body>
-              </html>
-            `
+            html: `<!DOCTYPE html><html><body style="font-family: Arial, sans-serif;">
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+  <h1 style="color: white; margin: 0; font-size: 28px;">Welcome to Rapha Lumina</h1>
+</div>
+<div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+  <h2 style="color: #333; margin-top: 0;">Hi ${firstName},</h2>
+  <p>Please verify your email address by clicking the button below:</p>
+  <div style="text-align: center; margin: 30px 0;">
+    <a href="${verificationLink}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Verify Email Address</a>
+  </div>
+  <p style="color: #666; font-size: 14px;">Or copy and paste this link into your browser:</p>
+  <p style="color: #667eea; word-break: break-all; font-size: 14px;">${verificationLink}</p>
+  <p style="color: #666; font-size: 14px; margin-top: 30px;">This link will expire in 24 hours.</p>
+</div>
+</body></html>`
           })
         });
+        const responseText = await response.text();
         if (!response.ok) {
-          console.error("Failed to send verification email:", await response.text());
+          console.error(`[EMAIL] Failed to send verification email to ${email}:`, responseText);
         } else {
-          console.log(`\u2705 Verification email sent to ${email}`);
+          console.log(`[EMAIL] \u2705 Verification email sent to ${email}`);
+        }
+        try {
+          await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              from: "Rapha Lumina <support@raphalumina.com>",
+              to: ["leratom2012@gmail.com"],
+              subject: `New User Signup - ${firstName} ${lastName}`,
+              html: `<!DOCTYPE html><html><body style="font-family: Arial, sans-serif;">
+<h1>New User Registered</h1>
+<p><strong>Name:</strong> ${firstName} ${lastName}</p>
+<p><strong>Email:</strong> ${email}</p>
+<p><strong>Address:</strong> ${address}</p>
+<p><strong>Date of Birth:</strong> ${dateOfBirth}</p>
+</body></html>`
+            })
+          });
+          console.log(`[EMAIL] \u2705 Admin notification sent for new signup: ${email}`);
+        } catch (adminEmailError) {
+          console.error(`[EMAIL] Failed to send admin notification:`, adminEmailError);
         }
       } catch (emailError) {
-        console.error("Error sending verification email:", emailError);
+        console.error(`[EMAIL] Error sending verification email to ${email}:`, emailError);
       }
       res.json({
         success: true,
@@ -1055,13 +1718,9 @@ async function registerRoutes(app2) {
   app2.get("/api/verify-email", async (req, res) => {
     try {
       const { token } = req.query;
-      if (!token) {
-        return res.status(400).json({ message: "Verification token is required" });
-      }
+      if (!token) return res.status(400).json({ message: "Verification token is required" });
       const user = await storage.getUserByVerificationToken(token);
-      if (!user) {
-        return res.status(400).json({ message: "Invalid or expired verification token" });
-      }
+      if (!user) return res.status(400).json({ message: "Invalid or expired verification token" });
       if (user.verificationTokenExpires && user.verificationTokenExpires < /* @__PURE__ */ new Date()) {
         return res.status(400).json({ message: "Verification token has expired. Please request a new one." });
       }
@@ -1097,16 +1756,38 @@ async function registerRoutes(app2) {
               }
             })
           });
+          const webhookText = await webhookResponse.text();
           if (!webhookResponse.ok) {
-            console.error(`\u26A0\uFE0F Zapier webhook failed with status ${webhookResponse.status}:`, await webhookResponse.text());
+            console.error(`[ZAPIER] \u26A0\uFE0F Webhook failed with status ${webhookResponse.status} for ${user.email}:`, webhookText);
           } else {
-            console.log(`\u2705 Sent verification webhook to Zapier for ${user.email}`);
+            console.log(`[ZAPIER] \u2705 Sent verification webhook to Zapier for ${user.email}`);
           }
         } else {
-          console.log(`\u2139\uFE0F ZAPIER_WEBHOOK_URL not configured - skipping CRM sync for ${user.email}`);
+          console.log(`[ZAPIER] \u2139\uFE0F ZAPIER_WEBHOOK_URL not configured - skipping CRM sync for ${user.email}`);
         }
       } catch (webhookError) {
-        console.error("\u274C Error sending Zapier webhook:", webhookError);
+        console.error("[ZAPIER] \u274C Error sending webhook:", webhookError);
+      }
+      try {
+        if (odooService.isConfigured()) {
+          const odooResult = await odooService.syncCustomer({
+            email: user.email,
+            firstName: user.firstName || void 0,
+            lastName: user.lastName || void 0,
+            address: user.address || void 0,
+            dateOfBirth: user.dateOfBirth || void 0,
+            subscriptionTier: "Free"
+          });
+          if (odooResult.success) {
+            console.log(`[ODOO] \u2705 Synced customer to Odoo (Partner ID: ${odooResult.partnerId}) for ${user.email}`);
+          } else {
+            console.error(`[ODOO] \u26A0\uFE0F Failed to sync customer: ${odooResult.error}`);
+          }
+        } else {
+          console.log(`[ODOO] \u2139\uFE0F Odoo not configured - skipping customer sync for ${user.email}`);
+        }
+      } catch (odooError) {
+        console.error("[ODOO] \u274C Error syncing customer:", odooError);
       }
       res.json({
         success: true,
@@ -1122,9 +1803,7 @@ async function registerRoutes(app2) {
       const validatedData = createPasswordSchema.parse(req.body);
       const { email, password } = validatedData;
       const user = await storage.getUserByEmail(email);
-      if (!user) {
-        return res.status(404).json({ message: "User not found. Please sign up first." });
-      }
+      if (!user) return res.status(404).json({ message: "User not found. Please sign up first." });
       if (user.password) {
         return res.status(400).json({ message: "Password already set. Please use login instead." });
       }
@@ -1156,6 +1835,7 @@ async function registerRoutes(app2) {
             return res.status(500).json({ message: "Failed to create session" });
           }
           const { password, resetPasswordToken, resetPasswordExpires, ...safeUser } = user;
+          safeUser.isSuper = String(user.email || "").toLowerCase() === SUPERUSER_EMAIL ? "true" : "false";
           return res.json({ success: true, user: safeUser });
         });
       })(req, res, next);
@@ -1181,61 +1861,43 @@ async function registerRoutes(app2) {
       const { email } = validatedData;
       const user = await storage.getUserByEmail(email);
       if (!user) {
-        return res.json({ success: true, message: "If an account exists with this email, a password reset link has been sent." });
+        return res.json({
+          success: true,
+          message: "If an account exists with this email, a password reset link has been sent."
+        });
       }
       const resetToken = generateResetToken();
       const resetExpires = new Date(Date.now() + 36e5);
       await storage.updateResetToken(user.id, resetToken, resetExpires);
-      const resetLink = `https://${req.hostname}/reset-password?token=${resetToken}`;
+      const baseUrl = process.env.BASE_URL || (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : `https://${req.hostname}`);
+      const resetLink = `${baseUrl}/reset-password?token=${resetToken}`;
       try {
         const response = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
+            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
             from: "Rapha Lumina <support@raphalumina.com>",
             to: [email],
             subject: "Reset your Rapha Lumina password",
-            html: `
-              <!DOCTYPE html>
-              <html>
-                <head>
-                  <meta charset="utf-8">
-                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                </head>
-                <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-                  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-                    <h1 style="color: white; margin: 0; font-size: 28px;">Password Reset Request</h1>
-                  </div>
-                  <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
-                    <h2 style="color: #333; margin-top: 0;">Hi ${user.firstName || "there"},</h2>
-                    <p>We received a request to reset your password for your Rapha Lumina account.</p>
-                    <p>Click the button below to create a new password:</p>
-                    <div style="text-align: center; margin: 30px 0;">
-                      <a href="${resetLink}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Reset Password</a>
-                    </div>
-                    <p style="color: #666; font-size: 14px;">Or copy and paste this link into your browser:</p>
-                    <p style="color: #667eea; word-break: break-all; font-size: 14px;">${resetLink}</p>
-                    <p style="color: #666; font-size: 14px; margin-top: 30px;"><strong>This link will expire in 1 hour.</strong></p>
-                    <p style="color: #666; font-size: 14px;">If you didn't request a password reset, please ignore this email. Your password will remain unchanged.</p>
-                  </div>
-                  <div style="text-align: center; padding: 20px; color: #999; font-size: 12px;">
-                    <p>\xA9 2025 Rapha Lumina. All rights reserved.</p>
-                  </div>
-                </body>
-              </html>
-            `
+            html: `<!DOCTYPE html><html><body style="font-family: Arial, sans-serif;">
+<h1>Password Reset Request</h1>
+<p>Click to reset your password:</p>
+<p><a href="${resetLink}">${resetLink}</a></p>
+<p>This link will expire in 1 hour.</p>
+</body></html>`
           })
         });
+        const responseText = await response.text();
         if (!response.ok) {
-          console.error("Failed to send password reset email:", await response.text());
+          console.error(`[EMAIL] Failed to send password reset email to ${email}:`, responseText);
         } else {
-          console.log(`\u2705 Password reset email sent to ${email}`);
+          console.log(`[EMAIL] \u2705 Password reset email sent to ${email}`);
         }
       } catch (emailError) {
-        console.error("Error sending password reset email:", emailError);
+        console.error(`[EMAIL] Error sending password reset email to ${email}:`, emailError);
       }
       res.json({
         success: true,
@@ -1251,22 +1913,41 @@ async function registerRoutes(app2) {
   });
   app2.post("/api/reset-password", async (req, res) => {
     try {
+      console.log("[RESET-PASSWORD] Request received:", {
+        hasToken: !!req.body.token,
+        hasPassword: !!req.body.password
+      });
       const validatedData = resetPasswordSchema.parse(req.body);
       const { token, password } = validatedData;
+      console.log("[RESET-PASSWORD] Looking up user with token:", token.substring(0, 10) + "...");
       const user = await storage.getUserByResetToken(token);
       if (!user) {
+        console.log("[RESET-PASSWORD] No user found with this token");
         return res.status(400).json({ message: "Invalid or expired reset token" });
       }
+      console.log(
+        "[RESET-PASSWORD] User found:",
+        user.email,
+        "Token expires:",
+        user.resetPasswordExpires
+      );
       if (user.resetPasswordExpires && user.resetPasswordExpires < /* @__PURE__ */ new Date()) {
+        console.log("[RESET-PASSWORD] Token has expired");
         return res.status(400).json({ message: "Reset token has expired" });
       }
       const hashedPassword = await hashPassword(password);
       await storage.updateUserPassword(user.id, hashedPassword);
       await storage.clearResetToken(user.id);
+      if (user.emailVerified !== "true") {
+        await storage.markEmailAsVerified(user.id);
+        console.log("[RESET-PASSWORD] Email auto-verified for:", user.email);
+      }
+      console.log("[RESET-PASSWORD] \u2705 Password reset successfully for:", user.email);
       res.json({ success: true, message: "Password reset successfully. You can now log in." });
     } catch (error) {
-      console.error("Error resetting password:", error);
+      console.error("[RESET-PASSWORD] Error:", error);
       if (error instanceof z2.ZodError) {
+        console.error("[RESET-PASSWORD] Validation error:", error.errors);
         return res.status(400).json({ message: error.errors[0].message });
       }
       res.status(500).json({ message: "Failed to reset password" });
@@ -1330,31 +2011,74 @@ async function registerRoutes(app2) {
       }
       const { email } = result.data;
       const subscriber = await storage.addNewsletterSubscriber(email);
-      res.json({
-        success: true,
-        message: "Successfully subscribed to newsletter",
-        subscriber
-      });
+      res.json({ success: true, message: "Successfully subscribed to newsletter", subscriber });
     } catch (error) {
       console.error("Error adding newsletter subscriber:", error);
       res.status(500).json({ error: "Failed to subscribe to newsletter" });
     }
   });
-  app2.get("/api/admin/newsletter/subscribers", isAuthenticated, isAdmin, async (req, res) => {
+  app2.post("/api/contact", async (req, res) => {
     try {
-      const subscribers = await storage.getNewsletterSubscribers();
-      res.json(subscribers);
+      const { name, email, subject, message } = req.body;
+      if (!name || !email || !message) {
+        return res.status(400).json({ error: "Name, email, and message are required" });
+      }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: "Please provide a valid email address" });
+      }
+      const leadId = await odooService.createLead({
+        name: subject || `Contact from ${name}`,
+        contact_name: name,
+        email_from: email,
+        description: message
+      });
+      if (leadId) {
+        console.log(`[Contact Form] Successfully created Odoo lead #${leadId} for ${email}`);
+        try {
+          await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              from: "Rapha Lumina <support@raphalumina.com>",
+              to: ["leratom2012@gmail.com"],
+              subject: `New Contact Form Submission - ${subject || "No Subject"}`,
+              html: `<!DOCTYPE html><html><body style="font-family: Arial, sans-serif;">
+<h2>New Contact Form Submission</h2>
+<p><strong>Name:</strong> ${name}</p>
+<p><strong>Email:</strong> ${email}</p>
+<p><strong>Subject:</strong> ${subject || "No subject provided"}</p>
+<p><strong>Message:</strong></p>
+<p style="white-space: pre-wrap;">${message}</p>
+<p><strong>Lead ID:</strong> #${leadId}</p>
+</body></html>`
+            })
+          });
+          console.log(`[Contact Form] Notification email sent to leratom2012@gmail.com`);
+        } catch (emailError) {
+          console.error("[Contact Form] Failed to send notification email:", emailError);
+        }
+        res.json({
+          success: true,
+          message: "Thank you for contacting us. We'll be in touch soon!",
+          leadId
+        });
+      } else {
+        console.error("[Contact Form] Failed to create Odoo lead, but returning success to user");
+        res.json({ success: true, message: "Thank you for contacting us. We'll be in touch soon!" });
+      }
     } catch (error) {
-      console.error("Error fetching newsletter subscribers:", error);
-      res.status(500).json({ error: "Failed to fetch subscribers" });
+      console.error("[Contact Form] Error:", error);
+      res.status(500).json({ error: "Something went wrong. Please try again." });
     }
   });
   app2.post("/api/chat", async (req, res) => {
     try {
       if (!process.env.ANTHROPIC_API_KEY) {
-        return res.status(503).json({
-          error: "Anthropic API key not configured. Please add ANTHROPIC_API_KEY to environment secrets."
-        });
+        return res.status(503).json({ error: "Anthropic API key not configured. Please add ANTHROPIC_API_KEY." });
       }
       const { content, history = [] } = req.body;
       if (!content || typeof content !== "string") {
@@ -1368,10 +2092,7 @@ async function registerRoutes(app2) {
       } else {
         conversationHistory = history;
       }
-      const anthropicMessages = [...conversationHistory, { role: "user", content }].filter((msg) => msg.role === "user" || msg.role === "assistant").map((msg) => ({
-        role: msg.role,
-        content: msg.content
-      }));
+      const anthropicMessages = [...conversationHistory, { role: "user", content }].filter((msg) => msg.role === "user" || msg.role === "assistant").map((msg) => ({ role: msg.role, content: msg.content }));
       const response = await anthropic.messages.create({
         model: "claude-sonnet-4-20250514",
         max_tokens: 2048,
@@ -1391,10 +2112,7 @@ async function registerRoutes(app2) {
           role: "assistant",
           content: assistantContent
         });
-        res.json({
-          userMessage: savedUserMessage,
-          assistantMessage: savedAssistantMessage
-        });
+        res.json({ userMessage: savedUserMessage, assistantMessage: savedAssistantMessage });
       } else {
         const userMessage = {
           id: Date.now().toString(),
@@ -1410,10 +2128,7 @@ async function registerRoutes(app2) {
           content: assistantContent,
           timestamp: (/* @__PURE__ */ new Date()).toISOString()
         };
-        res.json({
-          userMessage,
-          assistantMessage
-        });
+        res.json({ userMessage, assistantMessage });
       }
     } catch (error) {
       console.error("Error processing chat:", error);
@@ -1664,56 +2379,24 @@ async function registerRoutes(app2) {
     try {
       const { id } = req.params;
       const course = await storage.getCourse(id);
-      if (!course) {
-        return res.status(404).json({ error: "Course not found" });
-      }
+      if (!course) return res.status(404).json({ error: "Course not found" });
       const courseModules = await storage.getModulesByCourse(id);
       const courseLessons = await storage.getLessonsByCourse(id);
-      const modulesWithLessons = courseModules.map((module) => ({
-        ...module,
-        lessons: courseLessons.filter((lesson) => lesson.moduleId === module.id)
+      const modulesWithLessons = courseModules.map((m) => ({
+        ...m,
+        lessons: courseLessons.filter((l) => l.moduleId === m.id)
       }));
-      res.json({
-        ...course,
-        modules: modulesWithLessons
-      });
+      res.json({ ...course, modules: modulesWithLessons });
     } catch (error) {
       console.error("Error fetching course details:", error);
       res.status(500).json({ error: "Failed to fetch course details" });
-    }
-  });
-  app2.get("/api/blog", async (req, res) => {
-    try {
-      const posts = await storage.getAllBlogPosts();
-      res.json(posts);
-    } catch (error) {
-      console.error("Error fetching blog posts:", error);
-      res.status(500).json({ error: "Failed to fetch blog posts" });
-    }
-  });
-  app2.get("/api/blog/slug/:slug", async (req, res) => {
-    try {
-      const { slug } = req.params;
-      if (!slug || typeof slug !== "string") {
-        return res.status(400).json({ error: "Invalid slug parameter" });
-      }
-      const post = await storage.getBlogPostBySlug(slug);
-      if (!post) {
-        return res.status(404).json({ error: "Blog post not found" });
-      }
-      res.json(post);
-    } catch (error) {
-      console.error("Error fetching blog post:", error);
-      res.status(500).json({ error: "Failed to fetch blog post" });
     }
   });
   app2.post("/api/enroll", isAuthenticated, async (req, res) => {
     try {
       const user = req.user;
       const { courseId, paymentId } = req.body;
-      if (!courseId) {
-        return res.status(400).json({ error: "Course ID is required" });
-      }
+      if (!courseId) return res.status(400).json({ error: "Course ID is required" });
       const existingEnrollment = await storage.getEnrollment(user.id, courseId);
       if (existingEnrollment) {
         return res.status(400).json({ error: "Already enrolled in this course" });
@@ -1760,9 +2443,7 @@ async function registerRoutes(app2) {
       const { lessonId } = req.params;
       const { completed, lastWatchedPosition } = req.body;
       const lesson = await storage.getLesson(lessonId);
-      if (!lesson) {
-        return res.status(404).json({ error: "Lesson not found" });
-      }
+      if (!lesson) return res.status(404).json({ error: "Lesson not found" });
       const progressData = {
         userId: user.id,
         courseId: lesson.courseId,
@@ -1783,10 +2464,10 @@ async function registerRoutes(app2) {
       const user = req.user;
       const { courseId } = req.params;
       const progress = await storage.getStudentProgress(user.id, courseId);
-      const courseLessons = await storage.getLessonsByCourse(courseId);
-      const progressMap = new Map(progress.map((p) => [p.lessonId, p]));
-      const completeProgress = courseLessons.map((lesson) => {
-        const existing = progressMap.get(lesson.id);
+      const lessons2 = await storage.getLessonsByCourse(courseId);
+      const map = new Map(progress.map((p) => [p.lessonId, p]));
+      const completeProgress = lessons2.map((lesson) => {
+        const existing = map.get(lesson.id);
         return existing || {
           userId: user.id,
           courseId,
@@ -1814,9 +2495,7 @@ async function registerRoutes(app2) {
     try {
       const user = req.user;
       const subscription = await storage.getUserSubscription(user.id);
-      if (!subscription) {
-        return res.json({ tier: "free", chatLimit: "5", chatsUsed: "0" });
-      }
+      if (!subscription) return res.json({ tier: "free", chatLimit: "5", chatsUsed: "0" });
       res.json(subscription);
     } catch (error) {
       console.error("Error fetching user subscription:", error);
@@ -1826,24 +2505,12 @@ async function registerRoutes(app2) {
   app2.post("/api/admin/grant-premium", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const { tier, userId } = req.body;
-      if (!tier) {
-        return res.status(400).json({ error: "Tier is required" });
-      }
+      if (!tier) return res.status(400).json({ error: "Tier is required" });
       if (!["free", "premium", "transformation"].includes(tier)) {
         return res.status(400).json({ error: "Invalid tier" });
       }
-      let targetUserId;
-      if (userId) {
-        targetUserId = userId;
-      } else {
-        const user = req.user;
-        targetUserId = user.id;
-      }
-      const chatLimitMap = {
-        free: "5",
-        premium: "10",
-        transformation: "unlimited"
-      };
+      const targetUserId = userId || req.user.id;
+      const chatLimitMap = { free: "5", premium: "10", transformation: "unlimited" };
       const subscription = await storage.updateSubscriptionTier(
         targetUserId,
         tier,
@@ -1858,9 +2525,7 @@ async function registerRoutes(app2) {
   app2.post("/api/admin/grant-access-by-email", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const { tier, email } = req.body;
-      if (!tier || !email) {
-        return res.status(400).json({ error: "Tier and email are required" });
-      }
+      if (!tier || !email) return res.status(400).json({ error: "Tier and email are required" });
       if (!["free", "premium", "transformation"].includes(tier)) {
         return res.status(400).json({ error: "Invalid tier" });
       }
@@ -1874,23 +2539,37 @@ async function registerRoutes(app2) {
             firstName: subscriber.firstName,
             lastName: subscriber.lastName,
             location: subscriber.location
-            // Skip age field - dateOfBirth is a string but age should be a number
           });
-          console.log(`Created user account for newsletter subscriber: ${email}`);
         } else {
           return res.status(404).json({ error: "No user or newsletter subscriber found with that email" });
         }
       }
-      const chatLimitMap = {
-        free: "5",
-        premium: "10",
-        transformation: "unlimited"
-      };
+      const chatLimitMap = { free: "5", premium: "10", transformation: "unlimited" };
       const subscription = await storage.updateSubscriptionTier(
         targetUser.id,
         tier,
         chatLimitMap[tier]
       );
+      try {
+        if (odooService.isConfigured()) {
+          const tierName = tier === "premium" ? "Premium" : tier === "transformation" ? "Transformation" : "Free";
+          const odooResult = await odooService.syncCustomer({
+            email: targetUser.email,
+            firstName: targetUser.firstName || void 0,
+            lastName: targetUser.lastName || void 0,
+            address: targetUser.address || void 0,
+            dateOfBirth: targetUser.dateOfBirth || void 0,
+            subscriptionTier: tierName
+          });
+          if (odooResult.success) {
+            console.log(`[ODOO] \u2705 Synced subscription update to Odoo for ${targetUser.email}`);
+          } else {
+            console.error(`[ODOO] \u26A0\uFE0F Failed to sync subscription: ${odooResult.error}`);
+          }
+        }
+      } catch (odooError) {
+        console.error("[ODOO] \u274C Error syncing subscription update:", odooError);
+      }
       res.json({ success: true, subscription, email: targetUser.email });
     } catch (error) {
       console.error("Error granting access by email:", error);
@@ -1911,26 +2590,261 @@ async function registerRoutes(app2) {
       res.status(500).json({ error: "Failed to update user test status" });
     }
   });
-  app2.patch("/api/admin/subscribers/:id/test-status", isAuthenticated, isAdmin, async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { isTestUser } = req.body;
-      if (!isTestUser || !["true", "false"].includes(isTestUser)) {
-        return res.status(400).json({ error: "Invalid test user status" });
+  app2.patch(
+    "/api/admin/subscribers/:id/test-status",
+    isAuthenticated,
+    isAdmin,
+    async (req, res) => {
+      try {
+        const { id } = req.params;
+        const { isTestUser } = req.body;
+        if (!isTestUser || !["true", "false"].includes(isTestUser)) {
+          return res.status(400).json({ error: "Invalid test user status" });
+        }
+        const updatedSubscriber = await storage.updateSubscriberTestStatus(id, isTestUser);
+        res.json(updatedSubscriber);
+      } catch (error) {
+        console.error("Error updating subscriber test status:", error);
+        res.status(500).json({ error: "Failed to update subscriber test status" });
       }
-      const updatedSubscriber = await storage.updateSubscriberTestStatus(id, isTestUser);
-      res.json(updatedSubscriber);
+    }
+  );
+  const { handleOdooWebhook: handleOdooWebhook2 } = await Promise.resolve().then(() => (init_odooWebhook(), odooWebhook_exports));
+  app2.post("/api/odoo/webhook", async (req, res) => {
+    await handleOdooWebhook2(req, res);
+  });
+  app2.get("/api/admin/odoo/status", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const configured = odooService.isConfigured();
+      res.json({
+        configured,
+        message: configured ? "Odoo integration is configured and ready" : "Odoo integration not configured. Please set ODOO_URL, ODOO_DB, ODOO_USERNAME, and ODOO_API_KEY."
+      });
     } catch (error) {
-      console.error("Error updating subscriber test status:", error);
-      res.status(500).json({ error: "Failed to update subscriber test status" });
+      console.error("Error checking Odoo status:", error);
+      res.status(500).json({ error: "Failed to check Odoo status" });
+    }
+  });
+  app2.post("/api/admin/odoo/test-connection", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      if (!odooService.isConfigured()) {
+        return res.status(400).json({
+          success: false,
+          error: "Odoo integration not configured. Please set ODOO_URL, ODOO_DB, ODOO_USERNAME, and ODOO_API_KEY."
+        });
+      }
+      console.log("[Odoo Test] Testing authentication...");
+      const authenticated = await odooService.authenticate();
+      if (authenticated) {
+        console.log("[Odoo Test] \u2705 Authentication successful");
+        res.json({
+          success: true,
+          message: "Successfully authenticated with Odoo",
+          url: process.env.ODOO_URL,
+          database: process.env.ODOO_DB,
+          username: process.env.ODOO_USERNAME
+        });
+      } else {
+        console.log("[Odoo Test] \u274C Authentication failed");
+        res.json({
+          success: false,
+          message: "Authentication failed. Please check your Odoo credentials.",
+          url: process.env.ODOO_URL,
+          database: process.env.ODOO_DB,
+          username: process.env.ODOO_USERNAME,
+          hint: "Verify that ODOO_API_KEY is correct and has not expired"
+        });
+      }
+    } catch (error) {
+      console.error("[Odoo Test] Error testing connection:", error);
+      res.status(500).json({
+        success: false,
+        error: "Failed to test Odoo connection",
+        details: error.message
+      });
+    }
+  });
+  app2.post("/api/admin/odoo/sync-user", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { userId } = req.body;
+      if (!userId) return res.status(400).json({ error: "User ID is required" });
+      const user = await storage.getUser(userId);
+      if (!user) return res.status(404).json({ error: "User not found" });
+      if (!odooService.isConfigured()) {
+        return res.status(400).json({ error: "Odoo integration not configured" });
+      }
+      const subscription = await storage.getUserSubscription(userId);
+      const tierName = subscription?.tier === "premium" ? "Premium" : subscription?.tier === "transformation" ? "Transformation" : "Free";
+      const result = await odooService.syncCustomer({
+        email: user.email,
+        firstName: user.firstName || void 0,
+        lastName: user.lastName || void 0,
+        address: user.address || void 0,
+        dateOfBirth: user.dateOfBirth || void 0,
+        subscriptionTier: tierName
+      });
+      if (result.success) {
+        res.json({
+          success: true,
+          message: `Successfully synced ${user.email} to Odoo`,
+          partnerId: result.partnerId
+        });
+      } else {
+        res.status(500).json({ success: false, error: result.error || "Failed to sync to Odoo" });
+      }
+    } catch (error) {
+      console.error("Error syncing user to Odoo:", error);
+      res.status(500).json({ error: "Failed to sync user to Odoo" });
+    }
+  });
+  app2.post("/api/admin/odoo/sync-all-users", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      if (!odooService.isConfigured()) {
+        return res.status(400).json({ error: "Odoo integration not configured" });
+      }
+      const users2 = await storage.getAllUsers();
+      const verifiedUsers = users2.filter((u) => u.emailVerified === "true");
+      const results = { total: verifiedUsers.length, successful: 0, failed: 0, errors: [] };
+      for (const user of verifiedUsers) {
+        try {
+          const subscription = await storage.getUserSubscription(user.id);
+          const tierName = subscription?.tier === "premium" ? "Premium" : subscription?.tier === "transformation" ? "Transformation" : "Free";
+          const result = await odooService.syncCustomer({
+            email: user.email,
+            firstName: user.firstName || void 0,
+            lastName: user.lastName || void 0,
+            address: user.address || void 0,
+            dateOfBirth: user.dateOfBirth || void 0,
+            subscriptionTier: tierName
+          });
+          if (result.success) {
+            results.successful++;
+          } else {
+            results.failed++;
+            results.errors.push(`${user.email}: ${result.error}`);
+          }
+        } catch (error) {
+          results.failed++;
+          results.errors.push(`${user.email}: ${error.message}`);
+        }
+      }
+      res.json({
+        success: true,
+        message: `Synced ${results.successful} of ${results.total} users to Odoo`,
+        ...results
+      });
+    } catch (error) {
+      console.error("Error syncing all users to Odoo:", error);
+      res.status(500).json({ error: "Failed to sync users to Odoo" });
+    }
+  });
+  app2.patch("/api/user/profile", isAuthenticated, async (req, res) => {
+    try {
+      const user = await storage.getUserByEmail(req.user.email);
+      if (!user) return res.status(404).json({ error: "User not found" });
+      const { firstName, lastName, address, dateOfBirth } = req.body;
+      const updateData = {
+        id: user.id,
+        email: user.email,
+        firstName: firstName !== void 0 ? firstName : user.firstName,
+        lastName: lastName !== void 0 ? lastName : user.lastName,
+        address: address !== void 0 ? address : user.address,
+        dateOfBirth: dateOfBirth !== void 0 ? dateOfBirth : user.dateOfBirth,
+        profileImageUrl: user.profileImageUrl,
+        location: user.location,
+        age: user.age
+      };
+      const updatedUser = await storage.upsertUser(updateData);
+      const { password, resetPasswordToken, resetPasswordExpires, ...safeUser } = updatedUser;
+      res.json(safeUser);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      res.status(500).json({ error: "Failed to update profile" });
+    }
+  });
+  app2.post("/api/user/upload-avatar", isAuthenticated, upload.single("avatar"), async (req, res) => {
+    try {
+      if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+      const user = await storage.getUserByEmail(req.user.email);
+      if (!user) return res.status(404).json({ error: "User not found" });
+      if (user.profileImageUrl) {
+        const oldFilePath = path.join(process.cwd(), user.profileImageUrl);
+        if (fs.existsSync(oldFilePath)) {
+          fs.unlinkSync(oldFilePath);
+        }
+      }
+      const avatarUrl = `/attached_assets/uploads/avatars/${req.file.filename}`;
+      const updateData = { ...user, profileImageUrl: avatarUrl };
+      const updatedUser = await storage.upsertUser(updateData);
+      const { password, resetPasswordToken, resetPasswordExpires, ...safeUser } = updatedUser;
+      res.json({ success: true, profileImageUrl: avatarUrl, user: safeUser });
+    } catch (error) {
+      console.error("Error uploading avatar:", error);
+      res.status(500).json({ error: "Failed to upload avatar" });
+    }
+  });
+  app2.post("/api/user/change-password", isAuthenticated, async (req, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ error: "Current password and new password are required" });
+      }
+      const user = await storage.getUserByEmail(req.user.email);
+      if (!user || !user.password) return res.status(404).json({ error: "User not found" });
+      const isValidPassword = await bcrypt2.compare(currentPassword, user.password);
+      if (!isValidPassword) return res.status(401).json({ error: "Current password is incorrect" });
+      const hashedPassword = await hashPassword(newPassword);
+      const updateData = { ...user, password: hashedPassword };
+      await storage.upsertUser(updateData);
+      res.json({ success: true, message: "Password changed successfully" });
+    } catch (error) {
+      console.error("Error changing password:", error);
+      res.status(500).json({ error: "Failed to change password" });
+    }
+  });
+  app2.get("/api/user/subscription", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user;
+      const subscription = await storage.getUserSubscription(user.id);
+      if (!subscription) {
+        return res.json({ tier: "free", chatLimit: "5", chatsUsed: "0", status: "active" });
+      }
+      res.json(subscription);
+    } catch (error) {
+      console.error("Error fetching user subscription:", error);
+      res.status(500).json({ error: "Failed to fetch subscription" });
+    }
+  });
+  app2.get("/api/user/enrollments", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user;
+      const enrollments2 = await storage.getUserEnrollments(user.id);
+      const enrichedEnrollments = await Promise.all(
+        enrollments2.map(async (enrollment) => {
+          const course = await storage.getCourse(enrollment.courseId);
+          const progress = await storage.getStudentProgress(user.id, enrollment.courseId);
+          const lessons2 = await storage.getLessonsByCourse(enrollment.courseId);
+          const completedLessons = progress.filter((p) => p.completed === "true").length;
+          const progressPercentage = lessons2.length > 0 ? Math.round(completedLessons / lessons2.length * 100) : 0;
+          return {
+            id: enrollment.id,
+            courseId: enrollment.courseId,
+            courseName: course?.title || "Unknown Course",
+            enrolledAt: enrollment.enrolledAt,
+            progress: String(progressPercentage)
+          };
+        })
+      );
+      res.json(enrichedEnrollments);
+    } catch (error) {
+      console.error("Error fetching user enrollments:", error);
+      res.status(500).json({ error: "Failed to fetch enrollments" });
     }
   });
   app2.put("/api/profile", isAuthenticated, async (req, res) => {
     try {
       const user = await storage.getUserByEmail(req.user.email);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
+      if (!user) return res.status(404).json({ error: "User not found" });
       const { firstName, lastName, location, age, profileImageUrl } = req.body;
       const updateData = {
         id: user.id,
@@ -1946,6 +2860,132 @@ async function registerRoutes(app2) {
     } catch (error) {
       console.error("Error updating profile:", error);
       res.status(500).json({ error: "Failed to update profile" });
+    }
+  });
+  app2.get("/api/forum/posts", isAuthenticated, async (req, res) => {
+    try {
+      const posts = await storage.getAllForumPosts();
+      res.json(posts);
+    } catch (error) {
+      console.error("Error fetching forum posts:", error);
+      res.status(500).json({ error: "Failed to fetch forum posts" });
+    }
+  });
+  app2.get("/api/forum/posts/:id", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const post = await storage.getForumPost(id);
+      if (!post) return res.status(404).json({ error: "Post not found" });
+      res.json(post);
+    } catch (error) {
+      console.error("Error fetching forum post:", error);
+      res.status(500).json({ error: "Failed to fetch forum post" });
+    }
+  });
+  app2.post("/api/forum/posts", isAuthenticated, async (req, res) => {
+    try {
+      const user = await storage.getUserByEmail(req.user.email);
+      if (!user) return res.status(404).json({ error: "User not found" });
+      const result = insertForumPostSchema.safeParse({
+        userId: user.id,
+        title: req.body.title,
+        content: req.body.content,
+        category: req.body.category || "general"
+      });
+      if (!result.success) {
+        return res.status(400).json({ error: "Invalid post data", details: result.error.errors });
+      }
+      const post = await storage.createForumPost(result.data);
+      res.json(post);
+    } catch (error) {
+      console.error("Error creating forum post:", error);
+      res.status(500).json({ error: "Failed to create forum post" });
+    }
+  });
+  app2.get("/api/forum/posts/:id/replies", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const replies = await storage.getForumRepliesByPost(id);
+      res.json(replies);
+    } catch (error) {
+      console.error("Error fetching forum replies:", error);
+      res.status(500).json({ error: "Failed to fetch forum replies" });
+    }
+  });
+  app2.post("/api/forum/posts/:id/replies", isAuthenticated, async (req, res) => {
+    try {
+      const user = await storage.getUserByEmail(req.user.email);
+      if (!user) return res.status(404).json({ error: "User not found" });
+      const { id } = req.params;
+      const result = insertForumReplySchema.safeParse({
+        postId: id,
+        userId: user.id,
+        content: req.body.content
+      });
+      if (!result.success) {
+        return res.status(400).json({ error: "Invalid reply data", details: result.error.errors });
+      }
+      const reply = await storage.createForumReply(result.data);
+      res.json(reply);
+    } catch (error) {
+      console.error("Error creating forum reply:", error);
+      res.status(500).json({ error: "Failed to create forum reply" });
+    }
+  });
+  app2.post("/api/forum/posts/:id/like", isAuthenticated, async (req, res) => {
+    try {
+      const user = await storage.getUserByEmail(req.user.email);
+      if (!user) return res.status(404).json({ error: "User not found" });
+      const { id } = req.params;
+      const existingLike = await storage.getUserLikeForPost(user.id, id);
+      if (existingLike) {
+        await storage.toggleForumPostLike(id, false);
+        await storage.deleteForumLike(existingLike.id);
+        res.json({ liked: false });
+      } else {
+        const result = insertForumLikeSchema.safeParse({
+          userId: user.id,
+          postId: id,
+          replyId: null
+        });
+        if (!result.success) {
+          return res.status(400).json({ error: "Invalid like data", details: result.error.errors });
+        }
+        await storage.createForumLike(result.data);
+        await storage.toggleForumPostLike(id, true);
+        res.json({ liked: true });
+      }
+    } catch (error) {
+      console.error("Error toggling forum post like:", error);
+      res.status(500).json({ error: "Failed to toggle like" });
+    }
+  });
+  app2.post("/api/forum/replies/:id/like", isAuthenticated, async (req, res) => {
+    try {
+      const user = await storage.getUserByEmail(req.user.email);
+      if (!user) return res.status(404).json({ error: "User not found" });
+      const { id } = req.params;
+      const existingLike = await storage.getUserLikeForReply(user.id, id);
+      if (existingLike) {
+        await storage.toggleForumReplyLike(id, false);
+        await storage.deleteForumLike(existingLike.id);
+        res.json({ liked: false });
+      } else {
+        const result = insertForumLikeSchema.safeParse({
+          userId: user.id,
+          postId: null,
+          replyId: id
+        });
+        if (!result.success) {
+          return res.status(400).json({ error: "Invalid like data", details: result.error.errors });
+        }
+        await storage.createForumLike(result.data);
+        await storage.toggleForumReplyLike(id, true);
+        res.json({ liked: true });
+      }
+    } catch (error) {
+      console.error("Error toggling forum reply like:", error);
+      res.status(500).json({ error: "Failed to toggle like" });
     }
   });
   app2.get("/api/flashcards/course/:courseId", isAuthenticated, async (req, res) => {
@@ -1986,156 +3026,20 @@ async function registerRoutes(app2) {
       res.status(500).json({ error: "Failed to fetch music tracks" });
     }
   });
-  app2.get("/api/forum/posts", isAuthenticated, async (req, res) => {
-    try {
-      const posts = await storage.getAllForumPosts();
-      res.json(posts);
-    } catch (error) {
-      console.error("Error fetching forum posts:", error);
-      res.status(500).json({ error: "Failed to fetch forum posts" });
-    }
-  });
-  app2.get("/api/forum/posts/:id", isAuthenticated, async (req, res) => {
-    try {
-      const { id } = req.params;
-      const post = await storage.getForumPost(id);
-      if (!post) {
-        return res.status(404).json({ error: "Post not found" });
-      }
-      res.json(post);
-    } catch (error) {
-      console.error("Error fetching forum post:", error);
-      res.status(500).json({ error: "Failed to fetch forum post" });
-    }
-  });
-  app2.post("/api/forum/posts", isAuthenticated, async (req, res) => {
-    try {
-      const user = await storage.getUserByEmail(req.user.email);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-      const result = insertForumPostSchema.safeParse({
-        userId: user.id,
-        title: req.body.title,
-        content: req.body.content,
-        category: req.body.category || "general"
-      });
-      if (!result.success) {
-        return res.status(400).json({ error: "Invalid post data", details: result.error.errors });
-      }
-      const post = await storage.createForumPost(result.data);
-      res.json(post);
-    } catch (error) {
-      console.error("Error creating forum post:", error);
-      res.status(500).json({ error: "Failed to create forum post" });
-    }
-  });
-  app2.get("/api/forum/posts/:id/replies", isAuthenticated, async (req, res) => {
-    try {
-      const { id } = req.params;
-      const replies = await storage.getForumRepliesByPost(id);
-      res.json(replies);
-    } catch (error) {
-      console.error("Error fetching forum replies:", error);
-      res.status(500).json({ error: "Failed to fetch forum replies" });
-    }
-  });
-  app2.post("/api/forum/posts/:id/replies", isAuthenticated, async (req, res) => {
-    try {
-      const user = await storage.getUserByEmail(req.user.email);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-      const { id } = req.params;
-      const result = insertForumReplySchema.safeParse({
-        postId: id,
-        userId: user.id,
-        content: req.body.content
-      });
-      if (!result.success) {
-        return res.status(400).json({ error: "Invalid reply data", details: result.error.errors });
-      }
-      const reply = await storage.createForumReply(result.data);
-      res.json(reply);
-    } catch (error) {
-      console.error("Error creating forum reply:", error);
-      res.status(500).json({ error: "Failed to create forum reply" });
-    }
-  });
-  app2.post("/api/forum/posts/:id/like", isAuthenticated, async (req, res) => {
-    try {
-      const user = await storage.getUserByEmail(req.user.email);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-      const { id } = req.params;
-      const existingLike = await storage.getUserLikeForPost(user.id, id);
-      if (existingLike) {
-        await storage.toggleForumPostLike(id, false);
-        await storage.deleteForumLike(existingLike.id);
-        res.json({ liked: false });
-      } else {
-        const result = insertForumLikeSchema.safeParse({
-          userId: user.id,
-          postId: id,
-          replyId: null
-        });
-        if (!result.success) {
-          return res.status(400).json({ error: "Invalid like data", details: result.error.errors });
-        }
-        await storage.createForumLike(result.data);
-        await storage.toggleForumPostLike(id, true);
-        res.json({ liked: true });
-      }
-    } catch (error) {
-      console.error("Error toggling forum post like:", error);
-      res.status(500).json({ error: "Failed to toggle like" });
-    }
-  });
-  app2.post("/api/forum/replies/:id/like", isAuthenticated, async (req, res) => {
-    try {
-      const user = await storage.getUserByEmail(req.user.email);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-      const { id } = req.params;
-      const existingLike = await storage.getUserLikeForReply(user.id, id);
-      if (existingLike) {
-        await storage.toggleForumReplyLike(id, false);
-        await storage.deleteForumLike(existingLike.id);
-        res.json({ liked: false });
-      } else {
-        const result = insertForumLikeSchema.safeParse({
-          userId: user.id,
-          postId: null,
-          replyId: id
-        });
-        if (!result.success) {
-          return res.status(400).json({ error: "Invalid like data", details: result.error.errors });
-        }
-        await storage.createForumLike(result.data);
-        await storage.toggleForumReplyLike(id, true);
-        res.json({ liked: true });
-      }
-    } catch (error) {
-      console.error("Error toggling forum reply like:", error);
-      res.status(500).json({ error: "Failed to toggle like" });
-    }
-  });
   const httpServer = createServer(app2);
   return httpServer;
 }
 
 // server/vite.ts
 import express from "express";
-import fs from "fs";
-import path2 from "path";
+import fs2 from "fs";
+import path3 from "path";
 import { createServer as createViteServer, createLogger } from "vite";
 
 // vite.config.ts
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import path from "path";
+import path2 from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 var vite_config_default = defineConfig({
   plugins: [
@@ -2152,14 +3056,14 @@ var vite_config_default = defineConfig({
   ],
   resolve: {
     alias: {
-      "@": path.resolve(import.meta.dirname, "client", "src"),
-      "@shared": path.resolve(import.meta.dirname, "shared"),
-      "@assets": path.resolve(import.meta.dirname, "attached_assets")
+      "@": path2.resolve(import.meta.dirname, "client", "src"),
+      "@shared": path2.resolve(import.meta.dirname, "shared"),
+      "@assets": path2.resolve(import.meta.dirname, "attached_assets")
     }
   },
-  root: path.resolve(import.meta.dirname, "client"),
+  root: path2.resolve(import.meta.dirname, "client"),
   build: {
-    outDir: path.resolve(import.meta.dirname, "dist/public"),
+    outDir: path2.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true
   },
   server: {
@@ -2205,13 +3109,13 @@ async function setupVite(app2, server) {
   app2.use("*", async (req, res, next) => {
     const url = req.originalUrl;
     try {
-      const clientTemplate = path2.resolve(
+      const clientTemplate = path3.resolve(
         import.meta.dirname,
         "..",
         "client",
         "index.html"
       );
-      let template = await fs.promises.readFile(clientTemplate, "utf-8");
+      let template = await fs2.promises.readFile(clientTemplate, "utf-8");
       template = template.replace(
         `src="/src/main.tsx"`,
         `src="/src/main.tsx?v=${nanoid()}"`
@@ -2225,15 +3129,15 @@ async function setupVite(app2, server) {
   });
 }
 function serveStatic(app2) {
-  const distPath = path2.resolve(import.meta.dirname, "public");
-  if (!fs.existsSync(distPath)) {
+  const distPath = path3.resolve(import.meta.dirname, "public");
+  if (!fs2.existsSync(distPath)) {
     throw new Error(
       `Could not find the build directory: ${distPath}, make sure to build the client first`
     );
   }
   app2.use(express.static(distPath));
   app2.use("*", (_req, res) => {
-    res.sendFile(path2.resolve(distPath, "index.html"));
+    res.sendFile(path3.resolve(distPath, "index.html"));
   });
 }
 
@@ -2246,19 +3150,19 @@ app.use(express2.json({
 }));
 app.use(express2.urlencoded({ extended: false }));
 app.use((req, res, next) => {
-  const path3 = req.path;
-  if (path3.endsWith(".html") || path3 === "/" || !path3.includes(".")) {
+  const path4 = req.path;
+  if (path4.endsWith(".html") || path4 === "/" || !path4.includes(".")) {
     res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     res.setHeader("Pragma", "no-cache");
     res.setHeader("Expires", "0");
-  } else if (path3.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|eot|webmanifest|json)$/)) {
+  } else if (path4.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|eot|webmanifest|json)$/)) {
     res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
   }
   next();
 });
 app.use((req, res, next) => {
   const start = Date.now();
-  const path3 = req.path;
+  const path4 = req.path;
   let capturedJsonResponse = void 0;
   const originalResJson = res.json;
   res.json = function(bodyJson, ...args) {
@@ -2267,8 +3171,8 @@ app.use((req, res, next) => {
   };
   res.on("finish", () => {
     const duration = Date.now() - start;
-    if (path3.startsWith("/api")) {
-      let logLine = `${req.method} ${path3} ${res.statusCode} in ${duration}ms`;
+    if (path4.startsWith("/api")) {
+      let logLine = `${req.method} ${path4} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
@@ -2283,6 +3187,7 @@ app.use((req, res, next) => {
 (async () => {
   try {
     const server = await registerRoutes(app);
+    app.use("/attached_assets", express2.static("attached_assets"));
     app.use((err, _req, res, _next) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
