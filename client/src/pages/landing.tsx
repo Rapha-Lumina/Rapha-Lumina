@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 import { FloatingChatWidget } from "@/components/FloatingChatWidget";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -470,21 +471,7 @@ export default function Landing() {
         </DialogContent>
       </Dialog>
 
-      {/* Footer */}
-      <div className="py-12 px-4 border-t bg-muted/30">
-        <div className="max-w-6xl mx-auto text-center space-y-4">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <img src={logo} alt="Rapha Lumina" className="h-12 w-12" />
-            <span className="font-display text-2xl text-foreground">Rapha Lumina</span>
-          </div>
-          <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-            Integrating psychology, quantum mechanics, and ancient wisdom for conscious awakening and spiritual transformation
-          </p>
-          <div className="pt-4 text-xs text-muted-foreground">
-            <a href="/privacy" className="underline hover:text-foreground transition-colors" data-testid="link-privacy">
-              Privacy Policy
-            </a>
-          </div>
+      <Footer />
         </div>
       </div>
     </div>
