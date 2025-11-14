@@ -32,6 +32,7 @@ import ForgotPassword from "@/pages/forgot-password";
 import ResetPassword from "@/pages/reset-password";
 import VerifyEmail from "@/pages/verify-email";
 import NotFound from "@/pages/not-found";
+import RefundPolicy from "@/pages/refund-policy";
 
 function Router() {
   return (
@@ -61,6 +62,7 @@ function Router() {
       <Route path="/forum/:id" component={ForumPost} />
       <Route path="/forum" component={Forum} />
       <Route path="/contact" component={Contact} />
+      <Route path="/refund-policy" component={RefundPolicy} />
       <Route path="/admin" component={Admin} />
       <Route path="/privacy" component={Privacy} />
       <Route component={NotFound} />
