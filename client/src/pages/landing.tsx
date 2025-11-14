@@ -472,8 +472,6 @@ export default function Landing() {
       </Dialog>
 
       <Footer />
-        </div>
-      </div>
     </div>
   );
 }
