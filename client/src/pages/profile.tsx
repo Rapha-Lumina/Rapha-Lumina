@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import { Footer } from "@/components/Footer";
+import { Footer } from "@/components/Footer";
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -669,4 +671,6 @@ export default function Profile() {
       </main>
     </div>
   );
+      <Footer />
+      <Footer />
 }
