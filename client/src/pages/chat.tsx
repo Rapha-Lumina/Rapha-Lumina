@@ -1,17 +1,21 @@
 import { useState, useEffect, useRef } from "react";
+import { useLocation } from "wouter";
 import { Navigation } from "@/components/Navigation";
 import { ChatMessage, type Message } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
 import { WelcomeMessage } from "@/components/WelcomeMessage";
 import { LoadingIndicator } from "@/components/LoadingIndicator";
+import { UsageIndicator } from "@/components/UsageIndicator";
+import { ChatLimitModal } from "@/components/ChatLimitModal";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useSpeechSynthesis } from "@/hooks/useVoice";
 import { useAuth } from "@/hooks/useAuth";
+import { ChatLimitProvider, useChatLimit } from "@/contexts/ChatLimitContext";
 import { Trash2 } from "lucide-react";
 
-export default function Chat() {
+function ChatContent() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
@@ -19,6 +23,17 @@ export default function Chat() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { speak, stop, isSpeaking } = useSpeechSynthesis();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const [, setLocation] = useLocation();
+
+  // Use chat limit context
+  const {
+    limitInfo,
+    showLimitModal,
+    modalVariant,
+    incrementUsage,
+    closeModal,
+    guestChatCount,
+  } = useChatLimit();
 
   // Load messages on mount - from server if authenticated, localStorage if not
   useEffect(() => {
@@ -82,7 +97,7 @@ export default function Chat() {
 
   const handleSendMessage = async (content: string) => {
     setIsLoading(true);
-    
+
     // Stop any ongoing speech when user sends new message
     if (isSpeaking) {
       stop();
@@ -103,10 +118,11 @@ export default function Chat() {
     try {
       // Prepare request body
       const requestBody: any = { content };
-      
-      // For non-authenticated users, send conversation history
+
+      // For non-authenticated users, send conversation history and guest chat count
       if (!isAuthenticated) {
         requestBody.history = messages;
+        requestBody.guestChatCount = guestChatCount;
       }
 
       const response = await fetch("/api/chat", {
@@ -121,6 +137,11 @@ export default function Chat() {
         const data = await response.json() as {
           userMessage: Message;
           assistantMessage: Message;
+          guestLimitInfo?: {
+            tier: string;
+            remaining: number;
+            dailyLimit: number;
+          };
         };
 
         // Replace temp message with server response
@@ -128,23 +149,38 @@ export default function Chat() {
           const withoutTemp = prev.filter(msg => msg.id !== userMessage.id);
           return [...withoutTemp, data.userMessage, data.assistantMessage];
         });
-        
+
+        // Increment usage count after successful chat
+        incrementUsage();
+
         // Speak the assistant's response if voice is enabled
         if (voiceEnabled && data.assistantMessage.content) {
           speak(data.assistantMessage.content);
         }
+      } else if (response.status === 429) {
+        // Rate limit reached - the context will show the modal
+        const data = await response.json();
+
+        toast({
+          title: "Daily Limit Reached",
+          description: data.message || "You've reached your daily chat limit.",
+          variant: "destructive",
+        });
+
+        // Remove the user message since it wasn't sent
+        setMessages((prev) => prev.filter(msg => msg.id !== userMessage.id));
       } else {
         throw new Error("Failed to get response");
       }
     } catch (error) {
       console.error("Failed to send message:", error);
-      
+
       toast({
         title: "Connection Error",
         description: "Unable to reach Rapha Lumina. Please try again.",
         variant: "destructive",
       });
-      
+
       // Remove the user message if request failed
       setMessages((prev) => prev.filter(msg => msg.id !== userMessage.id));
     } finally {
@@ -251,9 +287,21 @@ export default function Chat() {
 
         {/* Input Area */}
         <div className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="max-w-5xl mx-auto px-4 py-4">
-            <ChatInput 
-              onSendMessage={handleSendMessage} 
+          <div className="max-w-5xl mx-auto px-4 py-4 space-y-2">
+            {/* Usage Indicator */}
+            {limitInfo && (
+              <UsageIndicator
+                remaining={limitInfo.remaining}
+                total={limitInfo.total}
+                tier={limitInfo.tier}
+                resetTime={limitInfo.resetTime}
+                onUpgradeClick={() => setLocation("/membership")}
+                onSignupClick={() => setLocation("/signup?source=chat_limit")}
+              />
+            )}
+
+            <ChatInput
+              onSendMessage={handleSendMessage}
               isLoading={isLoading}
               voiceEnabled={voiceEnabled}
               onVoiceToggle={handleVoiceToggle}
@@ -261,6 +309,39 @@ export default function Chat() {
           </div>
         </div>
       </div>
+
+      {/* Chat Limit Modal */}
+      {showLimitModal && modalVariant && limitInfo && (
+        <ChatLimitModal
+          isOpen={showLimitModal}
+          onClose={closeModal}
+          variant={modalVariant}
+          remaining={typeof limitInfo.remaining === "number" ? limitInfo.remaining : 0}
+          resetTime={limitInfo.resetTime}
+          onPrimaryAction={() => {
+            closeModal();
+            if (modalVariant === "guest") {
+              setLocation("/signup?source=guest_limit");
+            } else if (modalVariant === "free") {
+              setLocation("/membership?source=chat_limit_prompt&tier=free");
+            } else if (modalVariant === "premium") {
+              setLocation("/membership?source=chat_limit_prompt&tier=premium");
+            }
+          }}
+          onSecondaryAction={() => {
+            closeModal();
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+// Wrap the ChatContent with ChatLimitProvider
+export default function Chat() {
+  return (
+    <ChatLimitProvider>
+      <ChatContent />
+    </ChatLimitProvider>
   );
 }

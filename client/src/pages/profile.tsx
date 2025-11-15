@@ -668,6 +668,7 @@ export default function Profile() {
           </Tabs>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

@@ -325,6 +325,7 @@ export default function Shop() {
           <p className="text-sm text-muted-foreground">© 2025 Rapha Lumina. All rights reserved.</p>
         </div>
       </footer>
+      <Footer />
     </div>
   );
 }
