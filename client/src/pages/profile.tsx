@@ -670,6 +670,4 @@ export default function Profile() {
       </main>
     </div>
   );
-      <Footer />
-      <Footer />
 }

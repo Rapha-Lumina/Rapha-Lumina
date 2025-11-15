@@ -327,6 +327,4 @@ export default function Shop() {
       </footer>
     </div>
   );
-      <Footer />
-      <Footer />
 }
