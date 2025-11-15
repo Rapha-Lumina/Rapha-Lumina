@@ -127,6 +127,12 @@ var init_schema = __esm({
       chatLimit: varchar("chat_limit").notNull().default("5"),
       // "5", "10", or "unlimited"
       chatsUsed: varchar("chats_used").notNull().default("0"),
+      // DEPRECATED: use dailyChatsUsed instead
+      // NEW FIELDS for daily chat limit tracking
+      dailyChatsUsed: varchar("daily_chats_used").notNull().default("0"),
+      // Current day's usage
+      lastResetDate: timestamp("last_reset_date").defaultNow().notNull(),
+      // Last time daily usage was reset
       status: varchar("status", { enum: ["active", "cancelled", "expired"] }).notNull().default("active"),
       stripeCustomerId: varchar("stripe_customer_id"),
       stripeSubscriptionId: varchar("stripe_subscription_id"),
@@ -1040,6 +1046,14 @@ var DatabaseStorage = class {
     const [subscription] = await db.insert(subscriptions).values(subscriptionData).returning();
     return subscription;
   }
+  async getSubscription(subscriptionId) {
+    const subscription = await db.select().from(subscriptions).where(eq(subscriptions.id, subscriptionId)).limit(1);
+    return subscription[0];
+  }
+  async updateSubscription(subscriptionId, updates) {
+    const [updated] = await db.update(subscriptions).set(updates).where(eq(subscriptions.id, subscriptionId)).returning();
+    return updated;
+  }
   async updateSubscriptionTier(userId, tier, chatLimit) {
     const existing = await this.getUserSubscription(userId);
     if (!existing) {
@@ -1259,6 +1273,235 @@ var DatabaseStorage = class {
   }
 };
 var storage = new DatabaseStorage();
+
+// server/services/ChatLimitService.ts
+var TIER_LIMITS = {
+  free: 5,
+  premium: 10,
+  transformation: -1
+  // -1 means unlimited
+};
+var GUEST_LIMIT = 2;
+var ChatLimitService = class {
+  /**
+   * Check if an authenticated user can send a chat message
+   * Automatically resets daily usage if a new day has started
+   *
+   * @param userId - The user's ID
+   * @param tier - The user's subscription tier
+   * @returns LimitCheckResult with allowed status and usage info
+   */
+  async checkLimit(userId, tier) {
+    try {
+      let subscription = await storage.getUserSubscription(userId);
+      if (!subscription) {
+        subscription = await this.createDefaultSubscription(userId);
+      }
+      if (this.shouldResetDailyUsage(subscription.lastResetDate)) {
+        subscription = await this.resetDailyUsage(subscription.id);
+      }
+      const tierKey = tier;
+      const dailyLimit = TIER_LIMITS[tierKey] || TIER_LIMITS.free;
+      if (dailyLimit === -1) {
+        return {
+          allowed: true,
+          tier,
+          dailyLimit: "unlimited",
+          used: parseInt(subscription.dailyChatsUsed),
+          remaining: "unlimited",
+          resetTime: this.getNextResetTime()
+        };
+      }
+      const used = parseInt(subscription.dailyChatsUsed);
+      const remaining = Math.max(0, dailyLimit - used);
+      const allowed = used < dailyLimit;
+      const result = {
+        allowed,
+        tier,
+        dailyLimit,
+        used,
+        remaining,
+        resetTime: this.getNextResetTime()
+      };
+      if (!allowed) {
+        result.upgradeMessage = this.getUpgradeMessage(tier);
+        result.upgradeUrl = this.getUpgradeUrl(tier);
+      }
+      return result;
+    } catch (error) {
+      console.error("ChatLimitService.checkLimit failed (fail-open):", error);
+      return {
+        allowed: true,
+        tier: tier || "free",
+        dailyLimit: "unknown",
+        used: 0,
+        remaining: "unknown",
+        resetTime: null
+      };
+    }
+  }
+  /**
+   * Increment the daily chat usage counter for a user
+   *
+   * @param userId - The user's ID
+   */
+  async incrementUsage(userId) {
+    try {
+      const subscription = await storage.getUserSubscription(userId);
+      if (!subscription) {
+        console.warn(`incrementUsage: No subscription found for user ${userId}`);
+        return;
+      }
+      if (subscription.tier === "transformation") {
+        return;
+      }
+      const newUsage = parseInt(subscription.dailyChatsUsed) + 1;
+      await storage.updateSubscription(subscription.id, {
+        dailyChatsUsed: newUsage.toString(),
+        updatedAt: /* @__PURE__ */ new Date()
+      });
+    } catch (error) {
+      console.error("ChatLimitService.incrementUsage failed (non-critical):", error);
+    }
+  }
+  /**
+   * Reset daily usage counter if a new day has started
+   *
+   * @param subscriptionId - The subscription ID to reset
+   * @returns Updated subscription object
+   */
+  async resetDailyUsage(subscriptionId) {
+    const subscription = await storage.getSubscription(subscriptionId);
+    if (!subscription) {
+      throw new Error(`Subscription ${subscriptionId} not found`);
+    }
+    const updated = await storage.updateSubscription(subscriptionId, {
+      dailyChatsUsed: "0",
+      lastResetDate: /* @__PURE__ */ new Date(),
+      updatedAt: /* @__PURE__ */ new Date()
+    });
+    return updated;
+  }
+  /**
+   * Check if daily usage should be reset based on last reset date
+   *
+   * @param lastResetDate - The last time daily usage was reset
+   * @returns true if a new day has started (UTC)
+   */
+  shouldResetDailyUsage(lastResetDate) {
+    if (!lastResetDate) {
+      return true;
+    }
+    const now = /* @__PURE__ */ new Date();
+    const lastReset = new Date(lastResetDate);
+    const nowDateUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    const lastResetDateUTC = Date.UTC(
+      lastReset.getUTCFullYear(),
+      lastReset.getUTCMonth(),
+      lastReset.getUTCDate()
+    );
+    return nowDateUTC > lastResetDateUTC;
+  }
+  /**
+   * Calculate the next reset time (midnight UTC tomorrow)
+   *
+   * @returns Date object for next UTC midnight
+   */
+  getNextResetTime() {
+    const tomorrow = /* @__PURE__ */ new Date();
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+    tomorrow.setUTCHours(0, 0, 0, 0);
+    return tomorrow;
+  }
+  /**
+   * Create a default free tier subscription for a user
+   *
+   * @param userId - The user's ID
+   * @returns Created subscription object
+   */
+  async createDefaultSubscription(userId) {
+    return await storage.createSubscription({
+      userId,
+      tier: "free",
+      chatLimit: "5",
+      chatsUsed: "0",
+      dailyChatsUsed: "0",
+      status: "active"
+    });
+  }
+  /**
+   * Get tier-specific upgrade message when limit is exceeded
+   *
+   * @param tier - Current subscription tier
+   * @returns Upgrade message string
+   */
+  getUpgradeMessage(tier) {
+    switch (tier) {
+      case "free":
+        return "Daily limit reached. Upgrade to Premium for 10 daily chats.";
+      case "premium":
+        return "Daily limit reached. Upgrade to Transformation for unlimited chats.";
+      default:
+        return "Chat limit reached. Please upgrade your subscription.";
+    }
+  }
+  /**
+   * Get tier-specific upgrade URL with tracking parameters
+   *
+   * @param tier - Current subscription tier
+   * @returns Upgrade URL string
+   */
+  getUpgradeUrl(tier) {
+    const source = "chat_limit_prompt";
+    switch (tier) {
+      case "free":
+        return `/pricing?source=${source}&tier=free`;
+      case "premium":
+        return `/pricing?source=${source}&tier=premium`;
+      default:
+        return `/pricing?source=${source}`;
+    }
+  }
+  /**
+   * Get usage status for an authenticated user
+   *
+   * @param userId - The user's ID
+   * @returns LimitCheckResult with current usage info
+   */
+  async getUsageStatus(userId) {
+    const subscription = await storage.getUserSubscription(userId);
+    if (!subscription) {
+      return {
+        allowed: true,
+        tier: "free",
+        dailyLimit: TIER_LIMITS.free,
+        used: 0,
+        remaining: TIER_LIMITS.free,
+        resetTime: this.getNextResetTime()
+      };
+    }
+    return await this.checkLimit(userId, subscription.tier);
+  }
+  /**
+   * Check guest user limit (frontend handles localStorage, backend validates)
+   *
+   * @param guestChatCount - Number of chats the guest has used (from frontend)
+   * @returns Information about guest limit status
+   */
+  checkGuestLimit(guestChatCount) {
+    const allowed = guestChatCount < GUEST_LIMIT;
+    const remaining = Math.max(0, GUEST_LIMIT - guestChatCount);
+    return {
+      allowed,
+      limit: GUEST_LIMIT,
+      used: guestChatCount,
+      remaining,
+      signupPrompt: allowed ? void 0 : "You've used your 2 free chats! Sign up for 5 daily chats.",
+      signupUrl: allowed ? void 0 : "/signup?source=guest_limit"
+    };
+  }
+};
+var chatLimitService = new ChatLimitService();
 
 // server/routes.ts
 init_schema();
@@ -2080,16 +2323,50 @@ async function registerRoutes(app2) {
       if (!process.env.ANTHROPIC_API_KEY) {
         return res.status(503).json({ error: "Anthropic API key not configured. Please add ANTHROPIC_API_KEY." });
       }
-      const { content, history = [] } = req.body;
+      const { content, history = [], guestChatCount = 0 } = req.body;
       if (!content || typeof content !== "string") {
         return res.status(400).json({ error: "Message content is required" });
       }
       const isAuth = req.isAuthenticated && req.isAuthenticated() && req.user;
+      console.log("[DEBUG] isAuth:", isAuth, "| req.isAuthenticated:", typeof req.isAuthenticated, "| req.user:", !!req.user, "| guestChatCount:", guestChatCount);
       let conversationHistory = [];
+      let limitCheckResult = null;
       if (isAuth) {
         const user = req.user;
         conversationHistory = await storage.getMessagesByUser(user.id);
+        const subscription = await storage.getUserSubscription(user.id);
+        const tier = subscription?.tier || "free";
+        try {
+          limitCheckResult = await chatLimitService.checkLimit(user.id, tier);
+          if (!limitCheckResult.allowed) {
+            return res.status(429).json({
+              error: "Chat limit reached",
+              message: limitCheckResult.upgradeMessage,
+              limit: limitCheckResult.dailyLimit,
+              used: limitCheckResult.used,
+              remaining: limitCheckResult.remaining,
+              tier: limitCheckResult.tier,
+              resetTime: limitCheckResult.resetTime,
+              upgradeUrl: limitCheckResult.upgradeUrl
+            });
+          }
+        } catch (limitError) {
+          console.error("Limit check failed (fail-open mode):", limitError);
+          limitCheckResult = null;
+        }
       } else {
+        const guestLimit = chatLimitService.checkGuestLimit(guestChatCount);
+        if (!guestLimit.allowed) {
+          return res.status(429).json({
+            error: "Guest chat limit reached",
+            message: guestLimit.signupPrompt,
+            limit: guestLimit.limit,
+            used: guestLimit.used,
+            remaining: guestLimit.remaining,
+            tier: "guest",
+            signupUrl: guestLimit.signupUrl
+          });
+        }
         conversationHistory = history;
       }
       const anthropicMessages = [...conversationHistory, { role: "user", content }].filter((msg) => msg.role === "user" || msg.role === "assistant").map((msg) => ({ role: msg.role, content: msg.content }));
@@ -2112,7 +2389,23 @@ async function registerRoutes(app2) {
           role: "assistant",
           content: assistantContent
         });
-        res.json({ userMessage: savedUserMessage, assistantMessage: savedAssistantMessage });
+        try {
+          await chatLimitService.incrementUsage(user.id);
+        } catch (incrementError) {
+          console.error("Failed to increment usage (non-critical):", incrementError);
+        }
+        res.json({
+          userMessage: savedUserMessage,
+          assistantMessage: savedAssistantMessage,
+          limitStatus: limitCheckResult ? {
+            tier: limitCheckResult.tier,
+            dailyLimit: limitCheckResult.dailyLimit,
+            used: limitCheckResult.used + 1,
+            // Include this chat
+            remaining: limitCheckResult.remaining === "unlimited" ? "unlimited" : Math.max(0, limitCheckResult.remaining - 1),
+            resetTime: limitCheckResult.resetTime
+          } : void 0
+        });
       } else {
         const userMessage = {
           id: Date.now().toString(),
@@ -2128,7 +2421,15 @@ async function registerRoutes(app2) {
           content: assistantContent,
           timestamp: (/* @__PURE__ */ new Date()).toISOString()
         };
-        res.json({ userMessage, assistantMessage });
+        res.json({
+          userMessage,
+          assistantMessage,
+          guestLimitInfo: {
+            used: guestChatCount + 1,
+            limit: 2,
+            remaining: Math.max(0, 1 - guestChatCount)
+          }
+        });
       }
     } catch (error) {
       console.error("Error processing chat:", error);
@@ -3040,7 +3341,9 @@ import { createServer as createViteServer, createLogger } from "vite";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path2 from "path";
+import { fileURLToPath as fileURLToPath2 } from "url";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
+var __dirname2 = path2.dirname(fileURLToPath2(import.meta.url));
 var vite_config_default = defineConfig({
   plugins: [
     react(),
@@ -3056,14 +3359,14 @@ var vite_config_default = defineConfig({
   ],
   resolve: {
     alias: {
-      "@": path2.resolve(import.meta.dirname, "client", "src"),
-      "@shared": path2.resolve(import.meta.dirname, "shared"),
-      "@assets": path2.resolve(import.meta.dirname, "attached_assets")
+      "@": path2.resolve(__dirname2, "client", "src"),
+      "@shared": path2.resolve(__dirname2, "shared"),
+      "@assets": path2.resolve(__dirname2, "attached_assets")
     }
   },
-  root: path2.resolve(import.meta.dirname, "client"),
+  root: path2.resolve(__dirname2, "client"),
   build: {
-    outDir: path2.resolve(import.meta.dirname, "dist/public"),
+    outDir: path2.resolve(__dirname2, "dist/public"),
     emptyOutDir: true
   },
   server: {
