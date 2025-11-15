@@ -1,6 +1,5 @@
 // src/pages/shop.tsx
 import { Footer } from "@/components/Footer";
-import { Footer } from "@/components/Footer";
 import { Link } from "wouter";
 import { useEffect, useMemo, useState } from "react";
 import { Navigation } from "@/components/Navigation";
