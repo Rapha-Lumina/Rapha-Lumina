@@ -1,8 +1,18 @@
 import express, { type Request, Response, NextFunction } from "express";
+import cors from "cors";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+// CORS configuration for split deployment (frontend on different domain)
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || true, // Allow configured frontend URL or all origins in dev
+  credentials: true, // Allow cookies for session management
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+app.use(cors(corsOptions));
 
 declare module 'http' {
   interface IncomingMessage {
