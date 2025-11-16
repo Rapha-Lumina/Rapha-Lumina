@@ -35,12 +35,12 @@ RUN addgroup -g 1001 -S nodejs && \
 
 USER nodejs
 
-# Expose port
-EXPOSE 3000
+# Expose port (Spaceship/Hyperlift typically uses 8080; app reads PORT)
+EXPOSE 8080
 
 # Set environment variables
 ENV NODE_ENV=production
-ENV PORT=3000
+# Do not hardcode PORT; platform provides it. Default in app is 5000.
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
