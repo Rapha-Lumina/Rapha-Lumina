@@ -1,6 +1,9 @@
 # Stage 1: Build the application
 FROM node:20-alpine AS builder
 
+# Install build dependencies for native modules (bcrypt, etc.)
+RUN apk add --no-cache python3 make g++
+
 WORKDIR /app
 
 # Copy package files
@@ -12,17 +15,27 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+# Set dummy DATABASE_URL for build-time schema validation
+# This is only used during build, not runtime
+ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
+
 # Build the application (frontend + backend)
 RUN npm run build
 
 # Stage 2: Production image
 FROM node:20-alpine AS production
 
+# Install build dependencies for native modules (bcrypt, etc.)
+RUN apk add --no-cache python3 make g++
+
 WORKDIR /app
 
 # Install only production dependencies
 COPY package*.json ./
 RUN npm ci --only=production
+
+# Remove build dependencies to keep image small
+RUN apk del python3 make g++
 
 # Copy built artifacts from builder stage
 COPY --from=builder /app/dist ./dist
