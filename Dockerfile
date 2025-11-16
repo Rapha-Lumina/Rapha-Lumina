@@ -24,8 +24,9 @@ RUN npm run build
 # Remove dev dependencies after build
 RUN npm prune --production
 
-# Clean up build tools
-RUN apk del python3 make g++
+# Clean up build tools (keep wget for healthcheck)
+RUN apk del python3 make g++ && \
+    apk add --no-cache wget
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
