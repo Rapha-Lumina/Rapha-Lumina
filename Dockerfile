@@ -19,8 +19,12 @@ RUN npm ci && npm cache clean --force
 # Copy source code
 COPY . .
 
-# Set dummy DATABASE_URL for build-time schema validation
-ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
+# Set dummy MySQL environment variables for build-time
+ENV DB_HOST="localhost"
+ENV DB_PORT="3306"
+ENV DB_USER="build"
+ENV DB_PASSWORD="build"
+ENV DB_NAME="build"
 
 # Build the application
 RUN npm run build

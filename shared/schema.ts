@@ -1,56 +1,56 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, index, jsonb } from "drizzle-orm/pg-core";
+import { mysqlTable, text, varchar, timestamp, index, json, datetime } from "drizzle-orm/mysql-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Session storage table for Replit Auth
-export const sessions = pgTable(
+export const sessions = mysqlTable(
   "sessions",
   {
-    sid: varchar("sid").primaryKey(),
-    sess: jsonb("sess").notNull(),
-    expire: timestamp("expire").notNull(),
+    sid: varchar("sid", { length: 255 }).primaryKey(),
+    sess: json("sess").notNull(),
+    expire: datetime("expire").notNull(),
   },
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
 // User storage table for email/password authentication
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: varchar("email").unique(),
-  password: varchar("password"), // bcrypt hashed password
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
-  address: varchar("address"),
-  dateOfBirth: varchar("date_of_birth"),
-  location: varchar("location"),
-  age: varchar("age"),
-  profileImageUrl: varchar("profile_image_url"),
-  isAdmin: varchar("is_admin").default("false").notNull(),
-  isTestUser: varchar("is_test_user").default("false").notNull(),
-  emailVerified: varchar("email_verified").default("false").notNull(),
-  verificationToken: varchar("verification_token"),
-  verificationTokenExpires: timestamp("verification_token_expires"),
-  resetPasswordToken: varchar("reset_password_token"),
-  resetPasswordExpires: timestamp("reset_password_expires"),
-  odooExternalId: varchar("odoo_external_id"),
-  odooRevision: timestamp("odoo_revision"),
-  odooLastSyncAt: timestamp("odoo_last_sync_at"),
-  odooSource: varchar("odoo_source"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+export const users = mysqlTable("users", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+  email: varchar("email", { length: 255 }).unique(),
+  password: varchar("password", { length: 255 }), // bcrypt hashed password
+  firstName: varchar("first_name", { length: 255 }),
+  lastName: varchar("last_name", { length: 255 }),
+  address: varchar("address", { length: 500 }),
+  dateOfBirth: varchar("date_of_birth", { length: 50 }),
+  location: varchar("location", { length: 255 }),
+  age: varchar("age", { length: 10 }),
+  profileImageUrl: varchar("profile_image_url", { length: 500 }),
+  isAdmin: varchar("is_admin", { length: 10 }).default("false").notNull(),
+  isTestUser: varchar("is_test_user", { length: 10 }).default("false").notNull(),
+  emailVerified: varchar("email_verified", { length: 10 }).default("false").notNull(),
+  verificationToken: varchar("verification_token", { length: 255 }),
+  verificationTokenExpires: datetime("verification_token_expires"),
+  resetPasswordToken: varchar("reset_password_token", { length: 255 }),
+  resetPasswordExpires: datetime("reset_password_expires"),
+  odooExternalId: varchar("odoo_external_id", { length: 255 }),
+  odooRevision: datetime("odoo_revision"),
+  odooLastSyncAt: datetime("odoo_last_sync_at"),
+  odooSource: varchar("odoo_source", { length: 255 }),
+  createdAt: datetime("created_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: datetime("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 
 // Messages table - now linked to users instead of sessions
-export const messages = pgTable("messages", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  role: varchar("role", { enum: ["user", "assistant"] }).notNull(),
+export const messages = mysqlTable("messages", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+  userId: varchar("user_id", { length: 36 }).notNull().references(() => users.id),
+  role: varchar("role", { length: 20, enum: ["user", "assistant"] }).notNull(),
   content: text("content").notNull(),
-  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  timestamp: datetime("timestamp").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const insertMessageSchema = createInsertSchema(messages).omit({
@@ -62,15 +62,15 @@ export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Message = typeof messages.$inferSelect;
 
 // Newsletter subscribers table
-export const newsletterSubscribers = pgTable("newsletter_subscribers", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: varchar("email").unique().notNull(),
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
-  location: varchar("location"),
-  dateOfBirth: varchar("date_of_birth"),
-  isTestUser: varchar("is_test_user").default("false").notNull(),
-  subscribedAt: timestamp("subscribed_at").defaultNow().notNull(),
+export const newsletterSubscribers = mysqlTable("newsletter_subscribers", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+  email: varchar("email", { length: 255 }).unique().notNull(),
+  firstName: varchar("first_name", { length: 255 }),
+  lastName: varchar("last_name", { length: 255 }),
+  location: varchar("location", { length: 255 }),
+  dateOfBirth: varchar("date_of_birth", { length: 50 }),
+  isTestUser: varchar("is_test_user", { length: 10 }).default("false").notNull(),
+  subscribedAt: datetime("subscribed_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const insertNewsletterSubscriberSchema = createInsertSchema(newsletterSubscribers).omit({
@@ -88,28 +88,28 @@ export type InsertNewsletterSubscriber = z.infer<typeof insertNewsletterSubscrib
 export type NewsletterSubscriber = typeof newsletterSubscribers.$inferSelect;
 
 // User subscriptions table - tracks which tier each user has purchased
-export const subscriptions = pgTable("subscriptions", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  tier: varchar("tier", { enum: ["free", "premium", "transformation"] }).notNull().default("free"),
-  chatLimit: varchar("chat_limit").notNull().default("5"), // "5", "10", or "unlimited"
-  chatsUsed: varchar("chats_used").notNull().default("0"), // DEPRECATED: use dailyChatsUsed instead
+export const subscriptions = mysqlTable("subscriptions", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+  userId: varchar("user_id", { length: 36 }).notNull().references(() => users.id),
+  tier: varchar("tier", { length: 20, enum: ["free", "premium", "transformation"] }).notNull().default("free"),
+  chatLimit: varchar("chat_limit", { length: 20 }).notNull().default("5"), // "5", "10", or "unlimited"
+  chatsUsed: varchar("chats_used", { length: 20 }).notNull().default("0"), // DEPRECATED: use dailyChatsUsed instead
 
   // NEW FIELDS for daily chat limit tracking
-  dailyChatsUsed: varchar("daily_chats_used").notNull().default("0"), // Current day's usage
-  lastResetDate: timestamp("last_reset_date").defaultNow().notNull(), // Last time daily usage was reset
+  dailyChatsUsed: varchar("daily_chats_used", { length: 20 }).notNull().default("0"), // Current day's usage
+  lastResetDate: datetime("last_reset_date").default(sql`CURRENT_TIMESTAMP`).notNull(), // Last time daily usage was reset
 
-  status: varchar("status", { enum: ["active", "cancelled", "expired"] }).notNull().default("active"),
-  stripeCustomerId: varchar("stripe_customer_id"),
-  stripeSubscriptionId: varchar("stripe_subscription_id"),
-  currentPeriodStart: timestamp("current_period_start"),
-  currentPeriodEnd: timestamp("current_period_end"),
-  odooExternalId: varchar("odoo_external_id"),
-  odooRevision: timestamp("odoo_revision"),
-  odooLastSyncAt: timestamp("odoo_last_sync_at"),
-  odooSource: varchar("odoo_source"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  status: varchar("status", { length: 20, enum: ["active", "cancelled", "expired"] }).notNull().default("active"),
+  stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
+  stripeSubscriptionId: varchar("stripe_subscription_id", { length: 255 }),
+  currentPeriodStart: datetime("current_period_start"),
+  currentPeriodEnd: datetime("current_period_end"),
+  odooExternalId: varchar("odoo_external_id", { length: 255 }),
+  odooRevision: datetime("odoo_revision"),
+  odooLastSyncAt: datetime("odoo_last_sync_at"),
+  odooSource: varchar("odoo_source", { length: 255 }),
+  createdAt: datetime("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: datetime("updated_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({
@@ -122,13 +122,13 @@ export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
 export type Subscription = typeof subscriptions.$inferSelect;
 
 // Chat usage tracking table - detailed logs of each chat session
-export const chatUsage = pgTable("chat_usage", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  subscriptionId: varchar("subscription_id").notNull().references(() => subscriptions.id),
-  messageCount: varchar("message_count").notNull().default("0"),
-  startedAt: timestamp("started_at").defaultNow().notNull(),
-  endedAt: timestamp("ended_at"),
+export const chatUsage = mysqlTable("chat_usage", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+  userId: varchar("user_id", { length: 36 }).notNull().references(() => users.id),
+  subscriptionId: varchar("subscription_id", { length: 36 }).notNull().references(() => subscriptions.id),
+  messageCount: varchar("message_count", { length: 20 }).notNull().default("0"),
+  startedAt: datetime("started_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  endedAt: datetime("ended_at"),
 });
 
 export const insertChatUsageSchema = createInsertSchema(chatUsage).omit({
@@ -142,18 +142,18 @@ export type ChatUsage = typeof chatUsage.$inferSelect;
 // LMS Schema
 
 // Courses table
-export const courses = pgTable("courses", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  title: varchar("title").notNull(),
+export const courses = mysqlTable("courses", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+  title: varchar("title", { length: 255 }).notNull(),
   description: text("description").notNull(),
-  price: varchar("price").notNull(), // Store as string to preserve formatting like "$97"
-  instructor: varchar("instructor").notNull(),
-  thumbnail: varchar("thumbnail"),
-  duration: varchar("duration"), // e.g., "4 weeks"
-  totalLessons: varchar("total_lessons"), // e.g., "15 lessons"
-  level: varchar("level"), // e.g., "Beginner", "Intermediate", "Advanced"
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  price: varchar("price", { length: 50 }).notNull(), // Store as string to preserve formatting like "$97"
+  instructor: varchar("instructor", { length: 255 }).notNull(),
+  thumbnail: varchar("thumbnail", { length: 500 }),
+  duration: varchar("duration", { length: 50 }), // e.g., "4 weeks"
+  totalLessons: varchar("total_lessons", { length: 50 }), // e.g., "15 lessons"
+  level: varchar("level", { length: 50 }), // e.g., "Beginner", "Intermediate", "Advanced"
+  createdAt: datetime("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: datetime("updated_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const insertCourseSchema = createInsertSchema(courses).omit({
@@ -166,14 +166,14 @@ export type InsertCourse = z.infer<typeof insertCourseSchema>;
 export type Course = typeof courses.$inferSelect;
 
 // Modules table
-export const modules = pgTable("modules", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  courseId: varchar("course_id").notNull().references(() => courses.id),
-  moduleNumber: varchar("module_number").notNull(),
-  title: varchar("title").notNull(),
+export const modules = mysqlTable("modules", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+  courseId: varchar("course_id", { length: 36 }).notNull().references(() => courses.id),
+  moduleNumber: varchar("module_number", { length: 20 }).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
-  order: varchar("order").notNull(), // Display order
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  order: varchar("order", { length: 20 }).notNull(), // Display order
+  createdAt: datetime("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const insertModuleSchema = createInsertSchema(modules).omit({
@@ -185,18 +185,18 @@ export type InsertModule = z.infer<typeof insertModuleSchema>;
 export type Module = typeof modules.$inferSelect;
 
 // Lessons table
-export const lessons = pgTable("lessons", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  courseId: varchar("course_id").notNull().references(() => courses.id),
-  moduleId: varchar("module_id").notNull().references(() => modules.id),
-  moduleNumber: varchar("module_number").notNull(),
-  lessonNumber: varchar("lesson_number").notNull(),
-  title: varchar("title").notNull(),
+export const lessons = mysqlTable("lessons", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+  courseId: varchar("course_id", { length: 36 }).notNull().references(() => courses.id),
+  moduleId: varchar("module_id", { length: 36 }).notNull().references(() => modules.id),
+  moduleNumber: varchar("module_number", { length: 20 }).notNull(),
+  lessonNumber: varchar("lesson_number", { length: 20 }).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
-  videoUrl: varchar("video_url"),
-  duration: varchar("duration"), // e.g., "45 minutes"
-  order: varchar("order").notNull(), // Display order within module
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  videoUrl: varchar("video_url", { length: 500 }),
+  duration: varchar("duration", { length: 50 }), // e.g., "45 minutes"
+  order: varchar("order", { length: 20 }).notNull(), // Display order within module
+  createdAt: datetime("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const insertLessonSchema = createInsertSchema(lessons).omit({
@@ -208,15 +208,15 @@ export type InsertLesson = z.infer<typeof insertLessonSchema>;
 export type Lesson = typeof lessons.$inferSelect;
 
 // Student Progress table
-export const studentProgress = pgTable("student_progress", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  courseId: varchar("course_id").notNull().references(() => courses.id),
-  lessonId: varchar("lesson_id").notNull().references(() => lessons.id),
-  completed: varchar("completed").notNull().default("false"), // "true" or "false"
-  completedAt: timestamp("completed_at"),
-  lastWatchedPosition: varchar("last_watched_position").default("0"), // Video position in seconds
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+export const studentProgress = mysqlTable("student_progress", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+  userId: varchar("user_id", { length: 36 }).notNull().references(() => users.id),
+  courseId: varchar("course_id", { length: 36 }).notNull().references(() => courses.id),
+  lessonId: varchar("lesson_id", { length: 36 }).notNull().references(() => lessons.id),
+  completed: varchar("completed", { length: 10 }).notNull().default("false"), // "true" or "false"
+  completedAt: datetime("completed_at"),
+  lastWatchedPosition: varchar("last_watched_position", { length: 20 }).default("0"), // Video position in seconds
+  updatedAt: datetime("updated_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const insertStudentProgressSchema = createInsertSchema(studentProgress).omit({
@@ -228,14 +228,14 @@ export type InsertStudentProgress = z.infer<typeof insertStudentProgressSchema>;
 export type StudentProgress = typeof studentProgress.$inferSelect;
 
 // Enrollments table
-export const enrollments = pgTable("enrollments", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  courseId: varchar("course_id").notNull().references(() => courses.id),
-  enrolledAt: timestamp("enrolled_at").defaultNow().notNull(),
-  completedAt: timestamp("completed_at"),
-  status: varchar("status", { enum: ["active", "completed", "cancelled"] }).notNull().default("active"),
-  paymentId: varchar("payment_id"), // For Stripe payment tracking
+export const enrollments = mysqlTable("enrollments", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+  userId: varchar("user_id", { length: 36 }).notNull().references(() => users.id),
+  courseId: varchar("course_id", { length: 36 }).notNull().references(() => courses.id),
+  enrolledAt: datetime("enrolled_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  completedAt: datetime("completed_at"),
+  status: varchar("status", { length: 20, enum: ["active", "completed", "cancelled"] }).notNull().default("active"),
+  paymentId: varchar("payment_id", { length: 255 }), // For Stripe payment tracking
 });
 
 export const insertEnrollmentSchema = createInsertSchema(enrollments).omit({
@@ -247,15 +247,15 @@ export type InsertEnrollment = z.infer<typeof insertEnrollmentSchema>;
 export type Enrollment = typeof enrollments.$inferSelect;
 
 // Flashcards table
-export const flashcards = pgTable("flashcards", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  courseId: varchar("course_id").notNull().references(() => courses.id),
-  lessonId: varchar("lesson_id").references(() => lessons.id),
+export const flashcards = mysqlTable("flashcards", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+  courseId: varchar("course_id", { length: 36 }).notNull().references(() => courses.id),
+  lessonId: varchar("lesson_id", { length: 36 }).references(() => lessons.id),
   question: text("question").notNull(),
   answer: text("answer").notNull(),
-  category: varchar("category"), // e.g., "Vocabulary", "Concepts", "Key Insights"
-  order: varchar("order").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  category: varchar("category", { length: 100 }), // e.g., "Vocabulary", "Concepts", "Key Insights"
+  order: varchar("order", { length: 20 }).notNull(),
+  createdAt: datetime("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const insertFlashcardSchema = createInsertSchema(flashcards).omit({
@@ -267,17 +267,17 @@ export type InsertFlashcard = z.infer<typeof insertFlashcardSchema>;
 export type Flashcard = typeof flashcards.$inferSelect;
 
 // Meditation Tracks table
-export const meditationTracks = pgTable("meditation_tracks", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  title: varchar("title").notNull(),
+export const meditationTracks = mysqlTable("meditation_tracks", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+  title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
-  audioUrl: varchar("audio_url").notNull(),
-  duration: varchar("duration"), // e.g., "10 minutes"
-  category: varchar("category"), // e.g., "Guided", "Breathwork", "Sleep"
-  thumbnail: varchar("thumbnail"),
-  isPremium: varchar("is_premium").notNull().default("false"),
-  order: varchar("order").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  audioUrl: varchar("audio_url", { length: 500 }).notNull(),
+  duration: varchar("duration", { length: 50 }), // e.g., "10 minutes"
+  category: varchar("category", { length: 100 }), // e.g., "Guided", "Breathwork", "Sleep"
+  thumbnail: varchar("thumbnail", { length: 500 }),
+  isPremium: varchar("is_premium", { length: 10 }).notNull().default("false"),
+  order: varchar("order", { length: 20 }).notNull(),
+  createdAt: datetime("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const insertMeditationTrackSchema = createInsertSchema(meditationTracks).omit({
@@ -289,17 +289,17 @@ export type InsertMeditationTrack = z.infer<typeof insertMeditationTrackSchema>;
 export type MeditationTrack = typeof meditationTracks.$inferSelect;
 
 // Music Tracks table
-export const musicTracks = pgTable("music_tracks", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  title: varchar("title").notNull(),
-  artist: varchar("artist"),
-  audioUrl: varchar("audio_url").notNull(),
-  duration: varchar("duration"), // e.g., "3:45"
-  category: varchar("category"), // e.g., "Ambient", "Focus", "Relaxation"
-  thumbnail: varchar("thumbnail"),
-  isPremium: varchar("is_premium").notNull().default("false"),
-  order: varchar("order").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+export const musicTracks = mysqlTable("music_tracks", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+  title: varchar("title", { length: 255 }).notNull(),
+  artist: varchar("artist", { length: 255 }),
+  audioUrl: varchar("audio_url", { length: 500 }).notNull(),
+  duration: varchar("duration", { length: 50 }), // e.g., "3:45"
+  category: varchar("category", { length: 100 }), // e.g., "Ambient", "Focus", "Relaxation"
+  thumbnail: varchar("thumbnail", { length: 500 }),
+  isPremium: varchar("is_premium", { length: 10 }).notNull().default("false"),
+  order: varchar("order", { length: 20 }).notNull(),
+  createdAt: datetime("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const insertMusicTrackSchema = createInsertSchema(musicTracks).omit({
@@ -311,17 +311,17 @@ export type InsertMusicTrack = z.infer<typeof insertMusicTrackSchema>;
 export type MusicTrack = typeof musicTracks.$inferSelect;
 
 // Blog Posts table
-export const blogPosts = pgTable("blog_posts", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  slug: varchar("slug").unique().notNull(),
-  title: varchar("title").notNull(),
+export const blogPosts = mysqlTable("blog_posts", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+  slug: varchar("slug", { length: 255 }).unique().notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
   excerpt: text("excerpt").notNull(),
   content: text("content").notNull(),
-  category: varchar("category").notNull(),
-  readTime: varchar("read_time").notNull(), // e.g., "8 min read"
-  thumbnail: varchar("thumbnail"),
-  publishedAt: timestamp("published_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  category: varchar("category", { length: 100 }).notNull(),
+  readTime: varchar("read_time", { length: 50 }).notNull(), // e.g., "8 min read"
+  thumbnail: varchar("thumbnail", { length: 500 }),
+  publishedAt: datetime("published_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: datetime("updated_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
@@ -334,19 +334,20 @@ export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
 export type BlogPost = typeof blogPosts.$inferSelect;
 
 // Community Forum Posts table
-export const forumPosts = pgTable("forum_posts", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  title: varchar("title").notNull(),
+export const forumPosts = mysqlTable("forum_posts", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+  userId: varchar("user_id", { length: 36 }).notNull().references(() => users.id),
+  title: varchar("title", { length: 255 }).notNull(),
   content: text("content").notNull(),
-  category: varchar("category", { 
-    enum: ["general", "meditation", "philosophy", "guidance", "community"] 
+  category: varchar("category", {
+    length: 50,
+    enum: ["general", "meditation", "philosophy", "guidance", "community"]
   }).notNull().default("general"),
-  likeCount: varchar("like_count").notNull().default("0"),
-  replyCount: varchar("reply_count").notNull().default("0"),
-  isPinned: varchar("is_pinned").notNull().default("false"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  likeCount: varchar("like_count", { length: 20 }).notNull().default("0"),
+  replyCount: varchar("reply_count", { length: 20 }).notNull().default("0"),
+  isPinned: varchar("is_pinned", { length: 10 }).notNull().default("false"),
+  createdAt: datetime("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: datetime("updated_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const insertForumPostSchema = createInsertSchema(forumPosts).omit({
@@ -362,14 +363,14 @@ export type InsertForumPost = z.infer<typeof insertForumPostSchema>;
 export type ForumPost = typeof forumPosts.$inferSelect;
 
 // Forum Replies table
-export const forumReplies = pgTable("forum_replies", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  postId: varchar("post_id").notNull().references(() => forumPosts.id),
-  userId: varchar("user_id").notNull().references(() => users.id),
+export const forumReplies = mysqlTable("forum_replies", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+  postId: varchar("post_id", { length: 36 }).notNull().references(() => forumPosts.id),
+  userId: varchar("user_id", { length: 36 }).notNull().references(() => users.id),
   content: text("content").notNull(),
-  likeCount: varchar("like_count").notNull().default("0"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  likeCount: varchar("like_count", { length: 20 }).notNull().default("0"),
+  createdAt: datetime("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: datetime("updated_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const insertForumReplySchema = createInsertSchema(forumReplies).omit({
@@ -383,12 +384,12 @@ export type InsertForumReply = z.infer<typeof insertForumReplySchema>;
 export type ForumReply = typeof forumReplies.$inferSelect;
 
 // Forum Likes table (tracks who liked what)
-export const forumLikes = pgTable("forum_likes", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  postId: varchar("post_id").references(() => forumPosts.id),
-  replyId: varchar("reply_id").references(() => forumReplies.id),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+export const forumLikes = mysqlTable("forum_likes", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+  userId: varchar("user_id", { length: 36 }).notNull().references(() => users.id),
+  postId: varchar("post_id", { length: 36 }).references(() => forumPosts.id),
+  replyId: varchar("reply_id", { length: 36 }).references(() => forumReplies.id),
+  createdAt: datetime("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const insertForumLikeSchema = createInsertSchema(forumLikes).omit({

@@ -6,8 +6,10 @@ import passport from "passport";
 import session from "express-session";
 import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
-import connectPg from "connect-pg-simple";
+import MySQLStoreFactory from "express-mysql-session";
 import { storage } from "./storage";
+
+const MySQLStore = MySQLStoreFactory(session as any);
 
 if (!process.env.REPLIT_DOMAINS) {
   throw new Error("Environment variable REPLIT_DOMAINS not provided");
@@ -25,13 +27,23 @@ const getOidcConfig = memoize(
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
-  const pgStore = connectPg(session);
-  const sessionStore = new pgStore({
-    conString: process.env.DATABASE_URL,
-    createTableIfMissing: false,
-    ttl: sessionTtl,
-    tableName: "sessions",
-  });
+  const options = {
+    host: process.env.DB_HOST || "localhost",
+    port: parseInt(process.env.DB_PORT || "3306"),
+    user: process.env.DB_USER || "root",
+    password: process.env.DB_PASSWORD || "",
+    database: process.env.DB_NAME || "rapha_lumina",
+    createDatabaseTable: true,
+    schema: {
+      tableName: 'sessions',
+      columnNames: {
+        session_id: 'sid',
+        expires: 'expire',
+        data: 'sess'
+      }
+    }
+  };
+  const sessionStore = new MySQLStore(options);
   return session({
     secret: process.env.SESSION_SECRET!,
     store: sessionStore,
