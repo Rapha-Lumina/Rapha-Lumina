@@ -1,52 +1,36 @@
-# Stage 1: Build the application
-FROM node:20-alpine AS builder
+# Single stage build for simpler deployment
+FROM node:20-alpine
 
 # Install build dependencies for native modules (bcrypt, etc.)
-RUN apk add --no-cache python3 make g++
+RUN apk add --no-cache python3 make g++ wget
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files first for better caching
 COPY package*.json ./
 
-# Install all dependencies (including dev dependencies for build)
-RUN npm ci
+# Install all dependencies
+RUN npm ci && npm cache clean --force
 
 # Copy source code
 COPY . .
 
 # Set dummy DATABASE_URL for build-time schema validation
-# This is only used during build, not runtime
 ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
 
-# Build the application (frontend + backend)
+# Build the application
 RUN npm run build
 
-# Stage 2: Production image
-FROM node:20-alpine AS production
+# Remove dev dependencies after build
+RUN npm prune --production
 
-# Install build dependencies for native modules (bcrypt, etc.)
-RUN apk add --no-cache python3 make g++
-
-WORKDIR /app
-
-# Install only production dependencies
-COPY package*.json ./
-RUN npm ci --only=production
-
-# Remove build dependencies to keep image small
+# Clean up build tools
 RUN apk del python3 make g++
-
-# Copy built artifacts from builder stage
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/server/ebooks ./server/ebooks
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
-
-# Set ownership
-RUN chown -R nodejs:nodejs /app
+    adduser -S nodejs -u 1001 && \
+    chown -R nodejs:nodejs /app
 
 USER nodejs
 
