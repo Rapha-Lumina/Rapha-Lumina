@@ -1,0 +1,19 @@
+node_modules
+dist
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gz
+
+# Platform-specific binaries (should be in node_modules, not root)
+@esbuild/
+@rollup/
+@tailwindcss/
+
+# Environment variables - NEVER commit these!
+.env.secrets
+.env.backup
+.env
+.env.local
+.env.*.local
+client/.env
