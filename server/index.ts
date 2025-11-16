@@ -62,6 +62,15 @@ app.use((req, res, next) => {
 
 (async () => {
   try {
+    // Health check endpoint for Docker/Kubernetes
+    app.get('/api/health', (_req, res) => {
+      res.status(200).json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+      });
+    });
+
     const server = await registerRoutes(app);
 
     // Serve uploaded files (avatars, etc.)
