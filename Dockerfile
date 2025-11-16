@@ -1,6 +1,10 @@
 # Single stage build for simpler deployment
 FROM node:20-alpine
 
+# Cache buster - change this value to force rebuild
+ARG CACHE_BUST=1
+RUN echo "Cache bust: $CACHE_BUST"
+
 # Install build dependencies for native modules (bcrypt, etc.)
 RUN apk add --no-cache python3 make g++ wget
 
@@ -9,7 +13,7 @@ WORKDIR /app
 # Copy package files first for better caching
 COPY package*.json ./
 
-# Install all dependencies
+# Install all dependencies (fresh install for Linux)
 RUN npm ci && npm cache clean --force
 
 # Copy source code
