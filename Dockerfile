@@ -2,7 +2,7 @@
 FROM node:20-alpine
 
 # Cache buster - change this value to force rebuild
-ARG CACHE_BUST=1
+ARG CACHE_BUST=2
 RUN echo "Cache bust: $CACHE_BUST"
 
 # Install build dependencies for native modules (bcrypt, etc.)
