@@ -2,8 +2,16 @@
 node_modules
 npm-debug.log*
 
+# Local platform-specific vendor bundles (use npm ci in Docker instead)
+@esbuild/
+@rollup/
+@tailwindcss/
+
 # Build outputs (we build fresh in Docker)
 dist
+client/dist
+client/.vite
+.vite
 
 # Git
 .git
@@ -20,6 +28,11 @@ dist
 *.swp
 *.swo
 
+# Replit & Nix configs (not needed in container)
+.replit
+replit*
+*.nix
+
 # OS
 .DS_Store
 Thumbs.db
@@ -29,6 +42,8 @@ Thumbs.db
 *.log
 coverage
 .nyc_output
+tsconfig.tsbuildinfo
+*.cache
 
 # Temporary files
 *.tmp
@@ -41,3 +56,6 @@ coverage
 mysql_*.sql
 export-*.js
 generate-*.js
+
+# Do NOT ignore runtime assets; app serves from /attached_assets
+# attached_assets/
