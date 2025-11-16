@@ -12,10 +12,14 @@ COPY package*.json ./
 # Install all dependencies
 RUN npm ci && npm cache clean --force
 
+# Refresh Browserslist database to silence build warnings and ensure up-to-date targets
+RUN npx --yes update-browserslist-db@latest || true
+
 # Copy source code
 COPY . .
 
-# Set dummy DATABASE_URL for build-time schema validation
+# Set build-time environment early
+ENV NODE_ENV=production
 ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
 
 # Build the application
@@ -38,8 +42,7 @@ USER nodejs
 # Expose port (Spaceship/Hyperlift typically uses 8080; app reads PORT)
 EXPOSE 8080
 
-# Set environment variables
-ENV NODE_ENV=production
+# Set runtime environment variables
 # Do not hardcode PORT; platform provides it. Default in app is 5000.
 
 # Health check
