@@ -22,15 +22,11 @@ export function Footer() {
             >
               Contact Us
             </a>
-            <Link href="/privacy">
-              <a className="text-muted-foreground hover:text-foreground transition-colors">
-                Privacy Policy
-              </a>
+            <Link href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
+              Privacy Policy
             </Link>
-            <Link href="/refund-policy">
-              <a className="text-muted-foreground hover:text-foreground transition-colors">
-                Refund Policy
-              </a>
+            <Link href="/refund-policy" className="text-muted-foreground hover:text-foreground transition-colors">
+              Refund Policy
             </Link>
           </div>
         </div>

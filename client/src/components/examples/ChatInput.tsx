@@ -7,6 +7,8 @@ export default function ChatInputExample() {
         <ChatInput
           onSendMessage={(msg) => console.log("Message sent:", msg)}
           isLoading={false}
+          voiceEnabled={false}
+          onVoiceToggle={() => {}}
         />
       </div>
     </div>

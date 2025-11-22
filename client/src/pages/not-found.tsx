@@ -21,12 +21,12 @@ export default function NotFound() {
               The page you're looking for doesn't exist or has been moved.
             </p>
 
-            <Link href="/">
-              <Button className="mt-6 w-full" data-testid="button-home">
+            <Button className="mt-6 w-full" asChild data-testid="button-home">
+              <Link href="/">
                 <Home className="w-4 h-4 mr-2" />
                 Return Home
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </CardContent>
         </Card>
       </main>

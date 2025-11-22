@@ -238,7 +238,7 @@ export function useSpeechSynthesis() {
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
 
-      audio.onstart = () => {
+      audio.onplay = () => {
         setIsSpeaking(true);
       };
 

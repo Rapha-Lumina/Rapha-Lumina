@@ -1,4 +1,5 @@
 import { ElevenLabsClient } from "elevenlabs";
+import { Readable } from "stream";
 
 if (!process.env.ELEVENLABS_API_KEY) {
   console.warn("Warning: ELEVENLABS_API_KEY not configured. Voice features will use browser TTS.");
@@ -33,8 +34,19 @@ export async function generateSpeech(text: string, voiceId?: string): Promise<Bu
       },
     });
 
-    const buffer = Buffer.from(await audio.arrayBuffer());
-    return buffer;
+    let buffer: Buffer | null = null;
+
+    if (audio instanceof Readable) {
+      const chunks: Buffer[] = [];
+      for await (const chunk of audio) {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+      }
+      buffer = Buffer.concat(chunks);
+    } else if (audio && typeof (audio as any).arrayBuffer === "function") {
+      buffer = Buffer.from(await (audio as any).arrayBuffer());
+    }
+
+    return buffer && buffer.length ? buffer : null;
   } catch (error) {
     console.error("ElevenLabs TTS error:", error);
     return null;

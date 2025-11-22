@@ -15,6 +15,9 @@ import {
   type ForumPost, type InsertForumPost,
   type ForumReply, type InsertForumReply,
   type ForumLike, type InsertForumLike,
+  type Purchase, type InsertPurchase,
+  type DownloadToken, type InsertDownloadToken,
+  purchases, downloadTokens,
   messages, users, newsletterSubscribers, subscriptions,
   courses, modules, lessons, studentProgress, enrollments,
   flashcards, meditationTracks, musicTracks, blogPosts,
@@ -121,6 +124,13 @@ export interface IStorage {
   getUserLikeForReply(userId: string, replyId: string): Promise<ForumLike | undefined>;
   createForumLike(like: InsertForumLike): Promise<ForumLike>;
   deleteForumLike(likeId: string): Promise<void>;
+
+  createPurchase(p: InsertPurchase): Promise<Purchase>;
+  getPurchaseByReference(reference: string): Promise<Purchase | undefined>;
+  updatePurchaseStatus(reference: string, status: "initialized" | "success" | "failed"): Promise<Purchase>;
+  createDownloadToken(t: InsertDownloadToken): Promise<DownloadToken>;
+  getDownloadToken(token: string): Promise<DownloadToken | undefined>;
+  markDownloadTokenUsed(token: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -745,6 +755,39 @@ export class DatabaseStorage implements IStorage {
 
   async deleteForumLike(likeId: string): Promise<void> {
     await db.delete(forumLikes).where(eq(forumLikes.id, likeId));
+  }
+
+  async createPurchase(p: InsertPurchase): Promise<Purchase> {
+    const [created] = await db.insert(purchases).values(p).returning();
+    return created;
+  }
+
+  async getPurchaseByReference(reference: string): Promise<Purchase | undefined> {
+    const [row] = await db.select().from(purchases).where(eq(purchases.reference, reference));
+    return row;
+  }
+
+  async updatePurchaseStatus(reference: string, status: "initialized" | "success" | "failed"): Promise<Purchase> {
+    const [updated] = await db
+      .update(purchases)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(purchases.reference, reference))
+      .returning();
+    return updated;
+  }
+
+  async createDownloadToken(t: InsertDownloadToken): Promise<DownloadToken> {
+    const [created] = await db.insert(downloadTokens).values(t).returning();
+    return created;
+  }
+
+  async getDownloadToken(token: string): Promise<DownloadToken | undefined> {
+    const [row] = await db.select().from(downloadTokens).where(eq(downloadTokens.token, token));
+    return row;
+  }
+
+  async markDownloadTokenUsed(token: string): Promise<void> {
+    await db.update(downloadTokens).set({ used: "true" }).where(eq(downloadTokens.token, token));
   }
 }
 

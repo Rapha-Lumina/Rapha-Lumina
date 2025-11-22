@@ -162,12 +162,12 @@ export default function Blog() {
                       </div>
                     </CardContent>
                     <CardFooter>
-                      <Link href={`/blog/${post.slug}`} className="w-full">
-                        <Button variant="ghost" className="w-full group" data-testid={`button-read-post-${index}`}>
+                      <Button variant="ghost" className="w-full group" asChild data-testid={`button-read-post-${index}`}>
+                        <Link href={`/blog/${post.slug}`} className="w-full">
                           Read More
                           <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                        </Button>
-                      </Link>
+                        </Link>
+                      </Button>
                     </CardFooter>
                   </Card>
                 );

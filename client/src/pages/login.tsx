@@ -144,8 +144,8 @@ export default function Login() {
             <p>
               Don't have an account?{" "}
               <Button 
-                variant="link"
-                className="p-0 h-auto font-normal" 
+                variant="ghost"
+                className="p-0 h-auto font-normal bg-transparent border-none shadow-none text-primary hover:underline underline-offset-2" 
                 onClick={() => setLocation("/signup")}
                 data-testid="link-signup"
               >

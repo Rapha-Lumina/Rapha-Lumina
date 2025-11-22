@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import { useEffect, useMemo, useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Download, FileText, Package, Sparkles } from "lucide-react";
@@ -23,6 +24,7 @@ type AccessResp = { id: string; allowed: boolean; formats: string[] };
 
 export default function Shop() {
   const [isZA, setIsZA] = useState(false);
+  const { user } = useAuth();
 
   // --- pricing (unchanged visual) ---
   useEffect(() => {
@@ -146,6 +148,22 @@ export default function Shop() {
     a.remove();
   };
 
+  const handlePurchase = async (ebookId: string) => {
+    const email = user?.email || window.prompt("Enter your email to receive download links") || "";
+    if (!email) return;
+    const currency = isZA ? "ZAR" : "USD";
+    const amount = isZA ? 100 : 10;
+    const r = await fetch("/api/purchase/ebook/init", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, ebookId, currency, amount }),
+    });
+    const j = await r.json();
+    if (r.ok && j.authorization_url) {
+      window.location.href = j.authorization_url as string;
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navigation />
@@ -248,11 +266,7 @@ export default function Shop() {
                           </Button>
                         </div>
                       ) : (
-                        <Button
-                          onClick={() => {
-                            window.location.href = "/membership";
-                          }}
-                        >
+                        <Button onClick={() => handlePurchase(ebook.id)}>
                           Purchase eBook
                         </Button>
                       )}

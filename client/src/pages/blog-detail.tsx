@@ -45,12 +45,12 @@ export default function BlogDetail() {
         <Navigation />
         <div className="flex-1 flex flex-col items-center justify-center gap-4 px-4">
           <h1 className="text-2xl font-display">Article not found</h1>
-          <Link href="/blog">
-            <Button variant="ghost" data-testid="button-back-to-blog">
+          <Button variant="ghost" asChild data-testid="button-back-to-blog">
+            <Link href="/blog">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Blog
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </div>
     );
@@ -82,12 +82,12 @@ export default function BlogDetail() {
         {/* Article Content */}
         <article className="max-w-4xl mx-auto px-4 py-12">
           {/* Back Button */}
-          <Link href="/blog">
-            <Button variant="ghost" className="mb-6" data-testid="button-back-to-blog">
+          <Button variant="ghost" className="mb-6" asChild data-testid="button-back-to-blog">
+            <Link href="/blog">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Blog
-            </Button>
-          </Link>
+            </Link>
+          </Button>
 
           {/* Category Badge */}
           <Badge variant="secondary" className="mb-4">{post.category}</Badge>
@@ -151,16 +151,12 @@ export default function BlogDetail() {
                 Explore more wisdom, insights, and transformative content to support your spiritual awakening.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/chat">
-                  <Button size="lg" data-testid="button-start-chat">
-                    Begin Chatting
-                  </Button>
-                </Link>
-                <Link href="/blog">
-                  <Button size="lg" variant="outline" data-testid="button-more-articles">
-                    More Articles
-                  </Button>
-                </Link>
+                <Button size="lg" asChild data-testid="button-start-chat">
+                  <Link href="/chat">Begin Chatting</Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild data-testid="button-more-articles">
+                  <Link href="/blog">More Articles</Link>
+                </Button>
               </div>
             </div>
           </div>

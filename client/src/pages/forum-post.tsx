@@ -151,12 +151,12 @@ export default function ForumPost() {
           <Card>
             <CardContent className="py-12 text-center">
               <p className="text-muted-foreground mb-4">Post not found</p>
-              <Link href="/forum">
-                <Button variant="outline">
+              <Button variant="outline" asChild>
+                <Link href="/forum">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back to Forum
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -167,12 +167,12 @@ export default function ForumPost() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto p-6">
-        <Link href="/forum">
-          <Button variant="ghost" className="mb-6" data-testid="button-back-forum">
+        <Button variant="ghost" className="mb-6" asChild data-testid="button-back-forum">
+          <Link href="/forum">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Forum
-          </Button>
-        </Link>
+          </Link>
+        </Button>
 
         <Card className="mb-6">
           <CardHeader>

@@ -29,6 +29,7 @@ import path from "path";
 import fs from "fs";
 import bcrypt from "bcrypt";
 import { odooService } from "./odoo";
+import { initTransaction, verifyTransaction } from "./paystack";
 
 // ESM-compatible __dirname/__filename
 import { fileURLToPath } from "url";
@@ -131,7 +132,7 @@ function registerEbookDownload(app: Express) {
         // Optional: let premium/transformation tiers through (future-proof).
         const sub = await storage.getUserSubscription(req.user.id);
         const isPaidTier =
-          sub?.tier === "premium" || sub?.tier === "transformation" || sub?.tier === "lifetime";
+          sub?.tier === "premium" || sub?.tier === "transformation";
         if (!isPaidTier) {
           return res.status(403).json({
             error:
@@ -189,6 +190,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerEbookExistProbe(app);
   registerEbookDownload(app);
 
+  app.get("/api/ebooks/:ebookId/token-download", async (req, res) => {
+    try {
+      const ebookId = sanitizeId(req.params.ebookId);
+      const fmtQ = String(req.query.format || "pdf").toLowerCase();
+      const fmt: "pdf" | "epub" | "mobi" = ALLOWED_EBOOK_FORMATS.has(fmtQ) ? (fmtQ as any) : "pdf";
+      const token = String(req.query.token || "");
+      const record = await storage.getDownloadToken(token);
+      if (!record || record.ebookId !== ebookId || record.format !== fmt) {
+        return res.status(403).json({ error: "Invalid token" });
+      }
+      if (record.used === "true" || (record.expiresAt && record.expiresAt < new Date())) {
+        return res.status(410).json({ error: "Link expired" });
+      }
+      const dir = path.join(EBOOKS_ROOT, ebookId);
+      const filename = `${ebookId}.${fmt}`;
+      const filepath = path.join(dir, filename);
+      if (!fs.existsSync(filepath)) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      await storage.markDownloadTokenUsed(token);
+      res.download(filepath, filename);
+    } catch (err) {
+      console.error("token download error:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // ---------- Validation Schemas ----------
   const createPasswordSchema = z.object({
     email: z.string().email(),
@@ -222,6 +250,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
       .regex(/[a-z]/, "Password must contain at least one lowercase letter")
       .regex(/[0-9]/, "Password must contain at least one number"),
+  });
+
+  const initPurchaseSchema = z.object({
+    email: z.string().trim().email(),
+    ebookId: z.string().trim(),
+    currency: z.enum(["USD", "ZAR", "NGN", "GHS"]).default("USD"),
+    amount: z.number().positive(),
   });
 
   // ---------- Auth routes ----------
@@ -270,9 +305,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       await storage.updateVerificationToken(user.id, verificationToken, verificationExpires);
 
-      const baseUrl =
-        process.env.BASE_URL ||
-        (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : `https://${req.hostname}`);
+      const baseUrl = process.env.BASE_URL || `https://${req.hostname}`;
       const verificationLink = `${baseUrl}/verify-email?token=${verificationToken}`;
 
       console.log(`[EMAIL] Verification link for ${email}: ${verificationLink}`);
@@ -448,6 +481,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/purchase/ebook/init", async (req: any, res) => {
+    try {
+      const data = initPurchaseSchema.parse(req.body);
+      const baseUrl = process.env.BASE_URL || `https://${req.hostname}`;
+      const reference = generateResetToken();
+      const amountInMinor = Math.round(data.amount * 100);
+      const resp = await initTransaction({
+        email: data.email,
+        amount: amountInMinor,
+        currency: data.currency,
+        reference,
+        callback_url: `${baseUrl}/api/purchase/ebook/callback`,
+        metadata: { ebookId: data.ebookId },
+      });
+      await storage.createPurchase({
+        email: data.email,
+        ebookId: sanitizeId(data.ebookId),
+        currency: data.currency,
+        amount: String(data.amount),
+        reference,
+        status: "initialized",
+      });
+      res.json({ authorization_url: resp.data.authorization_url, reference });
+    } catch (error: any) {
+      console.error("init purchase error:", error);
+      if (error instanceof z.ZodError) return res.status(400).json({ message: error.errors[0].message });
+      res.status(500).json({ message: "Failed to initialize purchase" });
+    }
+  });
+
+  app.get("/api/purchase/ebook/callback", async (req: any, res) => {
+    try {
+      const reference = String(req.query.reference || "");
+      if (!reference) return res.status(400).send("Missing reference");
+      const verify = await verifyTransaction(reference);
+      const p = await storage.getPurchaseByReference(reference);
+      if (!p) return res.status(404).send("Purchase not found");
+      if (verify.status === true && verify.data.status === "success") {
+        await storage.updatePurchaseStatus(reference, "success");
+        const formats: ("pdf" | "epub" | "mobi")[] = ["pdf", "epub", "mobi"].filter((f) => fileExistsFor(p.ebookId, f)) as ("pdf" | "epub" | "mobi")[];
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        const baseUrl =
+          process.env.BASE_URL ||
+          (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : `https://${req.hostname}`);
+        const links: string[] = [];
+        for (const fmt of formats) {
+          const token = generateResetToken();
+          await storage.createDownloadToken({
+            token,
+            email: p.email,
+            ebookId: p.ebookId,
+            format: fmt,
+            expiresAt,
+            used: "false",
+          });
+          links.push(`${baseUrl}/api/ebooks/${p.ebookId}/token-download?token=${token}&format=${fmt}`);
+        }
+        try {
+          await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              from: "Rapha Lumina <support@raphalumina.com>",
+              to: [p.email],
+              subject: "Your Rapha Lumina ebook purchase",
+              html: `<!DOCTYPE html><html><body style="font-family: Arial, sans-serif;">
+<h2>Thank you for your purchase</h2>
+<p>Your secure download links (valid for 24 hours):</p>
+${links.map((l) => `<p><a href="${l}">${l}</a></p>`).join("")}
+</body></html>`,
+            }),
+          });
+        } catch {}
+        return res.redirect("/shop?success=1");
+      } else {
+        await storage.updatePurchaseStatus(reference, "failed");
+        return res.redirect("/shop?failed=1");
+      }
+    } catch (err) {
+      console.error("purchase callback error:", err);
+      res.status(500).send("Internal error");
+    }
+  });
+
   app.post("/api/create-password", async (req: any, res) => {
     try {
       const validatedData = createPasswordSchema.parse(req.body);
@@ -530,9 +650,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const resetExpires = new Date(Date.now() + 3600000);
       await storage.updateResetToken(user.id, resetToken, resetExpires);
 
-      const baseUrl =
-        process.env.BASE_URL ||
-        (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : `https://${req.hostname}`);
+      const baseUrl = process.env.BASE_URL || `https://${req.hostname}`;
       const resetLink = `${baseUrl}/reset-password?token=${resetToken}`;
 
       try {

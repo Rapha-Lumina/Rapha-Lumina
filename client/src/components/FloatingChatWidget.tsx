@@ -97,15 +97,16 @@ export function FloatingChatWidget() {
               </div>
             </div>
 
-            <Link href="/chat" className="w-full">
-              <Button
-                className="w-full bg-primary text-primary-foreground shadow-lg"
-                data-testid="button-start-chat"
-              >
+            <Button
+              className="w-full bg-primary text-primary-foreground shadow-lg"
+              asChild
+              data-testid="button-start-chat"
+            >
+              <Link href="/chat" className="w-full">
                 <MessageCircle className="mr-2 h-4 w-4" />
                 Get Your Answers Now
-              </Button>
-            </Link>
+              </Link>
+            </Button>
 
             <p className="text-xs text-center text-muted-foreground">
               No login required • Free to use

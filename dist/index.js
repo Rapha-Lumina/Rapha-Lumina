@@ -14,6 +14,7 @@ __export(schema_exports, {
   blogPosts: () => blogPosts,
   chatUsage: () => chatUsage,
   courses: () => courses,
+  downloadTokens: () => downloadTokens,
   enrollments: () => enrollments,
   flashcards: () => flashcards,
   forumLikes: () => forumLikes,
@@ -22,6 +23,7 @@ __export(schema_exports, {
   insertBlogPostSchema: () => insertBlogPostSchema,
   insertChatUsageSchema: () => insertChatUsageSchema,
   insertCourseSchema: () => insertCourseSchema,
+  insertDownloadTokenSchema: () => insertDownloadTokenSchema,
   insertEnrollmentSchema: () => insertEnrollmentSchema,
   insertFlashcardSchema: () => insertFlashcardSchema,
   insertForumLikeSchema: () => insertForumLikeSchema,
@@ -33,6 +35,7 @@ __export(schema_exports, {
   insertModuleSchema: () => insertModuleSchema,
   insertMusicTrackSchema: () => insertMusicTrackSchema,
   insertNewsletterSubscriberSchema: () => insertNewsletterSubscriberSchema,
+  insertPurchaseSchema: () => insertPurchaseSchema,
   insertStudentProgressSchema: () => insertStudentProgressSchema,
   insertSubscriptionSchema: () => insertSubscriptionSchema,
   lessons: () => lessons,
@@ -41,6 +44,7 @@ __export(schema_exports, {
   modules: () => modules,
   musicTracks: () => musicTracks,
   newsletterSubscribers: () => newsletterSubscribers,
+  purchases: () => purchases,
   sessions: () => sessions,
   studentProgress: () => studentProgress,
   subscriptions: () => subscriptions,
@@ -50,7 +54,7 @@ import { sql } from "drizzle-orm";
 import { pgTable, text, varchar, timestamp, index, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-var sessions, users, messages, insertMessageSchema, newsletterSubscribers, insertNewsletterSubscriberSchema, subscriptions, insertSubscriptionSchema, chatUsage, insertChatUsageSchema, courses, insertCourseSchema, modules, insertModuleSchema, lessons, insertLessonSchema, studentProgress, insertStudentProgressSchema, enrollments, insertEnrollmentSchema, flashcards, insertFlashcardSchema, meditationTracks, insertMeditationTrackSchema, musicTracks, insertMusicTrackSchema, blogPosts, insertBlogPostSchema, forumPosts, insertForumPostSchema, forumReplies, insertForumReplySchema, forumLikes, insertForumLikeSchema;
+var sessions, users, messages, insertMessageSchema, newsletterSubscribers, insertNewsletterSubscriberSchema, subscriptions, insertSubscriptionSchema, chatUsage, insertChatUsageSchema, courses, insertCourseSchema, modules, insertModuleSchema, lessons, insertLessonSchema, studentProgress, insertStudentProgressSchema, enrollments, insertEnrollmentSchema, flashcards, insertFlashcardSchema, meditationTracks, insertMeditationTrackSchema, musicTracks, insertMusicTrackSchema, blogPosts, insertBlogPostSchema, forumPosts, insertForumPostSchema, forumReplies, insertForumReplySchema, forumLikes, insertForumLikeSchema, purchases, downloadTokens, insertPurchaseSchema, insertDownloadTokenSchema;
 var init_schema = __esm({
   "shared/schema.ts"() {
     "use strict";
@@ -362,6 +366,34 @@ var init_schema = __esm({
     });
     insertForumLikeSchema = createInsertSchema(forumLikes).omit({
       id: true,
+      createdAt: true
+    });
+    purchases = pgTable("purchases", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      email: varchar("email").notNull(),
+      ebookId: varchar("ebook_id").notNull(),
+      currency: varchar("currency").notNull(),
+      amount: varchar("amount").notNull(),
+      reference: varchar("reference").notNull(),
+      status: varchar("status", { enum: ["initialized", "success", "failed"] }).notNull().default("initialized"),
+      createdAt: timestamp("created_at").defaultNow().notNull(),
+      updatedAt: timestamp("updated_at").defaultNow().notNull()
+    });
+    downloadTokens = pgTable("download_tokens", {
+      token: varchar("token").primaryKey(),
+      email: varchar("email").notNull(),
+      ebookId: varchar("ebook_id").notNull(),
+      format: varchar("format", { enum: ["pdf", "epub", "mobi"] }).notNull(),
+      expiresAt: timestamp("expires_at").notNull(),
+      used: varchar("used").notNull().default("false"),
+      createdAt: timestamp("created_at").defaultNow().notNull()
+    });
+    insertPurchaseSchema = createInsertSchema(purchases).omit({
+      id: true,
+      createdAt: true,
+      updatedAt: true
+    });
+    insertDownloadTokenSchema = createInsertSchema(downloadTokens).omit({
       createdAt: true
     });
   }
@@ -1271,6 +1303,29 @@ var DatabaseStorage = class {
   async deleteForumLike(likeId) {
     await db.delete(forumLikes).where(eq(forumLikes.id, likeId));
   }
+  async createPurchase(p) {
+    const [created] = await db.insert(purchases).values(p).returning();
+    return created;
+  }
+  async getPurchaseByReference(reference) {
+    const [row] = await db.select().from(purchases).where(eq(purchases.reference, reference));
+    return row;
+  }
+  async updatePurchaseStatus(reference, status) {
+    const [updated] = await db.update(purchases).set({ status, updatedAt: /* @__PURE__ */ new Date() }).where(eq(purchases.reference, reference)).returning();
+    return updated;
+  }
+  async createDownloadToken(t) {
+    const [created] = await db.insert(downloadTokens).values(t).returning();
+    return created;
+  }
+  async getDownloadToken(token) {
+    const [row] = await db.select().from(downloadTokens).where(eq(downloadTokens.token, token));
+    return row;
+  }
+  async markDownloadTokenUsed(token) {
+    await db.update(downloadTokens).set({ used: "true" }).where(eq(downloadTokens.token, token));
+  }
 };
 var storage = new DatabaseStorage();
 
@@ -1630,6 +1685,7 @@ function generateResetToken() {
 
 // server/elevenlabs.ts
 import { ElevenLabsClient } from "elevenlabs";
+import { Readable } from "stream";
 if (!process.env.ELEVENLABS_API_KEY) {
   console.warn("Warning: ELEVENLABS_API_KEY not configured. Voice features will use browser TTS.");
 }
@@ -1657,8 +1713,17 @@ async function generateSpeech(text2, voiceId) {
         // Enhance clarity
       }
     });
-    const buffer = Buffer.from(await audio.arrayBuffer());
-    return buffer;
+    let buffer = null;
+    if (audio instanceof Readable) {
+      const chunks = [];
+      for await (const chunk of audio) {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+      }
+      buffer = Buffer.concat(chunks);
+    } else if (audio && typeof audio.arrayBuffer === "function") {
+      buffer = Buffer.from(await audio.arrayBuffer());
+    }
+    return buffer && buffer.length ? buffer : null;
   } catch (error) {
     console.error("ElevenLabs TTS error:", error);
     return null;
@@ -1673,6 +1738,37 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import bcrypt2 from "bcrypt";
+
+// server/paystack.ts
+async function initTransaction(payload) {
+  const res = await fetch("https://api.paystack.co/transaction/initialize", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY ?? ""}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    const text2 = await res.text();
+    throw new Error(text2);
+  }
+  return await res.json();
+}
+async function verifyTransaction(reference) {
+  const res = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
+    headers: {
+      Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY ?? ""}`
+    }
+  });
+  if (!res.ok) {
+    const text2 = await res.text();
+    throw new Error(text2);
+  }
+  return await res.json();
+}
+
+// server/routes.ts
 import { fileURLToPath } from "url";
 var __filename = fileURLToPath(import.meta.url);
 var __dirname = path.dirname(__filename);
@@ -1748,7 +1844,7 @@ function registerEbookDownload(app2) {
       const fmt = ALLOWED_EBOOK_FORMATS.has(fmtQ) ? fmtQ : "pdf";
       if (!isSuperUserReq(req)) {
         const sub = await storage.getUserSubscription(req.user.id);
-        const isPaidTier = sub?.tier === "premium" || sub?.tier === "transformation" || sub?.tier === "lifetime";
+        const isPaidTier = sub?.tier === "premium" || sub?.tier === "transformation";
         if (!isPaidTier) {
           return res.status(403).json({
             error: "Access denied. This download is restricted to the site owner or premium members."
@@ -1794,6 +1890,32 @@ async function registerRoutes(app2) {
   await setupAuth(app2);
   registerEbookExistProbe(app2);
   registerEbookDownload(app2);
+  app2.get("/api/ebooks/:ebookId/token-download", async (req, res) => {
+    try {
+      const ebookId = sanitizeId(req.params.ebookId);
+      const fmtQ = String(req.query.format || "pdf").toLowerCase();
+      const fmt = ALLOWED_EBOOK_FORMATS.has(fmtQ) ? fmtQ : "pdf";
+      const token = String(req.query.token || "");
+      const record = await storage.getDownloadToken(token);
+      if (!record || record.ebookId !== ebookId || record.format !== fmt) {
+        return res.status(403).json({ error: "Invalid token" });
+      }
+      if (record.used === "true" || record.expiresAt && record.expiresAt < /* @__PURE__ */ new Date()) {
+        return res.status(410).json({ error: "Link expired" });
+      }
+      const dir = path.join(EBOOKS_ROOT, ebookId);
+      const filename = `${ebookId}.${fmt}`;
+      const filepath = path.join(dir, filename);
+      if (!fs.existsSync(filepath)) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      await storage.markDownloadTokenUsed(token);
+      res.download(filepath, filename);
+    } catch (err) {
+      console.error("token download error:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
   const createPasswordSchema = z2.object({
     email: z2.string().email(),
     password: z2.string().min(8, "Password must be at least 8 characters"),
@@ -1817,6 +1939,12 @@ async function registerRoutes(app2) {
     dateOfBirth: z2.string().regex(/^\d{2}\/\d{2}\/\d{4}$/, "Date must be in DD/MM/YYYY format"),
     email: z2.string().trim().email("Please enter a valid email address"),
     password: z2.string().min(8, "Password must be at least 8 characters").regex(/[A-Z]/, "Password must contain at least one uppercase letter").regex(/[a-z]/, "Password must contain at least one lowercase letter").regex(/[0-9]/, "Password must contain at least one number")
+  });
+  const initPurchaseSchema = z2.object({
+    email: z2.string().trim().email(),
+    ebookId: z2.string().trim(),
+    currency: z2.enum(["USD", "ZAR", "NGN", "GHS"]).default("USD"),
+    amount: z2.number().positive()
   });
   app2.get("/api/auth/user", async (req, res) => {
     try {
@@ -1855,7 +1983,7 @@ async function registerRoutes(app2) {
         verificationTokenExpires: verificationExpires
       });
       await storage.updateVerificationToken(user.id, verificationToken, verificationExpires);
-      const baseUrl = process.env.BASE_URL || (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : `https://${req.hostname}`);
+      const baseUrl = process.env.BASE_URL || `https://${req.hostname}`;
       const verificationLink = `${baseUrl}/verify-email?token=${verificationToken}`;
       console.log(`[EMAIL] Verification link for ${email}: ${verificationLink}`);
       try {
@@ -2014,6 +2142,90 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: "Failed to verify email" });
     }
   });
+  app2.post("/api/purchase/ebook/init", async (req, res) => {
+    try {
+      const data = initPurchaseSchema.parse(req.body);
+      const baseUrl = process.env.BASE_URL || `https://${req.hostname}`;
+      const reference = generateResetToken();
+      const amountInMinor = Math.round(data.amount * 100);
+      const resp = await initTransaction({
+        email: data.email,
+        amount: amountInMinor,
+        currency: data.currency,
+        reference,
+        callback_url: `${baseUrl}/api/purchase/ebook/callback`,
+        metadata: { ebookId: data.ebookId }
+      });
+      await storage.createPurchase({
+        email: data.email,
+        ebookId: sanitizeId(data.ebookId),
+        currency: data.currency,
+        amount: String(data.amount),
+        reference,
+        status: "initialized"
+      });
+      res.json({ authorization_url: resp.data.authorization_url, reference });
+    } catch (error) {
+      console.error("init purchase error:", error);
+      if (error instanceof z2.ZodError) return res.status(400).json({ message: error.errors[0].message });
+      res.status(500).json({ message: "Failed to initialize purchase" });
+    }
+  });
+  app2.get("/api/purchase/ebook/callback", async (req, res) => {
+    try {
+      const reference = String(req.query.reference || "");
+      if (!reference) return res.status(400).send("Missing reference");
+      const verify = await verifyTransaction(reference);
+      const p = await storage.getPurchaseByReference(reference);
+      if (!p) return res.status(404).send("Purchase not found");
+      if (verify.status === true && verify.data.status === "success") {
+        await storage.updatePurchaseStatus(reference, "success");
+        const formats = ["pdf", "epub", "mobi"].filter((f) => fileExistsFor(p.ebookId, f));
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1e3);
+        const baseUrl = process.env.BASE_URL || (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : `https://${req.hostname}`);
+        const links = [];
+        for (const fmt of formats) {
+          const token = generateResetToken();
+          await storage.createDownloadToken({
+            token,
+            email: p.email,
+            ebookId: p.ebookId,
+            format: fmt,
+            expiresAt,
+            used: "false"
+          });
+          links.push(`${baseUrl}/api/ebooks/${p.ebookId}/token-download?token=${token}&format=${fmt}`);
+        }
+        try {
+          await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              from: "Rapha Lumina <support@raphalumina.com>",
+              to: [p.email],
+              subject: "Your Rapha Lumina ebook purchase",
+              html: `<!DOCTYPE html><html><body style="font-family: Arial, sans-serif;">
+<h2>Thank you for your purchase</h2>
+<p>Your secure download links (valid for 24 hours):</p>
+${links.map((l) => `<p><a href="${l}">${l}</a></p>`).join("")}
+</body></html>`
+            })
+          });
+        } catch {
+        }
+        return res.redirect("/shop?success=1");
+      } else {
+        await storage.updatePurchaseStatus(reference, "failed");
+        return res.redirect("/shop?failed=1");
+      }
+    } catch (err) {
+      console.error("purchase callback error:", err);
+      res.status(500).send("Internal error");
+    }
+  });
   app2.post("/api/create-password", async (req, res) => {
     try {
       const validatedData = createPasswordSchema.parse(req.body);
@@ -2085,7 +2297,7 @@ async function registerRoutes(app2) {
       const resetToken = generateResetToken();
       const resetExpires = new Date(Date.now() + 36e5);
       await storage.updateResetToken(user.id, resetToken, resetExpires);
-      const baseUrl = process.env.BASE_URL || (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : `https://${req.hostname}`);
+      const baseUrl = process.env.BASE_URL || `https://${req.hostname}`;
       const resetLink = `${baseUrl}/reset-password?token=${resetToken}`;
       try {
         const response = await fetch("https://api.resend.com/emails", {
@@ -3315,20 +3527,10 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path2 from "path";
 import { fileURLToPath as fileURLToPath2 } from "url";
-import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 var __dirname2 = path2.dirname(fileURLToPath2(import.meta.url));
 var vite_config_default = defineConfig({
   plugins: [
-    react(),
-    runtimeErrorOverlay(),
-    ...process.env.NODE_ENV !== "production" && process.env.REPL_ID !== void 0 ? [
-      await import("@replit/vite-plugin-cartographer").then(
-        (m) => m.cartographer()
-      ),
-      await import("@replit/vite-plugin-dev-banner").then(
-        (m) => m.devBanner()
-      )
-    ] : []
+    react()
   ],
   resolve: {
     alias: {
@@ -3462,6 +3664,13 @@ app.use((req, res, next) => {
 });
 (async () => {
   try {
+    app.get("/api/health", (_req, res) => {
+      res.status(200).json({
+        status: "healthy",
+        timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+        uptime: process.uptime()
+      });
+    });
     const server = await registerRoutes(app);
     app.use("/attached_assets", express2.static("attached_assets"));
     app.use((err, _req, res, _next) => {

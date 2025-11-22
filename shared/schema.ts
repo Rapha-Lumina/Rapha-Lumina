@@ -398,3 +398,40 @@ export const insertForumLikeSchema = createInsertSchema(forumLikes).omit({
 
 export type InsertForumLike = z.infer<typeof insertForumLikeSchema>;
 export type ForumLike = typeof forumLikes.$inferSelect;
+
+export const purchases = pgTable("purchases", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email").notNull(),
+  ebookId: varchar("ebook_id").notNull(),
+  currency: varchar("currency").notNull(),
+  amount: varchar("amount").notNull(),
+  reference: varchar("reference").notNull(),
+  status: varchar("status", { enum: ["initialized", "success", "failed"] }).notNull().default("initialized"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const downloadTokens = pgTable("download_tokens", {
+  token: varchar("token").primaryKey(),
+  email: varchar("email").notNull(),
+  ebookId: varchar("ebook_id").notNull(),
+  format: varchar("format", { enum: ["pdf", "epub", "mobi"] }).notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  used: varchar("used").notNull().default("false"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertPurchaseSchema = createInsertSchema(purchases).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertDownloadTokenSchema = createInsertSchema(downloadTokens).omit({
+  createdAt: true,
+});
+
+export type InsertPurchase = z.infer<typeof insertPurchaseSchema>;
+export type Purchase = typeof purchases.$inferSelect;
+export type InsertDownloadToken = z.infer<typeof insertDownloadTokenSchema>;
+export type DownloadToken = typeof downloadTokens.$inferSelect;
